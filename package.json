@@ -1,0 +1,24 @@
+{
+    "name": "ts3bot",
+    "version": "0.0.1",
+    "description": "another teamspeak3 bot",
+    "homepage": "",
+    "bugs": "",
+    "licenses" : [
+        {
+        "type" : "",
+        "url" : ""
+        }
+    ],
+    "author": {
+        "name": "Impulse",
+        "email": "hereGoesYour@email.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "link to git repository"
+    },
+    "dependencies": {
+        "node-teamspeak": ">=1.0.4 <2.0.0"
+    }
+}
