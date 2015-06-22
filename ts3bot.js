@@ -3,7 +3,8 @@
 var TeamSpeakClient = require("node-teamspeak"),
 	config = JSON.parse(require("fs").readFileSync("config.json")),
 	util = require("util"),
-	https = require('https');
+	https = require('https'),
+	sqlite = require('sqlite3').verbose();
 
 function date() {
 	var date = new Date();
@@ -12,6 +13,10 @@ function date() {
 
 (function ts3bot() {
 
+	var database = new sqlite3.Database('ts3bot.db');
+	database.serialize(function() {
+		database run
+	});
 
 	var serverQueryClient = new TeamSpeakClient(config.host);
 
