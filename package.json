@@ -12,11 +12,11 @@
     ],
     "author": {
         "name": "Impulse",
-        "email": "hereGoesYour@email.com"
+        "email": "sfr4nke@gmail.com"
     },
     "repository": {
         "type": "git",
-        "url": "link to git repository"
+        "url": "https://github.com/sfranke/ts3bot"
     },
     "dependencies": {
         "node-teamspeak": ">=1.0.4 <2.0.0"
