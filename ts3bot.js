@@ -13,11 +13,6 @@ function date() {
 
 (function ts3bot() {
 
-	var database = new sqlite3.Database('ts3bot.db');
-	database.serialize(function() {
-		database run
-	});
-
 	var serverQueryClient = new TeamSpeakClient(config.host);
 
 	console.log(date() + " [Connect] login to: " + config.host + " as " + config.loginName);
@@ -118,6 +113,29 @@ function date() {
 	*/
 	serverQueryClient.on("cliententerview", function(response){
 		/*is a user connecting via the normal teamspeak client proceed*/
+
+		console.log('\n' + date() + '[cliententerview]: ' + 'Uid: ' + '\'' + response.client_unique_identifier + '\'' + ' Nickname: ' + response.client_nickname);
+
+		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+		console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
+
+
+		databaseConnection.serialize(function() {
+			
+			var uid = response.client_unique_identifier,
+			nickname = response.client_nickname;
+
+			var statement = databaseConnection.prepare('INSERT INTO `clients` VALUES (?)');
+			statement.run(uid);
+			statement.finalize();
+			console.log('[db_statement] RUN: ' + util.inspect(statement));
+
+			statement.on("error", function(response) {
+				console.log('\n' + '[db_errorEvent] : ' + response);
+				console.log('[Inspection] ' + util.inspect(response));
+			});
+		});
+
 		if (response.client_type === 0) {
 			//console.log(date() + " [Info] client_type checked for user: \t" + response.client_nickname + " client_type is " + response.client_type);
 			/*is a user member of the guest group proceed*/
