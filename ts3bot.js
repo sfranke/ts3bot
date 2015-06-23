@@ -121,18 +121,30 @@ function date() {
 
 
 		databaseConnection.serialize(function() {
-			
-			var uid = response.client_unique_identifier,
-			nickname = response.client_nickname;
 
-			var statement = databaseConnection.prepare('INSERT INTO `clients` VALUES (?)');
-			statement.run(uid);
+			var uid = response.client_unique_identifier,
+			nick = response.client_nickname;
+
+			var client = { "client_unique_id": uid, "client_nickname": nick };
+
+			var statement = databaseConnection.prepare("INSERT INTO `clients` VALUES (?, ?, ?)");
+			statement.run(response.client_unique_identifier, response.client_nickname, null);
 			statement.finalize();
+
 			console.log('[db_statement] RUN: ' + util.inspect(statement));
 
 			statement.on("error", function(response) {
-				console.log('\n' + '[db_errorEvent] : ' + response);
+				console.log('\n' + '[--db_errorEvent] : ' + response);
 				console.log('[Inspection] ' + util.inspect(response));
+				if (response.errno === 19) {
+					console.log('[Db_Error]: This user already exists in our database.');
+				};
+			});
+			statement.on('trace', function(response) {
+				console.log(trace);
+			});
+			statement.on('profile', function(response) {
+				console.log(profile);
 			});
 		});
 
