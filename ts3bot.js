@@ -66,6 +66,18 @@ function date() {
 				console.log(date() + " [Info] gw2 API status code: ", res.statusCode);
 				//console.log("headers: ", res.headers);
 
+				//if (res.statusCode === 400) {
+				//	console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding!');
+				//	//Add logic to handle this case!For now restart.
+				//	this.emit("http400");
+				//};
+
+				//if (res.statusCode === 502) {
+				//	console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding!');
+				//	//Add logic to handle this case! For now restart.
+				//	this.emit("http502");
+				//};
+
 				res.on('data', function(d) {
     				//process.stdout.write(d);
     				var httpsRequest = JSON.parse(d);
@@ -74,8 +86,35 @@ function date() {
     				//console.log(date() + " [Debug] clientUid: " + response.invokeruid)
     				//check for world id 2003 (Gandara)
     				if (httpsRequest.world === 2003) {
+						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+						//console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
+
+
+						databaseConnection.serialize(function() {
+
+							var statement = databaseConnection.prepare("UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?");
+							statement.run(token, uid);
+							console.log(util.inspect(statement));
+							statement.finalize();
+							//console.log('[db_statement] RUN: ' + util.inspect(statement));
+
+							statement.on("error", function(response) {
+								console.log('\n' + '[db_errorEvent] : ' + response);
+								//console.log('[Inspection] ' + util.inspect(response));
+								if (response.errno === 19) {
+									console.log('[Db_Error]: This API key is already in our database!!');
+								};
+							});
+							statement.on('trace', function(response) {
+								console.log(response);
+							});
+							statement.on('profile', function(response) {
+								console.log(response);
+							});
+						});
+						databaseConnection.close();
 						//console.log("[Debug] sending " + config.confirmAccessMsg);
-    					serverQueryClient.send("sendtextmessage", {targetmode: "1", target: userId, msg: config.confirmAccessMsg}, function (err, response){
+						serverQueryClient.send("sendtextmessage", {targetmode: "1", target: userId, msg: config.confirmAccessMsg}, function (err, response){
 							//console.log("[Debug] clientdbid: " + response.cldbid);
 							serverQueryClient.send("clientgetdbidfromuid", {cluid: uid}, function (err, response){
 								console.log(date() + " [Info] SUCCESS, member permissions granted for " + nick + "( " + uid + " )");
@@ -83,6 +122,7 @@ function date() {
 								});
 							});
 						});
+						
     				} else {
     					console.log(date() + " [Info] FAIL, member permissions denied for " + nick + "( " + uid + " )");
     					serverQueryClient.send("sendtextmessage", {targetmode: "1", target: userId, msg: config.denyAccessMsg}, function (err, response){
@@ -92,6 +132,7 @@ function date() {
 
 			}).on('error', function(e) {
   				console.error(e);
+  				console.log('[ERROR] error while http.get. Work out a solution for this case!');
 			});
 
 		}
@@ -102,6 +143,7 @@ function date() {
 			});
 		};
 	});
+
 	/*listen on entryChannel
 
 	clid -> client id
@@ -114,39 +156,35 @@ function date() {
 	serverQueryClient.on("cliententerview", function(response){
 		/*is a user connecting via the normal teamspeak client proceed*/
 
-		console.log('\n' + date() + '[cliententerview]: ' + 'Uid: ' + '\'' + response.client_unique_identifier + '\'' + ' Nickname: ' + response.client_nickname);
+		//console.log('\n' + date() + '[cliententerview]: ' + 'Uid: ' + '\'' + response.client_unique_identifier + '\'' + ' Nickname: ' + response.client_nickname);
 
 		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-		console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
+		//console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
 
 
 		databaseConnection.serialize(function() {
-
-			var uid = response.client_unique_identifier,
-			nick = response.client_nickname;
-
-			var client = { "client_unique_id": uid, "client_nickname": nick };
 
 			var statement = databaseConnection.prepare("INSERT INTO `clients` VALUES (?, ?, ?)");
 			statement.run(response.client_unique_identifier, response.client_nickname, null);
 			statement.finalize();
 
-			console.log('[db_statement] RUN: ' + util.inspect(statement));
+			//console.log('[db_statement] RUN: ' + util.inspect(statement));
 
 			statement.on("error", function(response) {
-				console.log('\n' + '[--db_errorEvent] : ' + response);
-				console.log('[Inspection] ' + util.inspect(response));
+				//console.log('\n' + '[db_errorEvent] : ' + response);
+				//console.log('[Inspection] ' + util.inspect(response));
 				if (response.errno === 19) {
 					console.log('[Db_Error]: This user already exists in our database.');
 				};
 			});
 			statement.on('trace', function(response) {
-				console.log(trace);
+				console.log(response);
 			});
 			statement.on('profile', function(response) {
-				console.log(profile);
+				console.log(response);
 			});
 		});
+		databaseConnection.close();
 
 		if (response.client_type === 0) {
 			//console.log(date() + " [Info] client_type checked for user: \t" + response.client_nickname + " client_type is " + response.client_type);
@@ -160,6 +198,18 @@ function date() {
 				
 			};
 		};
+	});
+
+	serverQueryClient.on("http400", function() {
+		console.log("TEST400");
+	});
+
+	serverQueryClient.on("http502", function() {
+		console.log("TEST502");
+	});
+
+	serverQueryClient.on("duplicateEntry", function() {
+		console.log('[Duplicate] Duplicate entry of an API-key!');
 	});
 
     serverQueryClient.on("error", function() {
