@@ -19,7 +19,7 @@
 	"_welcomMessage_comment": "Welcome message that is send to every new client.",
 	"confirmAccessMsg": "You are Gandarian. Welcome to our community!",
 	"_confirmAccessMsg_comment": "Message that is send after successful registration.",
-	"denyGandaraMsg": "Sorry, but this key seems not to be registered for Gandara.",
+	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
 	"keyNotValid": "This key is not valid! Any preceding or trailing whitespaces?",
 	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake."
