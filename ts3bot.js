@@ -66,17 +66,15 @@ function date() {
 			};
 			https.get(options, function(res) {
 				console.log(date() + ' [Info] gw2 API status code: ', res.statusCode);
-				//console.log("headers: ", res.headers);
+				//console.log('headers: ', res.headers);
 
 				if (res.statusCode === 400) {
 					console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
-					//Add logic to handle this case!For now restart.
 					this.emit('http400');
 				};
 
 				if (res.statusCode === 502) {
 					console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP502]!');
-					//Add logic to handle this case! For now restart.
 					this.emit('http502');
 				};
 
@@ -84,9 +82,9 @@ function date() {
     				//process.stdout.write(d);
     				if (res.statusCode === 200) {
 	    				var httpsRequest = JSON.parse(d);
-	    				//console.log("\n" + date() + " [Debug] worldId: " + httpsRequest.world);
-	    				//console.log(date() + " [Debug] clientId: " + response.invokerid);
-	    				//console.log(date() + " [Debug] clientUid: " + response.invokeruid)
+	    				//console.log('\n' + date() + ' [Debug] worldId: ' + httpsRequest.world);
+	    				//console.log(date() + ' [Debug] clientId: ' + response.invokerid);
+	    				//console.log(date() + ' [Debug] clientUid: ' + response.invokeruid)
 	    				//check for world id 2003 (Gandara)
 	    				if (httpsRequest.world === 2003) {
 							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
@@ -102,9 +100,9 @@ function date() {
 				    					console.log(date() + ' [Info] FAIL, member permissions denied for ' + nick + '\( ' + uid + ' \)');
 				    					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is already in use thus it can not be associated with your account.'});
 									} else {
-										//console.log("[Debug] sending " + config.confirmAccessMsg);
+										//console.log('[Debug] sending ' + config.confirmAccessMsg);
 										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.confirmAccessMsg}, function (err, response){
-											//console.log("[Debug] clientdbid: " + response.cldbid);
+											//console.log('[Debug] clientdbid: ' + response.cldbid);
 											serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (err, response){
 												console.log(date() + ' [Info] SUCCESS, member permissions granted for ' + nick + '\( ' + uid + ' \)');
 												serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid}, function (err, response){
@@ -204,26 +202,25 @@ function date() {
 		databaseConnection.close();
 
 		if (response.client_type === 0) {
-			//console.log(date() + " [Info] client_type checked for user: \t" + response.client_nickname + " client_type is " + response.client_type);
+			//console.log(date() + ' [Info] client_type checked for user: \t' + response.client_nickname + ' client_type is ' + response.client_type);
 			//If a client is member of only one server group
 			if (typeof response.client_servergroups === 'number') {
 				if (response.client_servergroups != config.verifiedClientServerGroupId) {
-					//console.log(date() + "[Debug] serverGroup checked for user: \t" + response.client_nickname);
-					//Send client welcome message.
-					console.log(date() + ' [Info] sending ' + response.client_nickname + ' welcomeMessage');
-					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
-					});
+					sendWelcomeMessage();
 				};
 			};
 			//If a client is already member of 2 or more server groups
 			if (typeof response.client_servergroups === 'string') {
 				if (!(config.verifiedClientServerGroupId = response.client_servergroups.match(config.verifiedClientServerGroupId))) {
-					//console.log(date() + "[Debug] serverGroup checked for user: \t" + response.client_nickname);
-					//Send client welcome message.
-					console.log(date() + ' [Info] sending ' + response.client_nickname + ' welcomeMessage');
-					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
-					});
+					sendWelcomeMessage();
 				};
+			};
+			function sendWelcomeMessage() {
+				//console.log(date() + '[Debug] serverGroup checked for user: \t' + response.client_nickname);
+				//Send client welcome message.
+				console.log(date() + ' [Info] sending ' + response.client_nickname + ' welcomeMessage');
+				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
+				});
 			};
 		};
 	});
