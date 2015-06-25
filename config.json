@@ -1,24 +1,43 @@
 {
-	"host": "134.255.246.197",
+	"debuglevel": "info",
+	"_debuglevel_comment": "level of debugging.",
+
+	"homeWorld": 2003,
+	"_homeWorld_comment": "Server id of the game server you want to check for.",
+
+	"host": "",
 	"_host_comment": "Server adress you want to connect to.",
+	
+	"port": "",
+	"_port_comment": "Server query port, default: '10011'",
+	
 	"loginName": "ts3bot",
 	"_loginName_comment": "Server query login name.",
-	"clientPassword": "X1wVFWzp",
+	
+	"clientPassword": "SJuBiq6p",
 	"_clientPassword_comment": "Server query password",
+	
 	"virtualServerId": "1",
 	"_virtualServerId_comment": "Virtual server id you want to issue your commands.",
+	
 	"clientName": "Impulse_Bot",
 	"_clientName_comment": "Client name that is visible to other clients.",
+	
 	"entryChannel": 1,
 	"_entryChannel_comment": "Default channel every client joins if connecting the server for the first time.",
+	
 	"verifiedClientServerGroupId": 14,
 	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
+	
 	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.guildwars2.com/account/api-keys[/URL]. Then paste that API-key into this private chat.",
 	"_welcomMessage_comment": "Welcome message that is send to every new client.",
+	
 	"confirmAccessMsg": "You are Gandarian. Welcome to our community!",
 	"_confirmAccessMsg_comment": "Message that is send after successful registration.",
+	
 	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
+	
 	"keyNotValid": "This key is not valid! Any preceding or trailing whitespaces?",
 	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake."
 }

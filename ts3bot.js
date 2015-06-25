@@ -4,31 +4,39 @@ var TeamSpeakClient = require('node-teamspeak'),
 	config = JSON.parse(require('fs').readFileSync('config.json')),
 	util = require('util'),
 	https = require('https'),
-	sqlite = require('sqlite3').verbose();
-
-function date() {
-	var date = new Date();
-	return date;
-};
+	sqlite = require('sqlite3').verbose()
+	logger = require('./logger');
 
 (function ts3bot() {
 
-	var serverQueryClient = new TeamSpeakClient(config.host);
+	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
-	console.log(date() + ' [Connect] login to: ' + config.host + ' as ' + config.loginName);
 	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function(err, response, rawResponse){
-		//select virtual server by virtualServerId
-		console.log(date() + ' [Connect] using virtual server id: ' + config.virtualServerId);
-		serverQueryClient.send('use', {sid: config.virtualServerId}, function(err, response, rawResponse){
-			//clientupdate to change the name that's presented to the user
-			console.log(date() + ' [Connect] update client name to: ' + config.clientName);
-			serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function(err, response, rawResponse) {
-				//register with server to be able to read incoming private messages 
-				console.log(date() + ' [Connect] register with server for private textmessages..');
-				serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function(err, response, rawResponse){
-					//register with server to recognize user entering a specific channel
-					console.log(date() + ' [Connect] register with server for channel events..');
-					serverQueryClient.send('servernotifyregister', {event: 'channel', id: config.entryChannel}, function(err, response, rawResponse){
+		if (err === undefined) {
+			logger.log('info', 'Login successful');
+		} else {
+			serverQueryClient.emit('queryError', err);
+		};
+			//Select virtual server by virtualServerId.
+			serverQueryClient.send('use', {sid: config.virtualServerId}, function(err, response, rawResponse){
+				if (err === undefined) {
+					logger.log('info', 'Select virtual server successful');
+				};
+					//Clientupdate to change the name that's presented to the user.
+					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function(err, response, rawResponse) {
+						if (err === undefined) {
+							logger.log('info', 'Change client name successful');
+						};
+							//Register with server to be able to read incoming private messages.
+							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function(err, response, rawResponse){
+								if (err === undefined) {
+									logger.log('info', 'Register for private textmessages successful');
+								};
+									//Register with server to recognize user entering a specific channel.
+									serverQueryClient.send('servernotifyregister', {event: 'channel', id: config.entryChannel}, function(err, response, rawResponse){
+										if (err === undefined) {
+											logger.log('info','Register for channel events successful');
+										};
 					});
 				});
 			});
@@ -50,8 +58,8 @@ function date() {
 			nick   = response.invokername;
 
 		if (response.msg.length == 72) {
-			console.log(date() + ' [Info] checking valid key');
-			console.log(date() + ' [Info] ' + '\'' + response.msg + '\'');
+			logger.log('info','Checking valid key');
+			logger.log('info', '\'' + response.msg + '\'');
 			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Checking your key via GW2-API, please wait a moment.'}, function (err, response){
 			});
 
@@ -65,46 +73,41 @@ function date() {
 				}
 			};
 			https.get(options, function(res) {
-				console.log(date() + ' [Info] gw2 API status code: ', res.statusCode);
-				//console.log('headers: ', res.headers);
+				logger.log('info', 'GW2 API status code: ' + res.statusCode);
 
 				if (res.statusCode === 400) {
-					console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
-					this.emit('http400');
+					logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
+					if (res.text = 'invalid key') {
+						logger.log('warning', 'Invalid API key!');
+						serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invallid, please generate a new one.'});
+					} else {
+						this.emit('http400');
+					};
 				};
 
 				if (res.statusCode === 502) {
-					console.log('[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP502]!');
+					logger.log('info', 'Server not responding ' + res.statusCode);
 					this.emit('http502');
 				};
 
 				res.on('data', function(d) {
-    				//process.stdout.write(d);
     				if (res.statusCode === 200) {
 	    				var httpsRequest = JSON.parse(d);
-	    				//console.log('\n' + date() + ' [Debug] worldId: ' + httpsRequest.world);
-	    				//console.log(date() + ' [Debug] clientId: ' + response.invokerid);
-	    				//console.log(date() + ' [Debug] clientUid: ' + response.invokeruid)
-	    				//check for world id 2003 (Gandara)
-	    				if (httpsRequest.world === 2003) {
+	    				//Response is a JSON object.
+	    				if (httpsRequest.world === config.homeWorld) {
 							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-							//console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
-
-
 							databaseConnection.serialize(function() {
-
 								var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
 								statement.run(token, uid, function(response) {
-									/*If changes have happen permissions are granted otherwise denied.*/
+									//If changes have happen permissions are granted otherwise denied.
 									if (this.lastID === undefined) {
-				    					console.log(date() + ' [Info] FAIL, member permissions denied for ' + nick + '\( ' + uid + ' \)');
+				    					logger.log('info', 'FAIL, member permissions denied for ' + nick + '\( ' + uid + ' \)');
+				    					logger.log('info', 'It\'s used by another account already.');
 				    					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is already in use thus it can not be associated with your account.'});
 									} else {
-										//console.log('[Debug] sending ' + config.confirmAccessMsg);
 										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.confirmAccessMsg}, function (err, response){
-											//console.log('[Debug] clientdbid: ' + response.cldbid);
 											serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (err, response){
-												console.log(date() + ' [Info] SUCCESS, member permissions granted for ' + nick + '\( ' + uid + ' \)');
+												logger.log('info', 'SUCCESS, member permissions granted for ' + nick + '\( ' + uid + ' \)');
 												serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid}, function (err, response){
 												});
 											});
@@ -112,23 +115,41 @@ function date() {
 									};
 								});
 								statement.finalize();
-								//console.log('[db_statement] RUN: ' + util.inspect(statement));
 
 								statement.on('error', function(response) {
-									console.log('\n' + '[db_errorEvent] : ' + response);
-									//console.log('[Inspection] ' + util.inspect(response));
 									if (response.errno === 19) {
-										console.log(date() + ' [Db_Info]: This API key is already in our database!!');
+										logger.log('info', 'This API key is already in our database!!');
 									};
 								});
 								statement.on('trace', function(response) {
-									console.log(response);
+									logger.log('error', 'DB error trace\n' + response);
 								});
 								statement.on('profile', function(response) {
-									console.log(response);
+									logger.log('error', 'DB error profile\n' + response);
 								});
 							});
 							databaseConnection.close();
+	    				} else {
+	    					logger.log('info', 'Checking API-key for foreign world.');
+
+	    					var worldId = httpsRequest.world;
+							var options = {
+											hostname: 'api.guildwars2.com',
+											path: '/v2/worlds?ids=' + worldId,
+											method: 'GET'
+										};
+							https.get(options, function(res) {
+								logger.log('info', 'GW2 Worlds-API status code: ', res.statusCode);
+								res.on('data', function(d) {
+									var httpsRequest = JSON.parse(d);
+									//Response is a list of response objects.
+									for (var res in httpsRequest) {
+										var world = httpsRequest[res];
+	    								serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is associated with ' + world.name});
+	    								logger.log('info', 'API-key is associated with ' + world.name);
+									};
+								});
+							});
 	    				};
 	    			};
   				});
@@ -138,21 +159,21 @@ function date() {
 			}).on('http400', function() {
 				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Servers are not responding, please resend me your key.'}, function (err, response){
 				});
-				console.log('HTTP400 error occured.')
+				logger.log('info', 'Restarting in 3 seconds.')
 				setTimeout(function() {
             		ts3bot();
         		}, 3000);
 			}).on('http502', function() {
 				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Servers are not responding, please resend me your key.'}, function (err, response){
 				});
-				console.log('http502 error occured.')
+				logger.log('info', 'Restarting in 3 seconds.')
 				setTimeout(function() {
             		ts3bot();
         		}, 3000);
 			});
 		}
-		if (response.msg.length === 73 || response.msg.length === 74 || response.msg.length === 75 || response.msg.length === 76) {
-			console.log(date() + ' [Info] key not valid (whitespace)..');
+		if (response.msg.length === 73 || response.msg.length === 74) {
+			logger.log('info', 'API-key not valid (whitespace)..');
 			//behavior for not valid key goes here
 			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.keyNotValid}, function (err, response){
 			});
@@ -169,41 +190,31 @@ function date() {
 
 	*/
 	serverQueryClient.on('cliententerview', function(response){
-		/*is a user connecting via the normal teamspeak client proceed*/
-
-		//console.log('\n' + date() + '[cliententerview]: ' + 'Uid: ' + '\'' + response.client_unique_identifier + '\'' + ' Nickname: ' + response.client_nickname);
-
+		//When a client connects to the default channel of the server
+		//grab Uid and nickname and insert them on to our database.
 		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-		//console.log('[db_statement] conect to database: ' + util.inspect(databaseConnection));
-
-
 		databaseConnection.serialize(function() {
 
 			var statement = databaseConnection.prepare('INSERT INTO `clients` VALUES (?, ?, ?)');
 			statement.run(response.client_unique_identifier, response.client_nickname, null);
 			statement.finalize();
 
-			//console.log('[db_statement] RUN: ' + util.inspect(statement));
-
 			statement.on('error', function(response) {
-				//console.log('\n' + '[db_errorEvent] : ' + response);
-				//console.log('[Inspection] ' + util.inspect(response));
 				if (response.errno === 19) {
-					console.log(date() + ' [Db_Info]: This user already exists in our database.');
+					logger.log('info', 'This user already exists in our database.');
 				};
 			});
 			statement.on('trace', function(response) {
-				console.log(response);
+				logger.log('error', 'DB error trace\n' + response);
 			});
 			statement.on('profile', function(response) {
-				console.log(response);
+				logger.log('error', 'DB error profile\n' + response);
 			});
 		});
 		databaseConnection.close();
-
+		//If a user is connecting via the teamspeak client, ignore server query clients.
 		if (response.client_type === 0) {
-			//console.log(date() + ' [Info] client_type checked for user: \t' + response.client_nickname + ' client_type is ' + response.client_type);
-			//If a client is member of only one server group
+			//If a client is member of only one server group.
 			if (typeof response.client_servergroups === 'number') {
 				if (response.client_servergroups != config.verifiedClientServerGroupId) {
 					sendWelcomeMessage();
@@ -211,24 +222,32 @@ function date() {
 			};
 			//If a client is already member of 2 or more server groups
 			if (typeof response.client_servergroups === 'string') {
-				if (!(config.verifiedClientServerGroupId = response.client_servergroups.match(config.verifiedClientServerGroupId))) {
+				if (response.client_servergroups.match(config.verifiedClientServerGroupId) === null) {
+					//console.log(response.client_servergroups.match(config.verifiedClientServerGroupId));
 					sendWelcomeMessage();
 				};
 			};
-			function sendWelcomeMessage() {
-				//console.log(date() + '[Debug] serverGroup checked for user: \t' + response.client_nickname);
-				//Send client welcome message.
-				console.log(date() + ' [Info] sending ' + response.client_nickname + ' welcomeMessage');
-				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
-				});
-			};
+		};
+		function sendWelcomeMessage() {
+			//Send client welcome message.
+			logger.log('info', 'Sending ' + response.client_nickname + ' welcomeMessage');
+			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
+			});
 		};
 	});
 
-    serverQueryClient.on('error', function() {
-        //node-teamspeak only emits errors, if the socket emits errors,
-        //so send them to the blackhole
-    });
+	serverQueryClient.on('queryError', function(err, response) {
+		//Error id for banned status.
+		if (err.id === '3329') {
+			logger.log('error', 'I am banned');
+		};
+		//Error id for invalid loginname or password.
+		if (err.id === '520') {
+			console.log('error', 'Invalid loginname or password')
+		};
+	});
+
+    serverQueryClient.on('error', function() {});
 
     serverQueryClient.on('close', function(err, response, rawResponse) {
         //Try to reconnect/restart after 3 seconds
