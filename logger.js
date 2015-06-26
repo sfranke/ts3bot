@@ -8,7 +8,6 @@ function date() {
     return date;
 };
 
-
 logger.log = function(level, message) {
     var levels = ['error', 'warning', 'info'];
     if (levels.indexOf(level) >= levels.indexOf(logger.debugLevel)) {

@@ -5,7 +5,8 @@ var TeamSpeakClient = require('node-teamspeak'),
 	util = require('util'),
 	https = require('https'),
 	sqlite = require('sqlite3').verbose()
-	logger = require('./logger');
+	logger = require('./logger'),
+	chatMessage = require('./chatMessage');
 
 (function ts3bot() {
 
@@ -37,6 +38,12 @@ var TeamSpeakClient = require('node-teamspeak'),
 										if (err === undefined) {
 											logger.log('info','Register for channel events successful');
 										};
+											//Register with server to recognize user entering a specific channel.
+											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function(err, response, rawResponse){
+											if (err === undefined) {
+												logger.log('info','Register for textserver events successful');
+											};
+						});
 					});
 				});
 			});
@@ -58,8 +65,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 			nick   = response.invokername;
 
 		if (response.msg.length == 72) {
-			logger.log('info','Checking valid key');
-			logger.log('info', '\'' + response.msg + '\'');
+			logger.log('info','Checking valid key ==> '+ response.msg);
 			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Checking your key via GW2-API, please wait a moment.'}, function (err, response){
 			});
 
@@ -145,8 +151,10 @@ var TeamSpeakClient = require('node-teamspeak'),
 									//Response is a list of response objects.
 									for (var res in httpsRequest) {
 										var world = httpsRequest[res];
-	    								serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is associated with ' + world.name});
-	    								logger.log('info', 'API-key is associated with ' + world.name);
+										//Add worldname to response-object.
+										response.worldname = world.name;
+										var message =  new chatMessage();
+										serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', response));
 									};
 								});
 							});
@@ -157,16 +165,14 @@ var TeamSpeakClient = require('node-teamspeak'),
 			}).on('error', function(e) {
   				console.error(e);
 			}).on('http400', function() {
-				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Servers are not responding, please resend me your key.'}, function (err, response){
-				});
-				logger.log('info', 'Restarting in 3 seconds.')
+				var message = new chatMessage();
+				serverQueryClient.send('sendtextmessage', message.chatSend('httpError', response));
 				setTimeout(function() {
             		ts3bot();
         		}, 3000);
 			}).on('http502', function() {
-				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Servers are not responding, please resend me your key.'}, function (err, response){
-				});
-				logger.log('info', 'Restarting in 3 seconds.')
+				var message = new chatMessage();
+				serverQueryClient.send('sendtextmessage', message.chatSend('httpError', response));
 				setTimeout(function() {
             		ts3bot();
         		}, 3000);
@@ -175,8 +181,12 @@ var TeamSpeakClient = require('node-teamspeak'),
 		if (response.msg.length === 73 || response.msg.length === 74) {
 			logger.log('info', 'API-key not valid (whitespace)..');
 			//behavior for not valid key goes here
-			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.keyNotValid}, function (err, response){
-			});
+			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.keyNotValid});
+		};
+		if (response.invokeruid === config.adminClient) {
+			var message = new chatMessage();
+			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
+			logger.log('info', 'Received message from admin: ' + response.msg);
 		};
 	});
 
@@ -190,6 +200,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 
 	*/
 	serverQueryClient.on('cliententerview', function(response){
+
 		//When a client connects to the default channel of the server
 		//grab Uid and nickname and insert them on to our database.
 		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
@@ -214,25 +225,15 @@ var TeamSpeakClient = require('node-teamspeak'),
 		databaseConnection.close();
 		//If a user is connecting via the teamspeak client, ignore server query clients.
 		if (response.client_type === 0) {
-			//If a client is member of only one server group.
-			if (typeof response.client_servergroups === 'number') {
-				if (response.client_servergroups != config.verifiedClientServerGroupId) {
-					sendWelcomeMessage();
-				};
+			//Server groups should always be a string even if it's just a single one.
+			var groups = response.client_servergroups.toString();
+			if (groups.match(config.verifiedClientServerGroupId) === null) {
+				console.log('check!');
+				var message = new chatMessage();
+				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
+			} else {
+				logger.log('info', 'Noticed verified client ' + 'Uid: ' + response.client_unique_identifier + ' nick: ' + response.client_nickname);
 			};
-			//If a client is already member of 2 or more server groups
-			if (typeof response.client_servergroups === 'string') {
-				if (response.client_servergroups.match(config.verifiedClientServerGroupId) === null) {
-					//console.log(response.client_servergroups.match(config.verifiedClientServerGroupId));
-					sendWelcomeMessage();
-				};
-			};
-		};
-		function sendWelcomeMessage() {
-			//Send client welcome message.
-			logger.log('info', 'Sending ' + response.client_nickname + ' welcomeMessage');
-			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: response.clid, msg: config.welcomeMessage}, function (err, response){
-			});
 		};
 	});
 
