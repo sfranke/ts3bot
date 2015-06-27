@@ -26,11 +26,14 @@
 	"entryChannel": 1,
 	"_entryChannel_comment": "Default channel every client joins if connecting the server for the first time.",
 
-	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
+	"adminClient": "Rr4b3Acrf1Q51UUfiJkRdB0kREU=",
 	"_adminClient_comment": "Uid of admin client.",
 	
 	"verifiedClientServerGroupId": "9",
 	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
+
+	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
+	"_welcomePoke_comment": "",
 	
 	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.guildwars2.com/account/api-keys[/URL]. Then paste that API-key into this private chat.",
 	"_welcomMessage_comment": "Welcome message that is send to every new client.",

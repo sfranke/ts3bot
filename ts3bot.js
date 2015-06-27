@@ -230,6 +230,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 			if (groups.match(config.verifiedClientServerGroupId) === null) {
 				console.log('check!');
 				var message = new chatMessage();
+				serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
 			} else {
 				logger.log('info', 'Noticed verified client ' + 'Uid: ' + response.client_unique_identifier + ' nick: ' + response.client_nickname);

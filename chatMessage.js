@@ -21,6 +21,11 @@ function chatMessage(response) {
 				logger.log('info', 'Sending ' + response.client_nickname + ' welcomeMessage');
 				break;
 
+			case 'welcomePoke':
+				message = {clid: response.clid, msg: config.welcomePoke};
+				logger.log('info', 'Sending ' + response.client_nickname + ' welcomePoke');
+				break;
+
 			case 'foreignWorld':
 				message = {targetmode: '1', target: response.invokerid, msg: 'This key is not associated with: ' + response.worldname};
 	    		logger.log('info', 'API-key is associated with ' + response.worldname);
@@ -46,7 +51,7 @@ function chatMessage(response) {
 						break;
 
 					case '!awesome':
-						message = {targetmode: '1', target: response.invokerid, msg: 'You are the most beautiful in the world, my dear!'};
+						message = {targetmode: '1', target: response.invokerid, msg: 'I love you my dear!'};
 						break;
 
 					default:
