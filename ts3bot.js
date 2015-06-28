@@ -66,8 +66,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 
 		if (response.msg.length == 72) {
 			logger.log('info','Checking valid key ==> '+ response.msg);
-			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Checking your key via GW2-API, please wait a moment.'}, function (err, response){
-			});
+			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Checking your key via GW2-API, please wait a moment.'});
 
 			var token = response.msg;
 			var options = {
@@ -109,7 +108,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 									if (this.lastID === undefined) {
 				    					logger.log('info', 'FAIL, member permissions denied for ' + nick + '\( ' + uid + ' \)');
 				    					logger.log('info', 'It\'s used by another account already.');
-				    					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is already in use thus it can not be associated with your account.'});
+				    					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.'});
 									} else {
 										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.confirmAccessMsg}, function (err, response){
 											serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (err, response){
@@ -177,7 +176,7 @@ var TeamSpeakClient = require('node-teamspeak'),
             		ts3bot();
         		}, 3000);
 			});
-		}
+		};
 		if (response.msg.length === 73 || response.msg.length === 74) {
 			logger.log('info', 'API-key not valid (whitespace)..');
 			//behavior for not valid key goes here
@@ -201,34 +200,14 @@ var TeamSpeakClient = require('node-teamspeak'),
 	*/
 	serverQueryClient.on('cliententerview', function(response){
 
-		//When a client connects to the default channel of the server
-		//grab Uid and nickname and insert them on to our database.
-		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-		databaseConnection.serialize(function() {
+		var clientObject = response;
+		//console.log(res);
 
-			var statement = databaseConnection.prepare('INSERT INTO `clients` VALUES (?, ?, ?)');
-			statement.run(response.client_unique_identifier, response.client_nickname, null);
-			statement.finalize();
-
-			statement.on('error', function(response) {
-				if (response.errno === 19) {
-					logger.log('info', 'This user already exists in our database.');
-				};
-			});
-			statement.on('trace', function(response) {
-				logger.log('error', 'DB error trace\n' + response);
-			});
-			statement.on('profile', function(response) {
-				logger.log('error', 'DB error profile\n' + response);
-			});
-		});
-		databaseConnection.close();
 		//If a user is connecting via the teamspeak client, ignore server query clients.
-		if (response.client_type === 0) {
+		if (clientObject.client_type === 0) {
 			//Server groups should always be a string even if it's just a single one.
-			var groups = response.client_servergroups.toString();
+			var groups = clientObject.client_servergroups.toString();
 			if (groups.match(config.verifiedClientServerGroupId) === null) {
-				console.log('check!');
 				var message = new chatMessage();
 				serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
@@ -236,6 +215,109 @@ var TeamSpeakClient = require('node-teamspeak'),
 				logger.log('info', 'Noticed verified client ' + 'Uid: ' + response.client_unique_identifier + ' nick: ' + response.client_nickname);
 			};
 		};
+
+		//When a client connects to the default channel of the server
+		//grab Uid and nickname and insert them on to our database.
+		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+		databaseConnection.serialize(function() {
+
+			var stmt = databaseConnection.prepare('SELECT `gw2_api_key` AS key FROM `clients` WHERE `client_unique_id` = (?)');
+			stmt.get(clientObject.client_unique_identifier, function(error, response) {
+				//console.log('STATEMENT_RES: \n' + util.inspect(response));
+
+
+				switch(response) {
+
+					case undefined:
+						//console.log('switch-case undefined!');
+						
+						var databaseConnection2 = new sqlite.Database('ts3bot.sqlitedb');
+						databaseConnection2.serialize(function() {
+							//Insert client data into our database.
+							var statement = databaseConnection2.prepare('INSERT INTO `clients` VALUES (?, ?, ?)');
+							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, null);
+							statement.finalize();
+
+							statement.on('error', function(response) {
+								if (response.errno === 19) {
+									logger.log('info', 'This user already exists in our database.');
+									//If client exists in our database check for existing gw2_api_key and validate that.
+								};
+							});
+							statement.on('trace', function(response) {
+								logger.log('error', 'DB error trace\n' + response);
+							});
+							statement.on('profile', function(response) {
+								logger.log('error', 'DB error profile\n' + response);
+							});
+						});
+						break;
+
+					default:
+						//console.log('switch-case default! Checking existing API key..');
+						//console.log(util.inspect(response));
+
+						var token = response.key;
+						var options = {
+							hostname: 'api.guildwars2.com',
+							path: '/v2/account',
+							method: 'GET',
+							headers: {
+								Authorization: 'Bearer ' + token
+							}
+						};
+						https.get(options, function(res) {
+							logger.log('info', 'GW2 API status code: ' + res.statusCode);
+
+							if (res.statusCode === 400) {
+								logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
+								if (res.text = 'invalid key') {
+									logger.log('warning', 'Invalid API key!');
+									serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invallid, please generate a new one.'});
+								} else {
+									//Checking in background disable feedback for now!
+									//this.emit('http400');
+								};
+							};
+
+							if (res.statusCode === 502) {
+								logger.log('info', 'Server not responding ' + res.statusCode);
+								//Checking in background disable feedback for now!
+								//this.emit('http502');
+							};
+
+							res.on('data', function(d) {
+			    				if (res.statusCode === 200) {
+				    				var httpsRequest = JSON.parse(d);
+				    				if (httpsRequest.world != config.homeWorld) {
+				    					//console.log('Functionality for removing rights!');
+				    					//console.log(util.inspect(clientObject));
+
+				    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
+				    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
+										databaseConnection3.serialize(function() {
+											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
+											statement.run(null, clientObject.client_unique_identifier);
+											statement.finalize();
+											logger.log('info', 'gw2_api_key updated.');
+										});
+										databaseConnection3.close();
+
+				    				} else {
+				    					logger.log('info', 'Client API-is still valid. Checked!');
+				    				};
+				    			};
+							});
+						});
+						break;
+				//End of switch-case.
+				};
+			//End of stmt.
+			});
+			stmt.finalize();
+		//End of Database connection.
+		});
+		databaseConnection.close();
 	});
 
 	serverQueryClient.on('queryError', function(err, response) {
