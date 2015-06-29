@@ -1,5 +1,6 @@
 var logger = exports,
-    config = config = JSON.parse(require('fs').readFileSync('config.json'));
+    config = JSON.parse(require('fs').readFileSync('config.json')),
+    fs = require('fs');
 
 logger.debuglevel = config.debuglevel;
 
@@ -15,5 +16,10 @@ logger.log = function(level, message) {
             message = JSON.stringify(message);
         };
         console.log(date() + ' ' + level + ': ' + message);
+        fs.appendFile(__dirname + '/logs/log', date() + ' ' + level + ': ' + message + '\n', function(err) {
+            if (err) {
+                logger.log('error', 'Failed to write to log file!');
+            };
+        });
     };
 };
