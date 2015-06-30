@@ -254,20 +254,14 @@ var TeamSpeakClient = require('node-teamspeak'),
 						});
 						break;
 
-					case null:
-						logger.log('info', 'fuck me you creazy bitch!');
-						break;
-
 					default:
-
+						//If gw2_api_key = null do not hit it against API. This would result in a 403 error
+						//due to malformed request.
 						if (response.key === null) {
 							logger.log('info', 'key = null.');
 							break;
 						} else {
-
-							//console.log('switch-case default! Checking existing API key..');
-							//console.log(util.inspect(response));
-
+							//Check if gw2_api_key is still valid.
 							var token = response.key;
 							var options = {
 								hostname: 'api.guildwars2.com',
@@ -281,11 +275,11 @@ var TeamSpeakClient = require('node-teamspeak'),
 								logger.log('info', 'GW2 API status code: ' + res.statusCode);
 
 								if (res.statusCode === 400) {
-									logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
 									if (res.text = 'invalid key') {
 										logger.log('warning', 'Invalid API key!');
-										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: 'Your key is invalid, please generate a new one.'});
+										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.keyNotValid400});
 									} else {
+										logger.log('error', 'Unhandled status code 400 error!')
 										//Checking in background disable feedback for now!
 										//this.emit('http400');
 									};

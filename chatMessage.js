@@ -27,12 +27,12 @@ function chatMessage(response) {
 				break;
 
 			case 'foreignWorld':
-				message = {targetmode: '1', target: response.invokerid, msg: 'This key is not associated with: ' + response.worldname};
+				message = {targetmode: '1', target: response.invokerid, msg: config.foreignWorld + ' -> ' + response.worldname};
 	    		logger.log('info', 'API-key is associated with ' + response.worldname);
 				break;
 
 			case 'httpError':
-				message = {targetmode: '1', target: userId, msg: 'Servers are not responding, please resend me your key.'};
+				message = {targetmode: '1', target: userId, msg: config.serverNotResponding};
 				logger.log('info', 'Restarting in 3 seconds.');
 				break;
 			

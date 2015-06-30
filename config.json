@@ -45,5 +45,15 @@
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
 	
 	"keyNotValid": "This key is not valid! Any preceding or trailing whitespaces?",
-	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake."
+	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake.",
+
+	"keyNotValid400": "Your key is invalid, please generate a new one.",
+	"_keyNotValid400_comment": "Response from ANet if key is invalid for some reason.",
+
+	"foreignWorld": "This key is associated with a different world.",
+	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
+
+	"serverNotResponding": "Servers are not responding, please resend me your key.",
+	"_serverNotResponding_comment": "If GW2 API servers are not responding."
+
 }
