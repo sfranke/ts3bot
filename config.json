@@ -44,7 +44,7 @@
 	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
 	
-	"keyNotValid": "This key is not valid! Any preceding or trailing whitespaces?",
+	"keyNotValid": "This key is not valid! We recommend you to use the copy button on [URL=https://account.guildwars2.com/account/api-keys]this[/URL] site to ensure you only copy/paste the API-key.",
 	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake.",
 
 	"keyNotValid400": "Your key is invalid, please generate a new one.",
