@@ -26,7 +26,7 @@
 	"entryChannel": 1,
 	"_entryChannel_comment": "Default channel every client joins if connecting the server for the first time.",
 
-	"adminClient": "Rr4b3Acrf1Q51UUfiJkRdB0kREU=",
+	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
 	"_adminClient_comment": "Uid of admin client.",
 	
 	"verifiedClientServerGroupId": "9",

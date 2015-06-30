@@ -16,32 +16,42 @@ var TeamSpeakClient = require('node-teamspeak'),
 		if (err === undefined) {
 			logger.log('info', 'Login successful');
 		} else {
-			serverQueryClient.emit('queryError', err);
+			logger.log('error', err);
 		};
 			//Select virtual server by virtualServerId.
 			serverQueryClient.send('use', {sid: config.virtualServerId}, function(err, response, rawResponse){
 				if (err === undefined) {
 					logger.log('info', 'Select virtual server successful');
+				} else {
+					logger.log('error', err);
 				};
 					//Clientupdate to change the name that's presented to the user.
 					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function(err, response, rawResponse) {
 						if (err === undefined) {
 							logger.log('info', 'Change client name successful');
+						} else {
+							logger.log('error', err);
 						};
 							//Register with server to be able to read incoming private messages.
 							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function(err, response, rawResponse){
 								if (err === undefined) {
 									logger.log('info', 'Register for private textmessages successful');
+								} else {
+									logger.log('error', err);
 								};
 									//Register with server to recognize user entering a specific channel.
 									serverQueryClient.send('servernotifyregister', {event: 'channel', id: config.entryChannel}, function(err, response, rawResponse){
 										if (err === undefined) {
 											logger.log('info','Register for channel events successful');
+										} else {
+											logger.log('error', err);
 										};
 											//Register with server to recognize user entering a specific channel.
 											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function(err, response, rawResponse){
 											if (err === undefined) {
 												logger.log('info','Register for textserver events successful');
+											} else {
+												logger.log('error', err);
 											};
 						});
 					});
