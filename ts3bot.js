@@ -234,8 +234,6 @@ var TeamSpeakClient = require('node-teamspeak'),
 			var stmt = databaseConnection.prepare('SELECT `gw2_api_key` AS key FROM `clients` WHERE `client_unique_id` = (?)');
 			stmt.get(clientObject.client_unique_identifier, function(error, response) {
 				//console.log('STATEMENT_RES: \n' + util.inspect(response));
-				console.log('dbstatement response ' + util.inspect(response));
-				console.log('error ' + util.inspect(error));
 
 				switch(response) {
 
@@ -286,8 +284,21 @@ var TeamSpeakClient = require('node-teamspeak'),
 
 								if (res.statusCode === 400) {
 									if (res.text = 'invalid key') {
+										console.log(util.inspect(clientObject));
 										logger.log('warning', 'Invalid API key!');
-										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.keyNotValid400});
+										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.clid, msg: config.keyNotValid400});
+										//console.log('Functionality for removing rights!');
+				    					//console.log(util.inspect(clientObject));
+
+				    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
+				    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
+										databaseConnection3.serialize(function() {
+											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
+											statement.run(null, clientObject.client_unique_identifier);
+											statement.finalize();
+											logger.log('info', 'gw2_api_key updated.');
+										});
+										databaseConnection3.close();
 									} else {
 										logger.log('error', 'Unhandled status code 400 error!')
 										//Checking in background disable feedback for now!
