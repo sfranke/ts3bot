@@ -84,7 +84,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 					logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
 					if (res.text = 'invalid key') {
 						logger.log('warning', 'Invalid API key!');
-						serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invallid, please generate a new one.'});
+						serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invalid, please generate a new one.'});
 					} else {
 						this.emit('http400');
 					};
@@ -224,7 +224,8 @@ var TeamSpeakClient = require('node-teamspeak'),
 			var stmt = databaseConnection.prepare('SELECT `gw2_api_key` AS key FROM `clients` WHERE `client_unique_id` = (?)');
 			stmt.get(clientObject.client_unique_identifier, function(error, response) {
 				//console.log('STATEMENT_RES: \n' + util.inspect(response));
-
+				console.log('dbstatement response ' + util.inspect(response));
+				console.log('error ' + util.inspect(error));
 
 				switch(response) {
 
@@ -253,62 +254,73 @@ var TeamSpeakClient = require('node-teamspeak'),
 						});
 						break;
 
+					case null:
+						logger.log('info', 'fuck me you creazy bitch!');
+						break;
+
 					default:
-						//console.log('switch-case default! Checking existing API key..');
-						//console.log(util.inspect(response));
 
-						var token = response.key;
-						var options = {
-							hostname: 'api.guildwars2.com',
-							path: '/v2/account',
-							method: 'GET',
-							headers: {
-								Authorization: 'Bearer ' + token
-							}
-						};
-						https.get(options, function(res) {
-							logger.log('info', 'GW2 API status code: ' + res.statusCode);
+						if (response.key === null) {
+							logger.log('info', 'key = null.');
+							break;
+						} else {
 
-							if (res.statusCode === 400) {
-								logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
-								if (res.text = 'invalid key') {
-									logger.log('warning', 'Invalid API key!');
-									serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invallid, please generate a new one.'});
-								} else {
-									//Checking in background disable feedback for now!
-									//this.emit('http400');
+							//console.log('switch-case default! Checking existing API key..');
+							//console.log(util.inspect(response));
+
+							var token = response.key;
+							var options = {
+								hostname: 'api.guildwars2.com',
+								path: '/v2/account',
+								method: 'GET',
+								headers: {
+									Authorization: 'Bearer ' + token
+								}
+							};
+							https.get(options, function(res) {
+								logger.log('info', 'GW2 API status code: ' + res.statusCode);
+
+								if (res.statusCode === 400) {
+									logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
+									if (res.text = 'invalid key') {
+										logger.log('warning', 'Invalid API key!');
+										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: 'Your key is invalid, please generate a new one.'});
+									} else {
+										//Checking in background disable feedback for now!
+										//this.emit('http400');
+									};
 								};
-							};
 
-							if (res.statusCode === 502) {
-								logger.log('info', 'Server not responding ' + res.statusCode);
-								//Checking in background disable feedback for now!
-								//this.emit('http502');
-							};
+								if (res.statusCode === 502) {
+									logger.log('info', 'Server not responding ' + res.statusCode);
+									//Checking in background disable feedback for now!
+									//this.emit('http502');
+								};
 
-							res.on('data', function(d) {
-			    				if (res.statusCode === 200) {
-				    				var httpsRequest = JSON.parse(d);
-				    				if (httpsRequest.world != config.homeWorld) {
-				    					//console.log('Functionality for removing rights!');
-				    					//console.log(util.inspect(clientObject));
+								res.on('data', function(d) {
+				    				if (res.statusCode === 200) {
+					    				var httpsRequest = JSON.parse(d);
+					    				if (httpsRequest.world != config.homeWorld) {
+					    					//console.log('Functionality for removing rights!');
+					    					//console.log(util.inspect(clientObject));
 
-				    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
-				    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
-										databaseConnection3.serialize(function() {
-											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
-											statement.run(null, clientObject.client_unique_identifier);
-											statement.finalize();
-											logger.log('info', 'gw2_api_key updated.');
-										});
-										databaseConnection3.close();
+					    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
+					    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
+											databaseConnection3.serialize(function() {
+												var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
+												statement.run(null, clientObject.client_unique_identifier);
+												statement.finalize();
+												logger.log('info', 'gw2_api_key updated.');
+											});
+											databaseConnection3.close();
 
-				    				} else {
-				    					logger.log('info', 'Client API-is still valid. Checked!');
-				    				};
-				    			};
-							});
-						});
+					    				} else {
+					    					logger.log('info', 'Client API-is still valid. Checked!');
+					    				};
+					    			};
+								});
+							});	
+						};
 						break;
 				//End of switch-case.
 				};
