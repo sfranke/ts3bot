@@ -22,9 +22,6 @@
 	
 	"clientName": "Impulse_Bot",
 	"_clientName_comment": "Client name that is visible to other clients.",
-	
-	"entryChannel": 1,
-	"_entryChannel_comment": "Default channel every client joins if connecting the server for the first time.",
 
 	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
 	"_adminClient_comment": "Uid of admin client.",
@@ -54,6 +51,9 @@
 	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
 
 	"serverNotResponding": "Servers are not responding, please resend me your key.",
-	"_serverNotResponding_comment": "If GW2 API servers are not responding."
+	"_serverNotResponding_comment": "If GW2 API servers are not responding.",
+
+	"alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
+	"_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client."
 
 }

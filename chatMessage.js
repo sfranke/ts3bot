@@ -35,6 +35,16 @@ function chatMessage(response) {
 				message = {targetmode: '1', target: userId, msg: config.serverNotResponding};
 				logger.log('info', 'Restarting in 3 seconds.');
 				break;
+
+			case 'alreadyInUse':
+				message = {targetmode: '1', target: response.invokerid, msg: config.alreadyInUse};
+				logger.log('info','Key used by other client.');
+				break;
+
+			case 'keyNotValid400':
+				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid400};
+				logger.log('warning', 'Key not valid anymore.');
+				break;
 			
 			case 'admin':
 				switch(response.msg) {

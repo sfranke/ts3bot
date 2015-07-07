@@ -8,6 +8,11 @@ var TeamSpeakClient = require('node-teamspeak'),
 	logger = require('./logger'),
 	chatMessage = require('./chatMessage');
 
+function unixTime() {
+	var unixStamp = Math.round((new Date()).getTime() / 1000);
+	return unixStamp;
+}
+
 (function ts3bot() {
 
 	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
@@ -39,10 +44,10 @@ var TeamSpeakClient = require('node-teamspeak'),
 								} else {
 									logger.log('error', err);
 								};
-									//Register with server to recognize user entering a specific channel.
-									serverQueryClient.send('servernotifyregister', {event: 'channel', id: config.entryChannel}, function(err, response, rawResponse){
+									//Register with server to recognize user entering the server.
+									serverQueryClient.send('servernotifyregister', {event: 'server'}, function(err, response, rawResponse){
 										if (err === undefined) {
-											logger.log('info','Register for channel events successful');
+											logger.log('info','Register for server events successful');
 										} else {
 											logger.log('error', err);
 										};
@@ -116,15 +121,15 @@ var TeamSpeakClient = require('node-teamspeak'),
 								statement.run(token, uid, function(response) {
 									//If changes have happen permissions are granted otherwise denied.
 									if (this.lastID === undefined) {
-				    					logger.log('info', 'FAIL, member permissions denied for ' + nick + '\( ' + uid + ' \)');
-				    					logger.log('info', 'It\'s used by another account already.');
-				    					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.'});
+				    					logger.log('info', 'FAIL, member permissions denied for ' + nick + ' UId: ' + uid);
+				    					response.invokerid = userId;
+				    					var message = new chatMessage();
+				    					serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', response));
 									} else {
 										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.confirmAccessMsg}, function (err, response){
 											serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (err, response){
-												logger.log('info', 'SUCCESS, member permissions granted for ' + nick + '\( ' + uid + ' \)');
-												serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid}, function (err, response){
-												});
+												logger.log('info', 'SUCCESS, member permissions granted for ' + nick + ' UId: ' + uid);
+												serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
 											});
 										});
 									};
@@ -199,7 +204,7 @@ var TeamSpeakClient = require('node-teamspeak'),
 		};
 	});
 
-	/*listen on entryChannel
+	/*Listen on server event 'cliententerview'.
 
 	clid -> client id
 	client_type -> client type; 0=teamspeakClient 1=serverQuery 
@@ -240,11 +245,11 @@ var TeamSpeakClient = require('node-teamspeak'),
 					case undefined:
 						//console.log('switch-case undefined!');
 						
-						var databaseConnection2 = new sqlite.Database('ts3bot.sqlitedb');
-						databaseConnection2.serialize(function() {
+						var databaseConnection1 = new sqlite.Database('ts3bot.sqlitedb');
+						databaseConnection1.serialize(function() {
 							//Insert client data into our database.
-							var statement = databaseConnection2.prepare('INSERT INTO `clients` VALUES (?, ?, ?)');
-							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, null);
+							var statement = databaseConnection1.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?)');
+							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, null, unixTime());
 							statement.finalize();
 
 							statement.on('error', function(response) {
@@ -260,13 +265,22 @@ var TeamSpeakClient = require('node-teamspeak'),
 								logger.log('error', 'DB error profile\n' + response);
 							});
 						});
+						databaseConnection1.close();
 						break;
 
 					default:
 						//If gw2_api_key = null do not hit it against API. This would result in a 403 error
 						//due to malformed request.
 						if (response.key === null) {
-							logger.log('info', 'key = null.');
+							//Do not make the call but update 'last_seen' in our database.
+							var databaseConnection2 = new sqlite.Database('ts3bot.sqlitedb');
+							databaseConnection2.serialize(function() {
+								var statement = databaseConnection2.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
+								statement.run(null, unixTime(), clientObject.client_unique_identifier);
+								statement.finalize();
+								logger.log('info', 'gw2_api_key still \'null\'.');
+							});
+							databaseConnection2.close();
 							break;
 						} else {
 							//Check if gw2_api_key is still valid.
@@ -284,17 +298,17 @@ var TeamSpeakClient = require('node-teamspeak'),
 
 								if (res.statusCode === 400) {
 									if (res.text = 'invalid key') {
-										console.log(util.inspect(clientObject));
-										logger.log('warning', 'Invalid API key!');
-										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.clid, msg: config.keyNotValid400});
+										response.invokerid = clientObject.clid;
+										var message = new chatMessage();
+										serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', response));
 										//console.log('Functionality for removing rights!');
 				    					//console.log(util.inspect(clientObject));
 
 				    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
 				    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
 										databaseConnection3.serialize(function() {
-											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
-											statement.run(null, clientObject.client_unique_identifier);
+											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
+											statement.run(null, unixTime(), clientObject.client_unique_identifier);
 											statement.finalize();
 											logger.log('info', 'gw2_api_key updated.');
 										});
@@ -320,17 +334,25 @@ var TeamSpeakClient = require('node-teamspeak'),
 					    					//console.log(util.inspect(clientObject));
 
 					    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
-					    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
-											databaseConnection3.serialize(function() {
-												var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
-												statement.run(null, clientObject.client_unique_identifier);
+					    					var databaseConnection4 = new sqlite.Database('ts3bot.sqlitedb');
+											databaseConnection4.serialize(function() {
+												var statement = databaseConnection4.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
+												statement.run(null, unixTime(), clientObject.client_unique_identifier);
 												statement.finalize();
 												logger.log('info', 'gw2_api_key updated.');
 											});
-											databaseConnection3.close();
-
+											databaseConnection4.close();
 					    				} else {
 					    					logger.log('info', 'Client API-is still valid. Checked!');
+
+					    					var databaseConnection5 = new sqlite.Database('ts3bot.sqlitedb');
+											databaseConnection5.serialize(function() {
+												var statement = databaseConnection5.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
+												statement.run(unixTime(), clientObject.client_unique_identifier);
+												statement.finalize();
+												logger.log('info', 'updating \'last_seen\' for: ' + clientObject.client_nickname + ' UId: ' + clientObject.client_unique_identifier);
+											});
+											databaseConnection5.close();
 					    				};
 					    			};
 								});
