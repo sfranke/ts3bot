@@ -80,8 +80,9 @@ function unixTime() {
 			nick   = response.invokername;
 
 		if (response.msg.length == 72) {
-			logger.log('info','Checking valid key ==> '+ response.msg);
-			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Checking your key via GW2-API, please wait a moment.'});
+
+			var message = new chatMessage();
+			serverQueryClient.send('sendtextmessage', message.chatSend('checkingKey', response));
 
 			var token = response.msg;
 			var options = {
@@ -93,13 +94,10 @@ function unixTime() {
 				}
 			};
 			https.get(options, function(res) {
-				logger.log('info', 'GW2 API status code: ' + res.statusCode);
-
 				if (res.statusCode === 400) {
-					logger.log('info', '[HTTP_error_code]: ' + res.statusCode + ' server not responding [HTTP400]!');
 					if (res.text = 'invalid key') {
-						logger.log('warning', 'Invalid API key!');
-						serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: 'Your key is invalid, please generate a new one.'});
+						var message = new chatMessage();
+						serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', response));
 					} else {
 						this.emit('http400');
 					};
@@ -193,14 +191,15 @@ function unixTime() {
 			});
 		};
 		if (response.msg.length === 73 || response.msg.length === 74) {
-			logger.log('info', 'API-key not valid (whitespace)..');
+
+			var message = new chatMessage();
 			//behavior for not valid key goes here
-			serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.keyNotValid});
+			serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidWhitespace', response));
 		};
 		if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
-			logger.log('info', 'Received message from admin: ' + response.msg);
+			logger.log('info', 'Received message from admin: ' + '\'' + response.msg + '\'');
 		};
 	});
 

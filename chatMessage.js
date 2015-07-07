@@ -26,6 +26,11 @@ function chatMessage(response) {
 				logger.log('info', 'Sending ' + response.client_nickname + ' welcomePoke');
 				break;
 
+			case 'checkingKey':
+				message = {targetmode: '1', target: response.invokerid, msg: config.checkingKey};
+				logger.log('info', 'Checking valid key.. ' + '\n\t' + '\'' + response.msg + '\'');
+				break;
+
 			case 'foreignWorld':
 				message = {targetmode: '1', target: response.invokerid, msg: config.foreignWorld + ' -> ' + response.worldname};
 	    		logger.log('info', 'API-key is associated with ' + response.worldname);
@@ -41,9 +46,19 @@ function chatMessage(response) {
 				logger.log('info','Key used by other client.');
 				break;
 
+			case 'keyNotValid':
+				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid};
+				logger.log('warning', 'Key not valid.');
+				break;
+
+			case 'keyNotValidWhitespace':
+				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid};
+				logger.log('info', 'API-key not valid (whitespace)..' + '\n\t' + '\'' + response.msg + '\'');
+				break;
+
 			case 'keyNotValid400':
 				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid400};
-				logger.log('warning', 'Key not valid anymore.');
+				logger.log('warning', 'Key not valid, confirmed by API.');
 				break;
 			
 			case 'admin':

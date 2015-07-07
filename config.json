@@ -54,6 +54,9 @@
 	"_serverNotResponding_comment": "If GW2 API servers are not responding.",
 
 	"alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
-	"_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client."
+	"_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client.",
+
+	"checkingKey": "Checking your key via GW2-API, please wait a moment..",
+	"_checkingKey_comment": "Chat message when checking a key against the API."
 
 }
