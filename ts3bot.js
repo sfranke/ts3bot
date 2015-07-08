@@ -115,18 +115,18 @@ function unixTime() {
 	    				if (httpsRequest.world === config.homeWorld) {
 							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
 							databaseConnection.serialize(function() {
-								var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ? WHERE client_unique_id = ?');
-								statement.run(token, uid, function(response) {
+								var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_account_created = ? WHERE client_unique_id = ?');
+								statement.run(token, httpsRequest.id, httpsRequest.name, httpsRequest.created, uid, function(response) {
 									//If changes have happen permissions are granted otherwise denied.
 									if (this.lastID === undefined) {
-				    					logger.log('info', 'FAIL, member permissions denied for ' + nick + ' UId: ' + uid);
+				    					logger.log('info', 'FAIL, member permissions denied for ' + '\n\t' + nick + ' UId: ' + uid);
 				    					response.invokerid = userId;
 				    					var message = new chatMessage();
 				    					serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', response));
 									} else {
 										serverQueryClient.send('sendtextmessage', {targetmode: '1', target: userId, msg: config.confirmAccessMsg}, function (err, response){
 											serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (err, response){
-												logger.log('info', 'SUCCESS, member permissions granted for ' + nick + ' UId: ' + uid);
+												logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n\t' + nick + ' UId: ' + uid);
 												serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
 											});
 										});
@@ -199,7 +199,7 @@ function unixTime() {
 		if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
-			logger.log('info', 'Received message from admin: ' + '\'' + response.msg + '\'');
+			logger.log('info', 'Received message from admin: ' + '\n\t' + '\'' + response.msg + '\'');
 		};
 	});
 
@@ -247,8 +247,8 @@ function unixTime() {
 						var databaseConnection1 = new sqlite.Database('ts3bot.sqlitedb');
 						databaseConnection1.serialize(function() {
 							//Insert client data into our database.
-							var statement = databaseConnection1.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?)');
-							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, null, unixTime());
+							var statement = databaseConnection1.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, unixTime(), null, null, null, null, null);
 							statement.finalize();
 
 							statement.on('error', function(response) {
@@ -274,8 +274,8 @@ function unixTime() {
 							//Do not make the call but update 'last_seen' in our database.
 							var databaseConnection2 = new sqlite.Database('ts3bot.sqlitedb');
 							databaseConnection2.serialize(function() {
-								var statement = databaseConnection2.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
-								statement.run(null, unixTime(), clientObject.client_unique_identifier);
+								var statement = databaseConnection2.prepare('UPDATE clients SET client_nickname = ?, last_seen = ? WHERE client_unique_id = ?');
+								statement.run(clientObject.client_nickname, unixTime(), clientObject.client_unique_identifier);
 								statement.finalize();
 								logger.log('info', 'gw2_api_key still \'null\'.');
 							});
