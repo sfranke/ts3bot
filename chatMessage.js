@@ -1,21 +1,22 @@
 #!/usr/bin/node
 
 var TeamSpeakClient = require('node-teamspeak'),
-	config = JSON.parse(require('fs').readFileSync('config.json')),
-	util = require('util'),
-	https = require('https'),
-	sqlite = require('sqlite3').verbose()
-	logger = require('./logger'),
-	events = require("events");
+	config          = JSON.parse(require('fs').readFileSync('config.json')),
+	util            = require('util'),
+	https           = require('https'),
+	sqlite          = require('sqlite3').verbose()
+	logger          = require('./logger'),
+	events          = require('events');
 
 function chatMessage(response) {
 
 	chatMessage.prototype.chatSend = function(option, response) {
 
-		var opt = option,
+		var opt     = option,
 		    message = '';
 
 		switch(opt) {
+			
 			case 'welcome':
 				message = {targetmode: '1', target: response.clid, msg: config.welcomeMessage};
 				logger.log('info', 'Sending ' + response.client_nickname + ' welcomeMessage');

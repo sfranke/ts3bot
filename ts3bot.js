@@ -11,9 +11,24 @@ var TeamSpeakClient = require('node-teamspeak'),
 function unixTime() {
 	var unixStamp = Math.round((new Date()).getTime() / 1000);
 	return unixStamp;
-}
+};
+
+function databaseCleanup() {
+
+	var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+	databaseConnection.serialize(function() {
+
+		var stmt = databaseConnection.prepare('SELECT `client_unique_id` AS key FROM `clients` WHERE `client_unique_id` = (?)');
+		stmt.get(clientObject.client_unique_identifier, function(error, response) {
+
+		});
+	});
+
+};
 
 (function ts3bot() {
+
+	console.log(unixTime());
 
 	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
@@ -58,11 +73,12 @@ function unixTime() {
 											} else {
 												logger.log('error', err);
 											};
-						});
+
+											});
+									});
+							});
 					});
-				});
 			});
-		});
 	});
 	/*listen on incoming private messages.
 	
@@ -379,9 +395,25 @@ function unixTime() {
 		};
 	});
 
-    serverQueryClient.on('error', function() {});
+    serverQueryClient.on('error', function(err, response, rawResponse) {
+    	if (err != undefined) {
+    		logger.log('error', 'An error occured on close: ' + '\n' + err);
+    	};
+    	if (response != undefined) {
+    		logger.log('info', 'Response on close: ' + '\n' + response);
+    	};
+    	if (rawResponse != undefined) {
+	    	logger.log('error', 'An error has occured: ' + '\n' + rawResponse);	
+    	};
+    });
 
-    serverQueryClient.on('close', function(err, response, rawResponse) {
+    serverQueryClient.on('close', function(err, response) {
+    	if (err != undefined) {
+    		logger.log('error', 'An error occured on close -> err: ' + '\n' + err);
+    	};
+    	if (response != undefined) {
+    		logger.log('info', 'Response on close -> res: ' + '\n' + response);
+    	};
         //Try to reconnect/restart after 3 seconds
         setTimeout(function() {
             ts3bot();
