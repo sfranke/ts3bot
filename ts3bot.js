@@ -13,63 +13,83 @@ function unixTime() {
 	return unixStamp;
 };
 
-function databaseCleanup() {
+function databaseCleanup(serverQueryClient) {
 
+	//console.log(serverQueryClient);
+
+	//constant as typeof String for comparison in SQL statement.
+	var constant = {
+		'ninetyOneDays': '7862400'
+	};
+
+	var timeNow = unixTime(),
+	    ninetyOneDaysOld = timeNow - constant.ninetyOneDays;
+
+	//Query database for old users.
 	var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
 	databaseConnection.serialize(function() {
 
-		var stmt = databaseConnection.prepare('SELECT `client_unique_id` AS key FROM `clients` WHERE `client_unique_id` = (?)');
-		stmt.get(clientObject.client_unique_identifier, function(error, response) {
-
+		databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function(err, response) {
+			if (err != undefined) {
+				console.log('error: ' + '\n' + err);
+			} else {
+				//Send offline message to admin
+				var responseString = JSON.stringify(response);
+				logger.log('info', 'Found old client! ' + '\n' + responseString + '\n');
+				serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client(s)', message: responseString}, function(err, response,rawResponse) {
+					//console.log('err: ' + err + '\n' + 'res: ' + response +'\n' + 'raw: ' + rawResponse);
+					//console.log(util.inspect(err));
+				});
+			};
 		});
 	});
-
+	databaseConnection.close();
 };
 
 (function ts3bot() {
-
-	console.log(unixTime());
 
 	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
 	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function(err, response, rawResponse){
 		if (err === undefined) {
-			logger.log('info', 'Login successful');
+			logger.log('info', 'Login successful.');
 		} else {
 			logger.log('error', err);
 		};
 			//Select virtual server by virtualServerId.
 			serverQueryClient.send('use', {sid: config.virtualServerId}, function(err, response, rawResponse){
 				if (err === undefined) {
-					logger.log('info', 'Select virtual server successful');
+					logger.log('info', 'Virtual server selected successfully.');
 				} else {
 					logger.log('error', err);
 				};
 					//Clientupdate to change the name that's presented to the user.
 					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function(err, response, rawResponse) {
 						if (err === undefined) {
-							logger.log('info', 'Change client name successful');
+							logger.log('info', 'Client name changed successfully.');
 						} else {
 							logger.log('error', err);
 						};
 							//Register with server to be able to read incoming private messages.
 							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function(err, response, rawResponse){
 								if (err === undefined) {
-									logger.log('info', 'Register for private textmessages successful');
+									logger.log('info', 'Registered for private textmessages successfully.');
 								} else {
 									logger.log('error', err);
 								};
 									//Register with server to recognize user entering the server.
 									serverQueryClient.send('servernotifyregister', {event: 'server'}, function(err, response, rawResponse){
 										if (err === undefined) {
-											logger.log('info','Register for server events successful');
+											logger.log('info','Registered for server events successfully.');
 										} else {
 											logger.log('error', err);
 										};
 											//Register with server to recognize user entering a specific channel.
 											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function(err, response, rawResponse){
 											if (err === undefined) {
-												logger.log('info','Register for textserver events successful');
+												logger.log('info','Registered for textserver events successfully.');
+												logger.log('info', 'Starting database clean-up routine.')
+												databaseCleanup(serverQueryClient);
 											} else {
 												logger.log('error', err);
 											};
@@ -80,6 +100,7 @@ function databaseCleanup() {
 					});
 			});
 	});
+
 	/*listen on incoming private messages.
 	
 	msg -> containing the message sent
@@ -127,12 +148,14 @@ function databaseCleanup() {
 				res.on('data', function(d) {
     				if (res.statusCode === 200) {
 	    				var httpsRequest = JSON.parse(d);
+	    				var guilds = JSON.stringify(httpsRequest.guilds);
+	    				console.log(guilds);
 	    				//Response is a JSON object.
 	    				if (httpsRequest.world === config.homeWorld) {
 							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
 							databaseConnection.serialize(function() {
-								var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_account_created = ? WHERE client_unique_id = ?');
-								statement.run(token, httpsRequest.id, httpsRequest.name, httpsRequest.created, uid, function(response) {
+								var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?');
+								statement.run(token, httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, uid, function(response) {
 									//If changes have happen permissions are granted otherwise denied.
 									if (this.lastID === undefined) {
 				    					logger.log('info', 'FAIL, member permissions denied for ' + '\n\t' + nick + ' UId: ' + uid);
@@ -409,10 +432,10 @@ function databaseCleanup() {
 
     serverQueryClient.on('close', function(err, response) {
     	if (err != undefined) {
-    		logger.log('error', 'An error occured on close -> err: ' + '\n' + err);
+    		logger.log('info', 'Close event has been fired! (err)' + '\n' + err);
     	};
     	if (response != undefined) {
-    		logger.log('info', 'Response on close -> res: ' + '\n' + response);
+    		logger.log('info', 'Close event has been fired! (res)' + '\n' + response);
     	};
         //Try to reconnect/restart after 3 seconds
         setTimeout(function() {
