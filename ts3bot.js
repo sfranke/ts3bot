@@ -34,12 +34,18 @@ function databaseCleanup(serverQueryClient) {
 				console.log('error: ' + '\n' + err);
 			} else {
 				//Send offline message to admin
-				var responseString = JSON.stringify(response);
-				logger.log('info', 'Found old client! ' + '\n' + responseString + '\n');
-				serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client(s)', message: responseString}, function(err, response,rawResponse) {
+				logger.log('info', 'Found old client! ');
+				var report = '[B]' + 'cluid: ' + '[/B]' + response.client_unique_id + '\n' + '[B]' + 'nick: ' + '[/B]' + response.client_nickname + '\n' + '[B]' + 'accoun name: ' + '[/B]' + '\t' + response.gw2_account_name;
+				serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client', message: report}, function(err, response,rawResponse) {
 					//console.log('err: ' + err + '\n' + 'res: ' + response +'\n' + 'raw: ' + rawResponse);
 					//console.log(util.inspect(err));
 				});
+			};
+		}, function(err, response) {
+			if (response != 0) {
+				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.'); 
+			} else {
+				logger.log('info','All clients are up to date.')
 			};
 		});
 	});
@@ -149,7 +155,6 @@ function databaseCleanup(serverQueryClient) {
     				if (res.statusCode === 200) {
 	    				var httpsRequest = JSON.parse(d);
 	    				var guilds = JSON.stringify(httpsRequest.guilds);
-	    				console.log(guilds);
 	    				//Response is a JSON object.
 	    				if (httpsRequest.world === config.homeWorld) {
 							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
@@ -334,37 +339,8 @@ function databaseCleanup(serverQueryClient) {
 							https.get(options, function(res) {
 								logger.log('info', 'GW2 API status code: ' + res.statusCode);
 
-								if (res.statusCode === 400) {
-									if (res.text = 'invalid key') {
-										response.invokerid = clientObject.clid;
-										var message = new chatMessage();
-										serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', response));
-										//console.log('Functionality for removing rights!');
-				    					//console.log(util.inspect(clientObject));
-
-				    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
-				    					var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
-										databaseConnection3.serialize(function() {
-											var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
-											statement.run(null, unixTime(), clientObject.client_unique_identifier);
-											statement.finalize();
-											logger.log('info', 'gw2_api_key updated.');
-										});
-										databaseConnection3.close();
-									} else {
-										logger.log('error', 'Unhandled status code 400 error!')
-										//Checking in background disable feedback for now!
-										//this.emit('http400');
-									};
-								};
-
-								if (res.statusCode === 502) {
-									logger.log('info', 'Server not responding ' + res.statusCode);
-									//Checking in background disable feedback for now!
-									//this.emit('http502');
-								};
-
 								res.on('data', function(d) {
+									
 				    				if (res.statusCode === 200) {
 					    				var httpsRequest = JSON.parse(d);
 					    				if (httpsRequest.world != config.homeWorld) {
@@ -393,6 +369,48 @@ function databaseCleanup(serverQueryClient) {
 											databaseConnection5.close();
 					    				};
 					    			};
+
+					    			if (res.statusCode === 400) {
+					    				var httpsRequest = JSON.parse(d);
+					    				console.log('info', 'DEBUG: ' +httpsRequest);
+
+					    				switch (httpsRequest.text) {
+
+					    					case 'ErrBadData':
+					    						if (httpsRequest.text = 'ErrBadData') {
+													logger.log('info', 'API error bad request!');
+					    						};
+					    						break;
+
+					    					case 'invalid key':
+						    					response.invokerid = clientObject.clid;
+												var message = new chatMessage();
+												serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', response));
+												//console.log('Functionality for removing rights!');
+					    						//console.log(util.inspect(clientObject));
+
+					    						serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
+					    						var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
+												databaseConnection3.serialize(function() {
+													var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
+													statement.run(null, unixTime(), clientObject.client_unique_identifier);
+													statement.finalize();
+													logger.log('info', 'gw2_api_key updated.');
+												});
+												databaseConnection3.close();
+												break;
+
+											default:
+												logger.log('info', 'Please don\'t bother me, I\'m just chilling.')
+												break;
+					    				};
+					    			};
+
+					    			if (res.statusCode === 502) {
+										logger.log('info', 'Server not responding ' + res.statusCode);
+										//Checking in background disable feedback for now!
+										//this.emit('http502');
+									};
 								});
 							});	
 						};
