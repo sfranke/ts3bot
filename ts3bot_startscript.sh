@@ -53,7 +53,7 @@ case "$1" in
 	;;
 	stop)
 		if [ -e ts3bot.pid ]; then
-			echo -n "Stopping ts3bot. "
+			echo -n "Stopping ts3bot"
 			if ( kill -TERM $(cat ts3bot.pid) 2> /dev/null ); then
 				c=1
 				while [ "$c" -le 300 ]; do

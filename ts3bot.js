@@ -36,7 +36,7 @@ function databaseCleanup(serverQueryClient) {
 			, accountname = response.gw2_account_name;
 
 			if (err != undefined) {
-				console.log('error: ' + '\n' + err);
+				console.log('error: ' + '\n' + util.inspect(err));
 			} else {
 				//Send offline message to admin
 				logger.log('info', 'Found old client! ');
@@ -475,22 +475,22 @@ function databaseCleanup(serverQueryClient) {
 
     serverQueryClient.on('error', function(err, response, rawResponse) {
     	if (err != undefined) {
-    		logger.log('error', 'An error occured on close: ' + '\n' + err);
+    		logger.log('error', 'An error occured on close: ' + '\n' + util.inspect(err));
     	};
     	if (response != undefined) {
-    		logger.log('info', 'Response on close: ' + '\n' + response);
+    		logger.log('info', 'Response on close: ' + '\n' + util.inspect(response));
     	};
     	if (rawResponse != undefined) {
-	    	logger.log('error', 'An error has occured: ' + '\n' + rawResponse);	
+	    	logger.log('error', 'An error has occured: ' + '\n' + util.inspect(rawResponse));	
     	};
     });
 
     serverQueryClient.on('close', function(err, response) {
     	if (err != undefined) {
-    		logger.log('info', 'Close event has been fired! (err)' + '\n' + err);
+    		logger.log('info', 'Close event has been fired! (err)' + '\n' + util.inspect(err));
     	};
     	if (response != undefined) {
-    		logger.log('info', 'Close event has been fired! (res)' + '\n' + response);
+    		logger.log('info', 'Close event has been fired! (res)' + '\n' + util.inspect(response));
     	};
         //Try to reconnect/restart after 3 seconds
         setTimeout(function() {
