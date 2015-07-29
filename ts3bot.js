@@ -175,7 +175,8 @@ function databaseCleanup(serverQueryClient) {
 								break;
 
 							case 'ErrBadData':
-								logger.log('error', 'Received - ErrBadData for:\n\tNick: ' + nick + ' Uid: ' + uid);
+								var message = new chatMessage();
+								serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', response));
 								break;
 
 							default:
@@ -379,6 +380,7 @@ function databaseCleanup(serverQueryClient) {
 									
 				    				if (res.statusCode === 200) {
 					    				var httpsRequest = JSON.parse(d);
+					    				var guilds = JSON.stringify(httpsRequest.guilds)
 					    				if (httpsRequest.world != config.homeWorld) {
 					    					//console.log('Functionality for removing rights!');
 					    					//console.log(util.inspect(clientObject));
@@ -397,10 +399,13 @@ function databaseCleanup(serverQueryClient) {
 
 					    					var databaseConnection5 = new sqlite.Database('ts3bot.sqlitedb');
 											databaseConnection5.serialize(function() {
-												var statement = databaseConnection5.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
-												statement.run(unixTime(), clientObject.client_unique_identifier);
+
+
+												// Update full information here!
+												var statement = databaseConnection5.prepare('UPDATE clients SET last_seen = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?');
+												statement.run(unixTime(), httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, clientObject.client_unique_identifier);
 												statement.finalize();
-												logger.log('info', 'updating \'last_seen\' for: ' + clientObject.client_nickname + ' UId: ' + clientObject.client_unique_identifier);
+												logger.log('info', 'updated data for: ' + clientObject.client_nickname + ' UId: ' + clientObject.client_unique_identifier);
 											});
 											databaseConnection5.close();
 					    				};

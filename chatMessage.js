@@ -61,6 +61,11 @@ function chatMessage(response) {
 				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid400};
 				logger.log('warning', 'Key not valid, confirmed by API.');
 				break;
+
+			case 'apiErrorErrBadData':
+				message = {targetmode: '1', target: response.invokerid, msg: config.apiErrorErrBadData};
+				logger.log('error', 'Received - ErrBadData for:\n\tNick: ' + response.invokername + ' Uid: ' + response.invokeruid);
+				break;
 			
 			case 'admin':
 				switch(response.msg) {
