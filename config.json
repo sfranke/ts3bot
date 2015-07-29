@@ -47,7 +47,7 @@
 	"keyNotValid400": "Your key is invalid, please generate a new one.",
 	"_keyNotValid400_comment": "Response from ANet if key is invalid for some reason.",
 
-	"apiErrorErrBadData": "There is a problem with the APi response, please create a new key and try again. If this error persists please contact an admin or moderator.",
+	"apiErrorErrBadData": "There is a problem with the API response, please create a new key and try again. If this error persists please contact a moderator or an admin.",
 	"_apiErrorErrBadData_comment": "If while calling the API we get a response 'ErrBadData' we have to ask the user to take extreme measures, since we're uable to validate that key.",
 
 	"foreignWorld": "This key is associated with a different world.",
