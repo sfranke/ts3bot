@@ -163,9 +163,9 @@ function databaseCleanup(serverQueryClient) {
 			https.get(options, function(res) {
 
 				res.on('data', function(d) {
-    				var httpsRequest = JSON.parse(d);
 
 					if (res.statusCode === 400) {
+    				var httpsRequest = JSON.parse(d);
 
 						switch(httpsRequest.text) {
 
@@ -196,6 +196,7 @@ function databaseCleanup(serverQueryClient) {
 					};
 
     				if (res.statusCode === 200) {
+    					var httpsRequest = JSON.parse(d);
 	    				var guilds = JSON.stringify(httpsRequest.guilds);
 	    				//Response is a JSON object.
 	    				if (httpsRequest.world === config.homeWorld) {
