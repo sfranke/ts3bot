@@ -190,6 +190,11 @@ function databaseCleanup(serverQueryClient) {
 						this.emit('http502');
 					};
 
+					if (res.statusCode === 503) {
+						logger.log('info', 'Service unavailable');
+						this.emit('http400');
+					};
+
     				if (res.statusCode === 200) {
 	    				var guilds = JSON.stringify(httpsRequest.guilds);
 	    				//Response is a JSON object.
@@ -452,6 +457,11 @@ function databaseCleanup(serverQueryClient) {
 										logger.log('info', 'Server not responding ' + res.statusCode);
 										//Checking in background disable feedback for now!
 										//this.emit('http502');
+									};
+
+									if (res.statusCode === 503) {
+										logger.log('info', 'Server unavailable');
+										this.emit('close');
 									};
 								});
 							});	
