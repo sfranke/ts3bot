@@ -1,3 +1,5 @@
+#!/usr/bin/node
+
 var api             = exports,
     util            = require('util'),
     https           = require('https'),
@@ -87,6 +89,11 @@ api.account = function(serverQueryClient, userObject) {
                                         };
                                         break;
 
+                                    case 400:
+                                        var httpsRequest = JSON.parse(data);
+                                        logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                                        break;
+
                                     case 502:
                                         logger.log('info', 'Server not responding -> ' + statusCode);
                                         break;
@@ -121,6 +128,11 @@ api.account = function(serverQueryClient, userObject) {
                             break;
 
                     };
+                    break;
+
+                case 403:
+                    var httpsRequest = JSON.parse(data);
+                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
                     break;
 
                 case 502:

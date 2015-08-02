@@ -7,7 +7,8 @@ var TeamSpeakClient = require('node-teamspeak'),
 	sqlite = require('sqlite3').verbose(),
 	logger = require('./logger'),
 	chatMessage = require('./chatMessage')
-	api = require('./api');
+	api = require('./api'),
+	database = require('./database');
 
 function unixTime() {
 	var unixStamp = Math.round((new Date()).getTime() / 1000);
@@ -142,11 +143,9 @@ function databaseCleanup(serverQueryClient) {
 	*/
 	serverQueryClient.on('textmessage', function(response){
 
-		var regEx = /[!]*/;
-
 		if (response.invokername != config.clientName && response.msg.length === 72) {
 			api.account(serverQueryClient, response);
-		} else if (response.invokeruid === config.adminClient && response.msg.search(regEx) != -1) {
+		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
 			logger.log('info', 'Received message from admin: ' + '\n\t' + '\'' + response.msg + '\'');
@@ -183,6 +182,18 @@ function databaseCleanup(serverQueryClient) {
 			};
 		};
 
+
+		//Callback function to get API-key by cluid
+		database.getApiKey(clientObject, function(error, response){
+			if (error != null) {
+				logger.log('error', 'Error while receiving API-key from database: ' + error);
+			} else {
+				logger.log('info', 'Received API-key for current client:\n\t' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ' \'' + response.key + '\'');
+				//This is where the switch case below would start..
+			};
+		});
+
+
 		//When a client connects to the default channel of the server
 		//grab Uid and nickname and insert them on to our database.
 		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
@@ -197,27 +208,13 @@ function databaseCleanup(serverQueryClient) {
 					case undefined:
 						//console.log('switch-case undefined!');
 						logger.log('info', 'Adding new client to database.')
-						var databaseConnection1 = new sqlite.Database('ts3bot.sqlitedb');
-						databaseConnection1.serialize(function() {
-							//Insert client data into our database.
-							var statement = databaseConnection1.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-							statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, unixTime(), null, null, null, null, null);
-							statement.finalize();
-
-							statement.on('error', function(response) {
-								if (response.errno === 19) {
-									logger.log('info', 'This user already exists in our database.');
-									//If client exists in our database check for existing gw2_api_key and validate that.
-								};
-							});
-							statement.on('trace', function(response) {
-								logger.log('error', 'DB error trace\n' + response);
-							});
-							statement.on('profile', function(response) {
-								logger.log('error', 'DB error profile\n' + response);
-							});
+						database.setNewUser(clientObject, function(error, response) {
+							if (error != null) {
+								logger.log('error', 'Error while adding new client: ' + error);
+							} else {
+								logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'')
+							};
 						});
-						databaseConnection1.close();
 						break;
 
 					default:
@@ -225,14 +222,14 @@ function databaseCleanup(serverQueryClient) {
 						//due to malformed request.
 						if (response.key === null) {
 							//Do not make the call but update 'last_seen' in our database.
-							var databaseConnection2 = new sqlite.Database('ts3bot.sqlitedb');
-							databaseConnection2.serialize(function() {
-								var statement = databaseConnection2.prepare('UPDATE clients SET client_nickname = ?, last_seen = ? WHERE client_unique_id = ?');
-								statement.run(clientObject.client_nickname, unixTime(), clientObject.client_unique_identifier);
-								statement.finalize();
-								logger.log('info', 'gw2_api_key still \'null\'.');
+
+							database.updateLastSeen(clientObject, function(error, response) {
+								if (error != null) {
+									logger.log('error', 'Error while updateting last_seen: ' + error);
+								} else {
+									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
+								};
 							});
-							databaseConnection2.close();
 							break;
 						} else {
 							//Check if gw2_api_key is still valid.
@@ -309,7 +306,7 @@ function databaseCleanup(serverQueryClient) {
 													var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
 													statement.run(null, unixTime(), clientObject.client_unique_identifier);
 													statement.finalize();
-													logger.log('info', 'Removed gw2_api_key from database and revoked server group.');
+													logger.log('info', 'Removed gw2_api_key from database and revoked server group.' + '\n\t' + '\'' + token + '\'');
 												});
 												databaseConnection3.close();
 												break;
