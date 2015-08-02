@@ -32,7 +32,7 @@
 	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
 	"_welcomePoke_comment": "",
 	
-	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.",
+	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://thisisgandara.com/showthread.php?1173-How-to-interact-with-the-TS-Permission-Bot[/URL].",
 	"_welcomMessage_comment": "Welcome message that is send to every new client.",
 	
 	"confirmAccessMsg": "You are Gandaran. Welcome to our community!",
