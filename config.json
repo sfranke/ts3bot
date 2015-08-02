@@ -41,8 +41,8 @@
 	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
 	
-	"keyNotValid": "This key is not valid! We recommend you to use the copy button on [URL=https://account.arena.net/applications]this[/URL] site to ensure you only copy/paste the API-key.",
-	"_keyNotValid_comment": "Error message for additional whitespaces, common mistake.",
+	"keyNotValid": "This does not seem to be an API-key.",
+	"_keyNotValid_comment": "Error message for the user if a key does not match the relevant criteria.",
 
 	"keyNotValid400": "Your key is invalid, please generate a new one.",
 	"_keyNotValid400_comment": "Response from ANet if key is invalid for some reason.",
@@ -55,6 +55,9 @@
 
 	"serverNotResponding": "Servers are not responding, please resend me your key.",
 	"_serverNotResponding_comment": "If GW2 API servers are not responding.",
+
+	"api503": "Could not verify your key please send it again.",
+	"_api503_comment": "If server responds with 503 ask the user to re-post a key.",
 
 	"alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
 	"_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client.",

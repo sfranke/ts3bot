@@ -8,9 +8,9 @@ var TeamSpeakClient = require('node-teamspeak'),
 	logger          = require('./logger'),
 	events          = require('events');
 
-function chatMessage(response) {
+function chatMessage(user) {
 
-	chatMessage.prototype.chatSend = function(option, response) {
+	chatMessage.prototype.chatSend = function(option, user) {
 
 		var opt     = option,
 		    message = '';
@@ -18,23 +18,23 @@ function chatMessage(response) {
 		switch(opt) {
 			
 			case 'welcome':
-				message = {targetmode: '1', target: response.clid, msg: config.welcomeMessage};
-				logger.log('info', 'Sending ' + response.client_nickname + ' welcomeMessage');
+				message = {targetmode: '1', target: user.clid, msg: config.welcomeMessage};
+				logger.log('info', 'Sending ' + user.client_nickname + ' welcomeMessage');
 				break;
 
 			case 'welcomePoke':
-				message = {clid: response.clid, msg: config.welcomePoke};
-				logger.log('info', 'Sending ' + response.client_nickname + ' welcomePoke');
+				message = {clid: user.clid, msg: config.welcomePoke};
+				logger.log('info', 'Sending ' + user.client_nickname + ' welcomePoke');
 				break;
 
 			case 'checkingKey':
-				message = {targetmode: '1', target: response.invokerid, msg: config.checkingKey};
-				logger.log('info', 'Checking valid key.. ' + '\n\t' + '\'' + response.msg + '\'');
+				message = {targetmode: '1', target: user.invokerid, msg: config.checkingKey};
+				logger.log('info', 'Checking valid key.. ' + '\n\t' + '\'' + user.msg + '\'');
 				break;
 
 			case 'foreignWorld':
-				message = {targetmode: '1', target: response.invokerid, msg: config.foreignWorld + ' -> ' + response.worldname};
-	    		logger.log('info', 'API-key is associated with ' + response.worldname);
+				message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.worldname};
+	    		logger.log('info', 'API-key is associated with ' + user.worldname);
 				break;
 
 			case 'httpError':
@@ -43,50 +43,54 @@ function chatMessage(response) {
 				break;
 
 			case 'alreadyInUse':
-				message = {targetmode: '1', target: response.invokerid, msg: config.alreadyInUse};
+				message = {targetmode: '1', target: user.invokerid, msg: config.alreadyInUse};
 				logger.log('info','Key used by other client.');
 				break;
 
 			case 'keyNotValid':
-				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid};
-				logger.log('warning', 'Key not valid.');
+				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid};
+				logger.log('warning', 'Key not valid.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + '\'' + user.msg + '\'');
 				break;
 
 			case 'keyNotValidWhitespace':
-				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid};
-				logger.log('info', 'API-key not valid (whitespace)..' + '\n\t' + '\'' + response.msg + '\'');
+				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid};
+				logger.log('info', 'API-key not valid (whitespace)..' + '\n\t' + '\'' + user.msg + '\'');
 				break;
 
 			case 'keyNotValid400':
-				message = {targetmode: '1', target: response.invokerid, msg: config.keyNotValid400};
+				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid400};
 				logger.log('warning', 'Key not valid, confirmed by API.');
 				break;
 
 			case 'apiErrorErrBadData':
-				message = {targetmode: '1', target: response.invokerid, msg: config.apiErrorErrBadData};
-				logger.log('error', 'Received - ErrBadData for:\n\tNick: ' + response.invokername + ' Uid: ' + response.invokeruid);
+				message = {targetmode: '1', target: user.invokerid, msg: config.apiErrorErrBadData};
+				logger.log('error', 'Received - ErrBadData for:\n\tNick: ' + user.invokername + ' Uid: ' + user.invokeruid);
+				break;
+
+			case 'api503':
+				message = {targetmode: '1', target: user.invokerid, msg: config.api503};
+				logger.log('info', 'Service unavailable (503)');
 				break;
 			
 			case 'admin':
-				switch(response.msg) {
+				switch(user.msg) {
 					case '!bot':
-						message = {targetmode: '1', target: response.invokerid, msg: 'At your service oh mighty Admin! *bow'};
+						message = {targetmode: '1', target: user.invokerid, msg: 'At your service oh mighty Admin! *bow'};
 						break;
 
 					case '!help':
-						message = {targetmode: '1', target: response.invokerid, msg: 'This could be your help command.'};
+						message = {targetmode: '1', target: user.invokerid, msg: 'This could be your help command.'};
 						break;
 
 					case '!commands':
-						message = {targetmode: '1', target: response.invokerid, msg: 'This could be a list of commands.'};
+						message = {targetmode: '1', target: user.invokerid, msg: 'This could be a list of commands.'};
 						break;
 
 					case '!awesome':
-						message = {targetmode: '1', target: response.invokerid, msg: 'I love you my dear!'};
+						message = {targetmode: '1', target: user.invokerid, msg: 'I love you my dear!'};
 						break;
 
 					default:
-						message = {targetmode: '1', target: response.invokerid, msg: '*Nods condescendingly.'};
 						break;
 				};
 
