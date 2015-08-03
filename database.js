@@ -55,3 +55,18 @@ database.updateLastSeen = function(clientObject, callback) {
         statement.finalize();
     });
 };
+
+database.delApiKey = function(clientObject, callback) {
+    var databaseConnectionDelApiKey = new sqlite.Database('ts3bot.sqlitedb');
+    databaseConnectionDelApiKey.serialize(function() {
+        var statement = databaseConnectionDelApiKey.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
+        statement.run(null, unixTime(), clientObject.client_unique_identifier, function(error, response) {
+            if (error != null) {
+                callback(new Error(error));
+            } else {
+                callback(null, response);
+            }
+        });
+        statement.finalize();
+    });
+};

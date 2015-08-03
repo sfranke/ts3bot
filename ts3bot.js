@@ -1,14 +1,14 @@
 #!/usr/bin/node
 
 var TeamSpeakClient = require('node-teamspeak'),
-	config = JSON.parse(require('fs').readFileSync('config.json')),
-	util = require('util'),
-	https = require('https'),
-	sqlite = require('sqlite3').verbose(),
-	logger = require('./logger'),
-	chatMessage = require('./chatMessage')
-	api = require('./api'),
-	database = require('./database');
+	config          = JSON.parse(require('fs').readFileSync('config.json')),
+	util            = require('util'),
+	https           = require('https'),
+	sqlite          = require('sqlite3').verbose(),
+	logger          = require('./logger'),
+	chatMessage     = require('./chatMessage')
+	api             = require('./api'),
+	database        = require('./database');
 
 function unixTime() {
 	var unixStamp = Math.round((new Date()).getTime() / 1000);
@@ -24,7 +24,7 @@ function databaseCleanup(serverQueryClient) {
 		'ninetyOneDays': '7862400'
 	};
 
-	var timeNow = unixTime(),
+	var timeNow          = unixTime(),
 	    ninetyOneDaysOld = timeNow - constant.ninetyOneDays;
 
 	//Query database for old users.
@@ -44,12 +44,8 @@ function databaseCleanup(serverQueryClient) {
 				logger.log('info', 'Found old client! ');
 
 				serverQueryClient.send('clientgetdbidfromuid', {cluid: response.client_unique_id}, function (err, response){
-					//console.log('err: ' + util.inspect(err));
-					//console.log('response: ' + util.inspect(response));
 					logger.log('info', 'Deleting client from TS3-server: ' + '\n\t' + ' UId: ' + response.cluid);
 					serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (err, response) {
-						//console.log('cldbdel_err' + util.inspect(err));
-						//console.log('cldbdel_response:' + util.inspect(response));
 						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
 						databaseConnection.serialize(function() {
 							var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
@@ -61,8 +57,6 @@ function databaseCleanup(serverQueryClient) {
 						
 						var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + nickname + '\n' + '[B]' + 'account name: ' + '[/B]' + '\t' + accountname;
 						serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client', message: report}, function(err, response,rawResponse) {
-							//console.log('err: ' + err + '\n' + 'res: ' + response +'\n' + 'raw: ' + rawResponse);
-							//console.log(util.inspect(err));
 						});
 					});
 				});
@@ -133,18 +127,13 @@ function databaseCleanup(serverQueryClient) {
 			});
 	});
 
-	/*listen on incoming private messages.
-	
-	msg -> containing the message sent
-	invokerid -> containing the client id
-	invokername -> containing the client nickname
-	invokeruid -> containing the client unique identifier
-	
-	*/
+	//listen on incoming private messages.
 	serverQueryClient.on('textmessage', function(response){
 
 		if (response.invokername != config.clientName && response.msg.length === 72) {
-			api.account(serverQueryClient, response);
+			api.account(serverQueryClient, response, function(error, serverQueryClient, user) {
+				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: user.invokerid, msg: config.confirmAccessMsg});
+			});
 		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
@@ -155,19 +144,14 @@ function databaseCleanup(serverQueryClient) {
 		};
 	});
 
-	/*Listen on server event 'cliententerview'.
-
-	clid -> client id
-	client_type -> client type; 0=teamspeakClient 1=serverQuery 
-	client_nickname -> client nickname
-	client_servergroups -> comma seperated list of server groups
-	client_unique_identifier -> a client's unique identifier
-
-	*/
+	//Listen on server event 'cliententerview'.
 	serverQueryClient.on('cliententerview', function(response){
 
 		var clientObject = response;
-		//console.log(res);
+		clientObject.invokername = clientObject.client_nickname;
+		clientObject.invokeruid = clientObject.client_unique_identifier;
+		clientObject.invokerdbid = clientObject.client_database_id;
+		clientObject.invokerid = clientObject.clid;
 
 		//If a user is connecting via the teamspeak client, ignore server query clients.
 		if (clientObject.client_type === 0) {
@@ -178,164 +162,70 @@ function databaseCleanup(serverQueryClient) {
 				serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
 			} else {
-				logger.log('info', 'Noticed verified client ' + 'Uid: ' + response.client_unique_identifier + ' nick: ' + response.client_nickname);
+				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
 			};
-		};
 
+			//Callback function to get API-key by cluid
+			database.getApiKey(clientObject, function(error, response){
+				if (error != null) {
+					logger.log('error', 'Error while receiving API-key from database: ' + error);
+				} else {
+					logger.log('info', 'Received API-key for current client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
 
-		//Callback function to get API-key by cluid
-		database.getApiKey(clientObject, function(error, response){
-			if (error != null) {
-				logger.log('error', 'Error while receiving API-key from database: ' + error);
-			} else {
-				logger.log('info', 'Received API-key for current client:\n\t' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ' \'' + response.key + '\'');
-				//This is where the switch case below would start..
-			};
-		});
+					switch(response) {
 
-
-		//When a client connects to the default channel of the server
-		//grab Uid and nickname and insert them on to our database.
-		var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-		databaseConnection.serialize(function() {
-
-			var stmt = databaseConnection.prepare('SELECT `gw2_api_key` AS key FROM `clients` WHERE `client_unique_id` = (?)');
-			stmt.get(clientObject.client_unique_identifier, function(error, response) {
-				//console.log('STATEMENT_RES: \n' + util.inspect(response));
-
-				switch(response) {
-
-					case undefined:
-						//console.log('switch-case undefined!');
-						logger.log('info', 'Adding new client to database.')
-						database.setNewUser(clientObject, function(error, response) {
-							if (error != null) {
-								logger.log('error', 'Error while adding new client: ' + error);
-							} else {
-								logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'')
-							};
-						});
-						break;
-
-					default:
-						//If gw2_api_key = null do not hit it against API. This would result in a 403 error
-						//due to malformed request.
-						if (response.key === null) {
-							//Do not make the call but update 'last_seen' in our database.
-
-							database.updateLastSeen(clientObject, function(error, response) {
+						case undefined:
+							//console.log('switch-case undefined!');
+							logger.log('info', 'Adding new client to database.')
+							database.setNewUser(clientObject, function(error, response) {
 								if (error != null) {
-									logger.log('error', 'Error while updateting last_seen: ' + error);
+									logger.log('error', 'Error while adding new client: ' + error);
 								} else {
-									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
+									logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
 								};
 							});
 							break;
-						} else {
-							//Check if gw2_api_key is still valid.
-							var token = response.key;
-							var options = {
-								hostname: 'api.guildwars2.com',
-								path: '/v2/account',
-								method: 'GET',
-								headers: {
-									Authorization: 'Bearer ' + token
-								}
-							};
-							https.get(options, function(res) {
-								logger.log('info', 'GW2 API status code: ' + res.statusCode);
 
-								res.on('data', function(d) {
-									
-				    				if (res.statusCode === 200) {
-					    				var httpsRequest = JSON.parse(d);
-					    				var guilds = JSON.stringify(httpsRequest.guilds)
-					    				if (httpsRequest.world != config.homeWorld) {
-					    					//console.log('Functionality for removing rights!');
-					    					//console.log(util.inspect(clientObject));
+						case null:
+							logger.log('info', 'API-key still NULL: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
+							break;
 
-					    					serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
-					    					var databaseConnection4 = new sqlite.Database('ts3bot.sqlitedb');
-											databaseConnection4.serialize(function() {
-												var statement = databaseConnection4.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
-												statement.run(null, unixTime(), clientObject.client_unique_identifier);
-												statement.finalize();
-												logger.log('info', 'gw2_api_key updated.');
-											});
-											databaseConnection4.close();
-					    				} else {
-					    					logger.log('info', 'Client API-is still valid. Checked!');
-
-					    					var databaseConnection5 = new sqlite.Database('ts3bot.sqlitedb');
-											databaseConnection5.serialize(function() {
-
-
-												// Update full information here!
-												var statement = databaseConnection5.prepare('UPDATE clients SET last_seen = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?');
-												statement.run(unixTime(), httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, clientObject.client_unique_identifier);
-												statement.finalize();
-												logger.log('info', 'updated data for: ' + clientObject.client_nickname + ' UId: ' + clientObject.client_unique_identifier);
-											});
-											databaseConnection5.close();
-					    				};
-					    			};
-
-					    			if (res.statusCode === 400) {
-					    				var httpsRequest = JSON.parse(d);
-					    				//console.log('DEBUG: ' + util.inspect(httpsRequest));
-
-					    				switch (httpsRequest.text) {
-
-					    					case 'ErrBadData':
-					    						if (httpsRequest.text = 'ErrBadData') {
-													logger.log('info', 'API error bad request!');
-					    						};
-					    						break;
-
-					    					case 'invalid key':
-						    					response.invokerid = clientObject.clid;
-												var message = new chatMessage();
-												serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', response));
-												//console.log('Functionality for removing rights!');
-					    						//console.log(util.inspect(clientObject));
-					    						var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.client_nickname;
-					    						serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleting client from server group', message: report});
-					    						serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.client_database_id});
-					    						var databaseConnection3 = new sqlite.Database('ts3bot.sqlitedb');
-												databaseConnection3.serialize(function() {
-													var statement = databaseConnection3.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
-													statement.run(null, unixTime(), clientObject.client_unique_identifier);
-													statement.finalize();
-													logger.log('info', 'Removed gw2_api_key from database and revoked server group.' + '\n\t' + '\'' + token + '\'');
-												});
-												databaseConnection3.close();
-												break;
-
-											default:
-												logger.log('info', 'Please don\'t bother me, I\'m just chilling.')
-												break;
-					    				};
-					    			};
-
-					    			if (res.statusCode === 502) {
-										logger.log('info', 'Server not responding ' + res.statusCode);
-									};
-
-									if (res.statusCode === 503) {
-										logger.log('info', 'Server unavailable');
+						default:
+							//If gw2_api_key = null do not hit it against API. This would result in a 403 error
+							//due to malformed request.
+							if (response.key === null) {
+								//Do not make the call but update 'last_seen' in our database.
+								database.updateLastSeen(clientObject, function(error, response) {
+									if (error != null) {
+										logger.log('error', 'Error while updateting last_seen: ' + error);
+									} else {
+										logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
 									};
 								});
-							});	
-						};
-						break;
-				//End of switch-case.
+								break;
+							} else {
+								
+								database.updateLastSeen(clientObject, function(error, response) {
+									if (error != null) {
+										logger.log('error', 'Error while updateting last_seen: ' + error);
+									} else {
+										logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
+									};
+								});
+								clientObject.msg = response.key;
+								api.account(serverQueryClient, clientObject, function(error, serverQueryClient, user) {
+									if (error != null) {
+										logger.log('error', 'Error from api.account: ' + error);
+									} else {
+										logger.log('info', 'Verified existing client\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
+									};
+								});
+							};
+							break;
+					};
 				};
-			//End of stmt.
 			});
-			stmt.finalize();
-		//End of Database connection.
-		});
-		databaseConnection.close();
+		};
 	});
 
 	serverQueryClient.on('queryError', function(err, response) {

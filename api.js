@@ -8,7 +8,7 @@ var api             = exports,
     chatMessage     = require('./chatMessage'),
     TeamSpeakClient = require('node-teamspeak');
 
-api.account = function(serverQueryClient, userObject) {
+api.account = function(serverQueryClient, userObject, callback) {
     
     var token = userObject.msg,
         user = userObject;
@@ -28,23 +28,25 @@ api.account = function(serverQueryClient, userObject) {
                 case 200:
                     var httpsRequest = JSON.parse(data);
                     var guilds = JSON.stringify(httpsRequest.guilds);
+
                     if (httpsRequest.world === config.homeWorld) {
                         var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
                         databaseConnection.serialize(function() {
                             var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?');
-                            statement.run(token, httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, user.invokeruid, function(response) {
+                            statement.run(token, httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, user.invokeruid, function(error, response) {
                                 //If changes have happen permissions are granted otherwise denied.
-                                if (this.lastID === undefined) {
-                                    logger.log('info', 'FAIL, member permissions denied for ' + '\n\t' + user.invokername + ' UId: ' + user.invokeruid);
-                                    response.invokerid = user.invokerid;
+                                if (error != null) {
+                                    logger.log('info', 'FAIL, member permissions denied for ' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
                                     var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', response));
-                                } else {
-                                    serverQueryClient.send('sendtextmessage', {targetmode: '1', target: user.invokerid, msg: config.confirmAccessMsg}, function (err, response){
-                                        serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (err, response){
-                                            logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n\t' + user.invokername + ' UId: ' + user.invokeruid);
+                                    serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', user));
+                                } else if (response === undefined) {
+                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (err, response){
+                                        if (error != null) {
+                                            logger.log('error', 'Error while clientgetdbidfromuid: ' + user.invokeruid);
+                                        } else {
+                                            logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
                                             serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                                        });
+                                        };
                                     });
                                 };
                             });
@@ -64,48 +66,11 @@ api.account = function(serverQueryClient, userObject) {
                         });
                         databaseConnection.close();
                     } else {
-                        logger.log('info', 'Checking API-key for foreign world.' + '\n\t' + '\'' + token + '\'');
-
-                        var worldId = httpsRequest.world;
-                        var options = {
-                                        hostname: 'api.guildwars2.com',
-                                        path: '/v2/worlds?ids=' + worldId,
-                                        method: 'GET'
-                                    };
-                        https.get(options, function(res) {
-                            logger.log('info', 'GW2 Worlds-API status code: ' + res.statusCode);
-                            var statusCode = res.statusCode;
-                            res.on('data', function(data) {
-                                switch(statusCode) {
-                                    case 200:
-                                        var httpsRequest = JSON.parse(data);
-                                        //Response is a list of response objects.
-                                        for (var res in httpsRequest) {
-                                            var world = httpsRequest[res];
-                                            //Add worldname to response-object.
-                                            user.worldname = world.name;
-                                            var message =  new chatMessage();
-                                            serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', user));
-                                        };
-                                        break;
-
-                                    case 400:
-                                        var httpsRequest = JSON.parse(data);
-                                        logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
-                                        break;
-
-                                    case 502:
-                                        logger.log('info', 'Server not responding -> ' + statusCode);
-                                        break;
-
-                                    case 503:
-                                        var message = new chatMessage();
-                                        serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
-                                        break;
-                                };
-                            });
-                        });
+                        api.world(serverQueryClient, user, httpsRequest);
                     };
+                    var status = 'Success';
+                    serverQueryClient.status = status;
+                    callback(null, serverQueryClient, user);
                     break;
 
                 case 400:
@@ -113,8 +78,26 @@ api.account = function(serverQueryClient, userObject) {
                     switch(httpsRequest.text) {
                         case 'invalid key':
                             logger.log('info', 'Server responding with "Invalid key" -> ' + response.statusCode);
-                            var message = new chatMessage();
-                            serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', user));
+                            
+                            database.delApiKey(user, function(error, response) {
+                                console.log('user: \n' + util.inspect(user));
+                                if (error != null) {
+                                    logger.log('dbError: ' + error);
+                                } else {
+                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
+                                    var message = new chatMessage();
+                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', user));
+                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (error, response){
+                                        if (error != null) {
+                                            logger.log('error', 'Error while receiving cldbid: ' + error);
+                                        } else {
+                                            var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
+                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleting client because of invalid key', message: report});
+                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                                        };
+                                    });
+                                };
+                            });
                             break;
 
                         case 'ErrBadData':
@@ -141,6 +124,59 @@ api.account = function(serverQueryClient, userObject) {
 
                 case 503:
                     //logger.log('info', 'Service unavailable -> ' + response.statusCode);
+                    var message = new chatMessage();
+                    serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
+                    break;
+            };
+        });
+    });
+};
+
+api.world = function(serverQueryClient, userObject, httpsRequest) {
+    
+    var user    = userObject,
+        token   = userObject.msg,
+        worldId = httpsRequest.world;
+    
+    logger.log('info', 'Checking API-key for foreign world.' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
+
+    var options = {
+                    hostname: 'api.guildwars2.com',
+                    path: '/v2/worlds?ids=' + worldId,
+                    method: 'GET'
+                };
+    https.get(options, function(response) {
+        logger.log('info', 'GW2 Worlds-API status code: ' + response.statusCode);
+        var statusCode = response.statusCode;
+        response.on('data', function(data) {
+            switch(statusCode) {
+                case 200:
+                    var httpsRequest = JSON.parse(data);
+                    //Response is a list of response objects.
+                    for (var response in httpsRequest) {
+                        var world = httpsRequest[response];
+                        //Add worldname to response-object.
+                        user.worldname = world.name;
+                        var message =  new chatMessage();
+                        serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', user));
+                    };
+                    break;
+
+                case 400:
+                    var httpsRequest = JSON.parse(data);
+                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    break;
+
+                case 403:
+                    var httpsRequest = JSON.parse(data);
+                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    break;
+
+                case 502:
+                    logger.log('info', 'Server not responding -> ' + statusCode);
+                    break;
+
+                case 503:
                     var message = new chatMessage();
                     serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
                     break;
