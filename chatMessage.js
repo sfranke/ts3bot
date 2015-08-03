@@ -33,7 +33,7 @@ function chatMessage(user) {
 				break;
 
 			case 'foreignWorld':
-				message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.worldname};
+				message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.worldName};
 	    		logger.log('info', 'API-key is associated with ' + user.worldname);
 				break;
 

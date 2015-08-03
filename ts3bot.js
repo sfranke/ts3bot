@@ -132,7 +132,10 @@ function databaseCleanup(serverQueryClient) {
 
 		if (response.invokername != config.clientName && response.msg.length === 72) {
 			api.account(serverQueryClient, response, function(error, serverQueryClient, user) {
-				serverQueryClient.send('sendtextmessage', {targetmode: '1', target: user.invokerid, msg: config.confirmAccessMsg});
+				//console.log('api.account_err: ' + error);
+				//console.log('api.account_usr: ' + util.inspect(user));
+				//check if key is assiciated with gandara!
+                serverQueryClient.send('sendtextmessage', {targetmode: '1', target: user.invokerid, msg: config.confirmAccessMsg});
 			});
 		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();

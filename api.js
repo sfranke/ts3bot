@@ -66,10 +66,47 @@ api.account = function(serverQueryClient, userObject, callback) {
                         });
                         databaseConnection.close();
                     } else {
-                        api.world(serverQueryClient, user, httpsRequest);
+                        api.world(serverQueryClient, user, httpsRequest, function(error, worldId) {
+                            logger.log('info', 'Current world name is: ' + user.worldName);
+                            if (error != null) {
+                                logger.log('error', 'Error while receiving worldId: ' + error);
+                                if (user.invokerdbid == undefined) {
+                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function(error, response) {
+                                        console.log('err: ' + error);
+                                        console.log('res: ' + response);
+                                        if (error != null) {
+                                            logger.log('error', 'Error while receiving cldbid' + error);
+                                        } else {
+                                            user.invokerdbid = response;
+                                        };
+                                    });
+                                };
+                                console.log(util.inspect(user));
+                                serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: user.invokerdbid}, function(error, response) {
+                                    if (error != null) {
+                                        logger.log('error', 'Error while deleting server group:\n' + util.inspect(error));
+                                    } else {
+                                        var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
+                                        serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid world', message: report}, function(error, response) {
+                                            if (error != null) {
+                                                logger.log('error', 'Error while sending admin message\n' + error);
+                                            } else {
+                                                database.delApiKey(user, function(error, response) {
+                                                    if (error != null) {
+                                                        logger.log('error', 'Error while deleting API-key from database\n' + error);
+                                                    } else {
+                                                        logger.log('info', 'Deleted API-key from databse.\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
+                                                    };
+                                                });
+                                            };
+                                        });
+                                    };
+                                });
+                            } else {
+                                logger.log('info', 'World checked and verified.')
+                            };
+                        });
                     };
-                    var status = 'Success';
-                    serverQueryClient.status = status;
                     callback(null, serverQueryClient, user);
                     break;
 
@@ -92,7 +129,7 @@ api.account = function(serverQueryClient, userObject, callback) {
                                             logger.log('error', 'Error while receiving cldbid: ' + error);
                                         } else {
                                             var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
-                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleting client because of invalid key', message: report});
+                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
                                             serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
                                         };
                                     });
@@ -132,7 +169,7 @@ api.account = function(serverQueryClient, userObject, callback) {
     });
 };
 
-api.world = function(serverQueryClient, userObject, httpsRequest) {
+api.world = function(serverQueryClient, userObject, httpsRequest, callback) {
     
     var user    = userObject,
         token   = userObject.msg,
@@ -156,9 +193,14 @@ api.world = function(serverQueryClient, userObject, httpsRequest) {
                     for (var response in httpsRequest) {
                         var world = httpsRequest[response];
                         //Add worldname to response-object.
-                        user.worldname = world.name;
+                        user.worldName = world.name;
                         var message =  new chatMessage();
                         serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', user));
+                    };
+                    if (worldId != config.homeWorld) {
+                        callback(new Error(worldId));
+                    } else {
+                        callback(null, worldId);
                     };
                     break;
 
