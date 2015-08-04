@@ -131,11 +131,38 @@ function databaseCleanup(serverQueryClient) {
 	serverQueryClient.on('textmessage', function(response){
 
 		if (response.invokername != config.clientName && response.msg.length === 72) {
-			api.account(serverQueryClient, response, function(error, serverQueryClient, user) {
-				//console.log('api.account_err: ' + error);
-				//console.log('api.account_usr: ' + util.inspect(user));
-				//check if key is assiciated with gandara!
-                serverQueryClient.send('sendtextmessage', {targetmode: '1', target: user.invokerid, msg: config.confirmAccessMsg});
+			database.getApiKey
+			api.account(response, function(error, response) {
+
+				// console.log('api.account_callback_err: ' + util.inspect(error));
+				console.log('api.account_callback_res:\n' + util.inspect(response));
+				var clientObject = response;
+
+				if (error != null && error.accountWorldName != undefined) {
+					logger.log('error', 'While checking account API:\n' + util.inspect(error));
+					logger.log('info', 'Sending client textmessage - foreignWorld.');
+					var message = new chatMessage();
+					serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
+				} else {
+					//Account and world checked, verified Gandaran!
+					database.updateAccountInformation(response, function(error, response) {
+						if (error != null) {
+							logger.log('error', 'While updating account information.\n' + util.inspect(error));
+						} else {
+							logger.log('info', 'Added new user to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+
+							serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (err, response){
+                                if (error != null) {
+                                    logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid);
+                                } else {
+                                    logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+                                    serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
+                                };
+                            });
+						};
+					});
+				};
 			});
 		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
@@ -150,11 +177,11 @@ function databaseCleanup(serverQueryClient) {
 	//Listen on server event 'cliententerview'.
 	serverQueryClient.on('cliententerview', function(response){
 
-		var clientObject = response;
-		clientObject.invokername = clientObject.client_nickname;
-		clientObject.invokeruid = clientObject.client_unique_identifier;
-		clientObject.invokerdbid = clientObject.client_database_id;
-		clientObject.invokerid = clientObject.clid;
+		var clientObject             = response;
+		    clientObject.invokername = clientObject.client_nickname;
+		    clientObject.invokeruid  = clientObject.client_unique_identifier;
+		    clientObject.invokerdbid = clientObject.client_database_id;
+		    clientObject.invokerid   = clientObject.clid;
 
 		//If a user is connecting via the teamspeak client, ignore server query clients.
 		if (clientObject.client_type === 0) {
@@ -162,74 +189,76 @@ function databaseCleanup(serverQueryClient) {
 			var groups = clientObject.client_servergroups.toString();
 			if (groups.match(config.verifiedClientServerGroupId) === null) {
 				var message = new chatMessage();
-				serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
+				//serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
 			} else {
-				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
+				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
 			};
-
-			//Callback function to get API-key by cluid
-			database.getApiKey(clientObject, function(error, response){
-				if (error != null) {
-					logger.log('error', 'Error while receiving API-key from database: ' + error);
-				} else {
-					logger.log('info', 'Received API-key for current client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
-
-					switch(response) {
-
-						case undefined:
-							//console.log('switch-case undefined!');
-							logger.log('info', 'Adding new client to database.')
-							database.setNewUser(clientObject, function(error, response) {
-								if (error != null) {
-									logger.log('error', 'Error while adding new client: ' + error);
-								} else {
-									logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
-								};
-							});
-							break;
-
-						case null:
-							logger.log('info', 'API-key still NULL: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
-							break;
-
-						default:
-							//If gw2_api_key = null do not hit it against API. This would result in a 403 error
-							//due to malformed request.
-							if (response.key === null) {
-								//Do not make the call but update 'last_seen' in our database.
-								database.updateLastSeen(clientObject, function(error, response) {
-									if (error != null) {
-										logger.log('error', 'Error while updateting last_seen: ' + error);
-									} else {
-										logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
-									};
-								});
-								break;
-							} else {
-								
-								database.updateLastSeen(clientObject, function(error, response) {
-									if (error != null) {
-										logger.log('error', 'Error while updateting last_seen: ' + error);
-									} else {
-										logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
-									};
-								});
-								clientObject.msg = response.key;
-								api.account(serverQueryClient, clientObject, function(error, serverQueryClient, user) {
-									if (error != null) {
-										logger.log('error', 'Error from api.account: ' + error);
-									} else {
-										logger.log('info', 'Verified existing client\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
-									};
-								});
-							};
-							break;
-					};
-				};
-			});
 		};
 	});
+
+			//Callback function to get API-key by cluid
+	// 		database.getApiKey(clientObject, function(error, response){
+	// 			if (error != null) {
+	// 				logger.log('error', 'Error while receiving API-key from database: ' + error);
+	// 			} else {
+	// 				logger.log('info', 'Received API-key for current client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
+
+	// 				switch(response) {
+
+	// 					case undefined:
+	// 						//console.log('switch-case undefined!');
+	// 						logger.log('info', 'Adding new client to database.')
+	// 						database.setNewUser(clientObject, function(error, response) {
+	// 							if (error != null) {
+	// 								logger.log('error', 'Error while adding new client: ' + error);
+	// 							} else {
+	// 								logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
+	// 							};
+	// 						});
+	// 						break;
+
+	// 					case null:
+	// 						logger.log('info', 'API-key still NULL: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
+	// 						break;
+
+	// 					default:
+	// 						//If gw2_api_key = null do not hit it against API. This would result in a 403 error
+	// 						//due to malformed request.
+	// 						if (response.key === null) {
+	// 							//Do not make the call but update 'last_seen' in our database.
+	// 							database.updateLastSeen(clientObject, function(error, response) {
+	// 								if (error != null) {
+	// 									logger.log('error', 'Error while updateting last_seen: ' + error);
+	// 								} else {
+	// 									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
+	// 								};
+	// 							});
+	// 							break;
+	// 						} else {
+								
+	// 							database.updateLastSeen(clientObject, function(error, response) {
+	// 								if (error != null) {
+	// 									logger.log('error', 'Error while updateting last_seen: ' + error);
+	// 								} else {
+	// 									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
+	// 								};
+	// 							});
+	// 							clientObject.msg = response.key;
+	// 							api.account(serverQueryClient, clientObject, function(error, serverQueryClient, user) {
+	// 								if (error != null) {
+	// 									logger.log('error', 'Error from api.account: ' + error);
+	// 								} else {
+	// 									logger.log('info', 'Verified existing client\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
+	// 								};
+	// 							});
+	// 						};
+	// 						break;
+	// 				};
+	// 			};
+	// 		});
+	// 	};
+	// });
 
 	serverQueryClient.on('queryError', function(err, response) {
 		//Error id for banned status.

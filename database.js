@@ -17,7 +17,22 @@ database.getApiKey = function(clientObject, callback) {
         var statement = databaseConnectionGet.prepare('SELECT `gw2_api_key` AS key FROM `clients` WHERE `client_unique_id` = (?)');
         statement.get(clientObject.client_unique_identifier, function(error, response) {
             if (error != null) {
-                callback(new Error(error));
+                callback(error, null);
+            } else {
+                callback(null, response);
+            };
+        });
+        statement.finalize();
+    });
+};
+
+database.updateAccountInformation = function(clientObject, callback) {
+    var databaseConnectionUpdateAccountInformation = new sqlite.Database('ts3bot.sqlitedb');
+    databaseConnectionUpdateAccountInformation.serialize(function() {
+        var statement = databaseConnectionUpdateAccountInformation.prepare('UPDATE `clients` SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?')
+        statement.run(clientObject.apiKey, clientObject.accountId, clientObject.accountName, clientObject.accountGuilds, clientObject.accountCreated, clientObject.invokeruid, function(error, response) {
+            if (error != null) {
+                callback(error, null);
             } else {
                 callback(null, response);
             };
@@ -32,7 +47,7 @@ database.setNewUser = function(clientObject, callback) {
         var statement = databaseConnectionSetNewUser.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
         statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, unixTime(), null, null, null, null, null, function(error, response) {
             if (error != null) {
-                callback(new Error(error));
+                callback(error, null);
             } else {
                 callback(null, response);
             };
@@ -47,7 +62,7 @@ database.updateLastSeen = function(clientObject, callback) {
         var statement = databaseConnectionUpdateLastSeen.prepare('UPDATE clients SET client_nickname = ?, last_seen = ? WHERE client_unique_id = ?');
         statement.run(clientObject.client_nickname, unixTime(), clientObject.client_unique_identifier, function(error, response) {
             if (error != null) {
-                callback(new Error(error));
+                callback(error, null);
             } else {
                 callback(null, response);
             };
@@ -62,7 +77,7 @@ database.delApiKey = function(clientObject, callback) {
         var statement = databaseConnectionDelApiKey.prepare('UPDATE clients SET gw2_api_key = ?, last_seen = ? WHERE client_unique_id = ?');
         statement.run(null, unixTime(), clientObject.client_unique_identifier, function(error, response) {
             if (error != null) {
-                callback(new Error(error));
+                callback(error, null);
             } else {
                 callback(null, response);
             }

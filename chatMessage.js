@@ -33,12 +33,12 @@ function chatMessage(user) {
 				break;
 
 			case 'foreignWorld':
-				message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.worldName};
-	    		logger.log('info', 'API-key is associated with ' + user.worldname);
+				message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.accountWorldName};
+	    		logger.log('info', 'API-key is associated with ' + user.accountWorldName);
 				break;
 
 			case 'httpError':
-				message = {targetmode: '1', target: userId, msg: config.serverNotResponding};
+				message = {targetmode: '1', target: user.invokerid, msg: config.serverNotResponding};
 				logger.log('info', 'Restarting in 3 seconds.');
 				break;
 
