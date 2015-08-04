@@ -131,26 +131,25 @@ function databaseCleanup(serverQueryClient) {
 	serverQueryClient.on('textmessage', function(response){
 
 		if (response.invokername != config.clientName && response.msg.length === 72) {
-			database.getApiKey
 			api.account(response, function(error, response) {
 
 				// console.log('api.account_callback_err: ' + util.inspect(error));
-				console.log('api.account_callback_res:\n' + util.inspect(response));
+				// console.log('api.account_callback_res:\n' + util.inspect(response));
 				var clientObject = response;
 
 				if (error != null && error.accountWorldName != undefined) {
-					logger.log('error', 'While checking account API:\n' + util.inspect(error));
+					//logger.log('error', 'While checking account API:\n' + util.inspect(error));
 					logger.log('info', 'Sending client textmessage - foreignWorld.');
 					var message = new chatMessage();
 					serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
 				} else {
 					//Account and world checked, verified Gandaran!
 					database.updateAccountInformation(response, function(error, response) {
-						if (error != null) {
-							logger.log('error', 'While updating account information.\n' + util.inspect(error));
+						if (response === undefined) {
+							var message = new chatMessage();
+                            serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', clientObject));
 						} else {
 							logger.log('info', 'Added new user to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
-
 							serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (err, response){
                                 if (error != null) {
                                     logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid);

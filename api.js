@@ -27,7 +27,6 @@ api.account = function(userObject, callback) {
             switch(response.statusCode) {
                 case 200:
                     var httpsRequest = JSON.parse(data);
-                    console.log('httpsRequest: \n' + util.inspect(httpsRequest));
                     var guilds = JSON.stringify(httpsRequest.guilds);
 
                     if (httpsRequest.world === config.homeWorld) {
@@ -78,13 +77,9 @@ api.account = function(userObject, callback) {
                         
                         clientObject.accountWorldId = httpsRequest.world;
                         clientObject.apiKey = clientObject.msg;
-                        console.log('clientObject_before_calling_api.world:\n' + util.inspect(clientObject));
                         
                         api.world(clientObject, function(error, response) {
-                            console.log('api.world_callback_err:\n' + util.inspect(error));
-                            console.log('api.world_callback_res:\n' + util.inspect(response));
                             if (error != null) {
-                                console.log('api.world_error_callback_err:\n' + util.inspect(error));
                                 callback(error, null);
                             } else {
                                 callback(null, clientObject);
@@ -202,8 +197,6 @@ api.account = function(userObject, callback) {
 
 //World gets only checked if a foreign world is already detected.
 api.world = function(clientObject, callback) {
-
-    console.log('api.world_clientObject:\n' + util.inspect(clientObject));
     
     logger.log('info', 'Checking API-key for foreign world.' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
 
@@ -212,6 +205,7 @@ api.world = function(clientObject, callback) {
                     path: '/v2/worlds?ids=' + clientObject.accountWorldId,
                     method: 'GET'
                 };
+                
     https.get(options, function(response) {
         logger.log('info', 'GW2 Worlds-API status code: ' + response.statusCode);
         var statusCode = response.statusCode;

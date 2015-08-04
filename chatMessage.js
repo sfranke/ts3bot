@@ -44,7 +44,7 @@ function chatMessage(user) {
 
 			case 'alreadyInUse':
 				message = {targetmode: '1', target: user.invokerid, msg: config.alreadyInUse};
-				logger.log('info','Key used by other client.');
+				logger.log('info','Key used by other client.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + user.apiKey + '\'');
 				break;
 
 			case 'keyNotValid':
