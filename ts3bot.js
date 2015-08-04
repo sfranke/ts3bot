@@ -128,10 +128,11 @@ function databaseCleanup(serverQueryClient) {
 	});
 
 	//listen on incoming private messages.
-	serverQueryClient.on('textmessage', function(response){
+	serverQueryClient.on('textmessage', function (response) {
 
 		if (response.invokername != config.clientName && response.msg.length === 72) {
-			api.account(response, function(error, response) {
+			
+			api.account(response, function (error, response) {
 
 				// console.log('api.account_callback_err: ' + util.inspect(error));
 				// console.log('api.account_callback_res:\n' + util.inspect(response));
@@ -144,15 +145,23 @@ function databaseCleanup(serverQueryClient) {
 					serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
 				} else {
 					//Account and world checked, verified Gandaran!
-					database.updateAccountInformation(response, function(error, response) {
-						if (response === undefined) {
-							var message = new chatMessage();
-                            serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', clientObject));
+					database.updateAccountInformation(response, function (error, response) {
+						if (error != null) {
+							switch(error.errno) {
+								case 19:
+									var message = new chatMessage();
+		                            serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', clientObject));
+		                            break;
+
+		                        default:
+		                            logger.log('error', 'While updating database.\n' + util.inspect(error));
+		                            break;
+							};
 						} else {
 							logger.log('info', 'Added new user to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
-							serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (err, response){
-                                if (error != null) {
-                                    logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid);
+							serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
+                                if (error != undefined) {
+                                    logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid + util.inspect(error));
                                 } else {
                                     logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
                                     serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
@@ -187,6 +196,15 @@ function databaseCleanup(serverQueryClient) {
 			//Server groups should always be a string even if it's just a single one.
 			var groups = clientObject.client_servergroups.toString();
 			if (groups.match(config.verifiedClientServerGroupId) === null) {
+
+				database.setNewUser(clientObject, function(error, response) {
+					if (error != null) {
+						logger.log('error', 'Error while adding new client: ' + error);
+					} else {
+						logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
+					};
+				});
+
 				var message = new chatMessage();
 				//serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
@@ -259,20 +277,20 @@ function databaseCleanup(serverQueryClient) {
 	// 	};
 	// });
 
-	serverQueryClient.on('queryError', function(err, response) {
+	serverQueryClient.on('queryError', function (error, response) {
 		//Error id for banned status.
-		if (err.id === '3329') {
+		if (error.id === '3329') {
 			logger.log('error', 'I am banned');
 		};
 		//Error id for invalid loginname or password.
-		if (err.id === '520') {
+		if (error.id === '520') {
 			console.log('error', 'Invalid loginname or password')
 		};
 	});
 
-    serverQueryClient.on('error', function(err, response, rawResponse) {
-    	if (err != undefined) {
-    		logger.log('error', 'An error occured on close: ' + '\n' + util.inspect(err));
+    serverQueryClient.on('error', function (error, response, rawResponse) {
+    	if (error != undefined) {
+    		logger.log('error', 'An error occured on close: ' + '\n' + util.inspect(error));
     	};
     	if (response != undefined) {
     		logger.log('info', 'Response on close: ' + '\n' + util.inspect(response));
@@ -282,9 +300,9 @@ function databaseCleanup(serverQueryClient) {
     	};
     });
 
-    serverQueryClient.on('close', function(err, response) {
-    	if (err != undefined) {
-    		logger.log('info', 'Close event has been fired! (err)' + '\n' + util.inspect(err));
+    serverQueryClient.on('close', function (error, response) {
+    	if (error != undefined) {
+    		logger.log('info', 'Close event has been fired! (err)' + '\n' + util.inspect(error));
     	};
     	if (response != undefined) {
     		logger.log('info', 'Close event has been fired! (res)' + '\n' + util.inspect(response));

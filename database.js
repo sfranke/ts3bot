@@ -45,7 +45,7 @@ database.setNewUser = function(clientObject, callback) {
     var databaseConnectionSetNewUser = new sqlite.Database('ts3bot.sqlitedb');
     databaseConnectionSetNewUser.serialize(function() {
         var statement = databaseConnectionSetNewUser.prepare('INSERT INTO `clients` VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-        statement.run(clientObject.client_unique_identifier, clientObject.client_nickname, unixTime(), null, null, null, null, null, function(error, response) {
+        statement.run(clientObject.invokeruid, clientObject.invokername, unixTime(), null, null, null, null, null, function(error, response) {
             if (error != null) {
                 callback(error, null);
             } else {
