@@ -10,7 +10,7 @@ var api             = exports,
 
 api.account = function(userObject, callback) {
     
-    var token        = userObject.msg,
+    var token        = userObject.msg || userObject.apiKey,
         clientObject = userObject;
 
     var options = {
@@ -133,30 +133,36 @@ api.account = function(userObject, callback) {
                     switch(httpsRequest.text) {
                         case 'invalid key':
                             logger.log('info', 'Server responding with "Invalid key" -> ' + response.statusCode);
+                            clientObject.apiServerStatus = response.statusCode;
+                            clientObject.apiServerStatusReason = httpsRequest.text;
+                            callback(clientObject, null);
                             
-                            database.delApiKey(user, function(error, response) {
-                                console.log('user: \n' + util.inspect(user));
-                                if (error != null) {
-                                    logger.log('dbError: ' + error);
-                                } else {
-                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
-                                    var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', user));
-                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (error, response){
-                                        if (error != null) {
-                                            logger.log('error', 'Error while receiving cldbid: ' + error);
-                                        } else {
-                                            var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
-                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
-                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                                        };
-                                    });
-                                };
-                            });
+                            // database.delApiKey(user, function(error, response) {
+                            //     console.log('user: \n' + util.inspect(user));
+                            //     if (error != null) {
+                            //         logger.log('dbError: ' + error);
+                            //     } else {
+                            //         logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
+                            //         var message = new chatMessage();
+                            //         serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', user));
+                            //         serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (error, response){
+                            //             if (error != null) {
+                            //                 logger.log('error', 'Error while receiving cldbid: ' + error);
+                            //             } else {
+                            //                 var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
+                            //                 serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
+                            //                 serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                            //             };
+                            //         });
+                            //     };
+                            // });
                             break;
 
                         case 'ErrBadData':
                             logger.log('info', 'Server responding with "ErrBadData" -> ' + response.statusCode);
+                            clientObject.apiServerStatus = response.statusCode;
+                            clientObject.apiServerStatusReason = httpsRequest.text;
+                            callback(clientObject, null);
                             // var message = new chatMessage();
                             // serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', user));
                             break;

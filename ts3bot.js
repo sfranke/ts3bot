@@ -210,6 +210,40 @@ function databaseCleanup(serverQueryClient) {
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
 			} else {
 				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+				database.getApiKey(clientObject, function (error, response) {
+					if (error != null) {
+						logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
+					} else {
+						logger.log('info', 'Received API-key from database.\n' + util.inspect(response));
+						clientObject.apiKey = response.key; 
+
+						switch(response){
+							case null:
+								logger.log('info', 'API-key still \'NULL\', preparing welcome message.');
+								var message = new chatMessage();
+								serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
+								break;
+
+							default:
+								database.updateLastSeen(clientObject, function (error, response) {
+									if (error != null) {
+										logger.log('error', 'While updating last_seen.\n' + util.inspect(error));
+									} else {
+										logger.log('info', 'Updated last_seen.\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+										logger.log('debug', 'clientObject_after_last_seen_update:\n' + util.inspect(clientObject));
+										api.account(clientObject, function (error, response) {
+											if (error != null) {
+												logger.log('error', 'While checking API-key.\n' + util.inspect(error));
+											} else {
+												logger.log('info', 'Checked verified user, all good!\n' + util.inspect(response));
+											};
+										});
+									};
+								});
+								break;
+						};
+					};
+				});
 			};
 		};
 	});

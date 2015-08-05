@@ -10,8 +10,8 @@ function date() {
 };
 
 logger.log = function(level, message) {
-    var levels = ['error', 'warning', 'info'];
-    if (levels.indexOf(level) >= levels.indexOf(logger.debugLevel)) {
+    var levels = ['error', 'warning', 'info', 'debug'];
+    if (levels.indexOf(level) <= levels.indexOf(logger.debuglevel)) {
         if (typeof message !== 'string') {
             message = JSON.stringify(message);
         };
