@@ -1,5 +1,5 @@
 {
-	"debuglevel": "debug",
+	"debuglevel": "info",
 	"_debuglevel_comment": "level of debugging.",
 
 	"homeWorld": 2003,
@@ -50,7 +50,7 @@
 	"apiErrorErrBadData": "There is a problem with the API response, please create a new key and try again. If this error persists please contact a moderator or an admin.",
 	"_apiErrorErrBadData_comment": "If while calling the API we get a response 'ErrBadData' we have to ask the user to take extreme measures, since we're uable to validate that key.",
 
-	"foreignWorld": "This key is associated with a different world.",
+	"foreignWorld": "Your key is associated with a different world.",
 	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
 
 	"serverNotResponding": "Servers are not responding, please resend me your key.",

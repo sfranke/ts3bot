@@ -134,12 +134,12 @@ function databaseCleanup(serverQueryClient) {
 			
 			api.account(response, function (error, response) {
 
-				// console.log('api.account_callback_err: ' + util.inspect(error));
-				// console.log('api.account_callback_res:\n' + util.inspect(response));
+				logger.log('debug', 'api.account_callback_err: ' + util.inspect(error));
+				logger.log('debug', 'api.account_callback_res:\n' + util.inspect(response));
 				var clientObject = response;
 
 				if (error != null && error.accountWorldName != undefined) {
-					//logger.log('error', 'While checking account API:\n' + util.inspect(error));
+					logger.log('debug', 'While checking account API:\n' + util.inspect(error));
 					logger.log('info', 'Sending client textmessage - foreignWorld.');
 					var message = new chatMessage();
 					serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
@@ -199,14 +199,15 @@ function databaseCleanup(serverQueryClient) {
 
 				database.setNewUser(clientObject, function(error, response) {
 					if (error != null) {
-						logger.log('error', 'Error while adding new client: ' + error);
+						logger.log('debug', 'Error while adding new client: ' + error);
+						logger.log('info', 'Noticed unregistered user re-visiting:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
 					} else {
 						logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
 					};
 				});
 
 				var message = new chatMessage();
-				//serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
+				serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
 				serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
 			} else {
 				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
@@ -231,10 +232,64 @@ function databaseCleanup(serverQueryClient) {
 									} else {
 										logger.log('info', 'Updated last_seen.\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
 										logger.log('debug', 'clientObject_after_last_seen_update:\n' + util.inspect(clientObject));
+										//Account validation and error handling.
 										api.account(clientObject, function (error, response) {
 											if (error != null) {
-												logger.log('error', 'While checking API-key.\n' + util.inspect(error));
+												logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error));
+												//If API-key is invalid.
+												if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
+													database.delApiKey(error, function(error, response) {
+						                                logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
+						                                logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
+						                                if (error != null) {
+						                                    logger.log('error', 'while deleting API-Key via database.delApiKey.');
+						                                } else {
+						                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+						                                    var message = new chatMessage();
+						                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', clientObject));
+						                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
+						                                        if (error != null) {
+						                                            logger.log('error', 'Error while receiving cldbid: ' + error);
+						                                        } else {
+						                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername;
+						                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
+						                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+						                                        };
+						                                    });
+						                                };
+						                            });
+												};
+												//If worldId is invalid.
+												if (error.accountWorldId != undefined && error.accountWorldId != config.homeWorld) {
+													database.delApiKey(error, function(error, response) {
+						                                logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
+						                                logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
+						                                if (error != null) {
+						                                    logger.log('error', 'dbError: ' + util.inspect(error));
+						                                } else {
+						                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+						                                    var message = new chatMessage();
+						                                    serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', clientObject));
+				                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+				                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of foreign world', message: report});
+				                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+						                                };
+						                            });
+												};
+                                                if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'ErrBadData') {
+						                            var message = new chatMessage();
+						                            serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', clientObject));
+						                        };
+						                        if (error.apiServerStatus === 503) {
+								                    var message = new chatMessage();
+								                    serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
+												} else {
+													logger.log('debug', 'Error while re-validating user:\n' + util.inspect(error));
+													logger.log('error', 'While re-validating user.');
+												};
+
 											} else {
+												logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
 												logger.log('info', 'Checked verified user, all good!\n' + util.inspect(response));
 											};
 										});
@@ -247,69 +302,6 @@ function databaseCleanup(serverQueryClient) {
 			};
 		};
 	});
-
-			//Callback function to get API-key by cluid
-	// 		database.getApiKey(clientObject, function(error, response){
-	// 			if (error != null) {
-	// 				logger.log('error', 'Error while receiving API-key from database: ' + error);
-	// 			} else {
-	// 				logger.log('info', 'Received API-key for current client:\n' + '(' + clientObject.clid + ')' + clientObject.client_nickname + ': ' + clientObject.client_unique_identifier);
-
-	// 				switch(response) {
-
-	// 					case undefined:
-	// 						//console.log('switch-case undefined!');
-	// 						logger.log('info', 'Adding new client to database.')
-	// 						database.setNewUser(clientObject, function(error, response) {
-	// 							if (error != null) {
-	// 								logger.log('error', 'Error while adding new client: ' + error);
-	// 							} else {
-	// 								logger.log('info', 'Added new client: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
-	// 							};
-	// 						});
-	// 						break;
-
-	// 					case null:
-	// 						logger.log('info', 'API-key still NULL: ' + clientObject.client_nickname + ' \'' + clientObject.client_unique_identifier + '\'');
-	// 						break;
-
-	// 					default:
-	// 						//If gw2_api_key = null do not hit it against API. This would result in a 403 error
-	// 						//due to malformed request.
-	// 						if (response.key === null) {
-	// 							//Do not make the call but update 'last_seen' in our database.
-	// 							database.updateLastSeen(clientObject, function(error, response) {
-	// 								if (error != null) {
-	// 									logger.log('error', 'Error while updateting last_seen: ' + error);
-	// 								} else {
-	// 									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
-	// 								};
-	// 							});
-	// 							break;
-	// 						} else {
-								
-	// 							database.updateLastSeen(clientObject, function(error, response) {
-	// 								if (error != null) {
-	// 									logger.log('error', 'Error while updateting last_seen: ' + error);
-	// 								} else {
-	// 									logger.log('info', 'Updated \'last_seen\' for:' + clientObject.client_nickname)
-	// 								};
-	// 							});
-	// 							clientObject.msg = response.key;
-	// 							api.account(serverQueryClient, clientObject, function(error, serverQueryClient, user) {
-	// 								if (error != null) {
-	// 									logger.log('error', 'Error from api.account: ' + error);
-	// 								} else {
-	// 									logger.log('info', 'Verified existing client\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
-	// 								};
-	// 							});
-	// 						};
-	// 						break;
-	// 				};
-	// 			};
-	// 		});
-	// 	};
-	// });
 
 	serverQueryClient.on('queryError', function (error, response) {
 		//Error id for banned status.

@@ -38,45 +38,12 @@ api.account = function(userObject, callback) {
                         clientObject.accountCreated = httpsRequest.created;
 
                         callback(null, clientObject);
-                        // var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-                        // databaseConnection.serialize(function() {
-                        //     var statement = databaseConnection.prepare('UPDATE clients SET gw2_api_key = ?, gw2_account_id = ?, gw2_account_name = ?, gw2_guilds = ?, gw2_account_created = ? WHERE client_unique_id = ?');
-                        //     statement.run(token, httpsRequest.id, httpsRequest.name, guilds, httpsRequest.created, user.invokeruid, function(error, response) {
-                        //         //If changes have happen permissions are granted otherwise denied.
-                        //         if (error != null) {
-                        //             logger.log('info', 'FAIL, member permissions denied for ' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
-                        //             var message = new chatMessage();
-                        //             serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', user));
-                        //         } else if (response === undefined) {
-                        //             serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (err, response){
-                        //                 if (error != null) {
-                        //                     logger.log('error', 'Error while clientgetdbidfromuid: ' + user.invokeruid);
-                        //                 } else {
-                        //                     logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
-                        //                     serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                        //                 };
-                        //             });
-                        //         };
-                        //     });
-                        //     statement.finalize();
-
-                        //     statement.on('error', function(response) {
-                        //         if (response.errno === 19) {
-                        //             logger.log('info', 'This API key is already in our database!!');
-                        //         };
-                        //     });
-                        //     statement.on('trace', function(response) {
-                        //         logger.log('error', 'DB error trace\n' + response);
-                        //     });
-                        //     statement.on('profile', function(response) {
-                        //         logger.log('error', 'DB error profile\n' + response);
-                        //     });
-                        // });
-                        // databaseConnection.close();
                     } else {
                         
                         clientObject.accountWorldId = httpsRequest.world;
-                        clientObject.apiKey = clientObject.msg;
+                        if (clientObject.apiKey === undefined) {
+                            clientObject.apiKey = clientObject.msg;
+                        };
                         
                         api.world(clientObject, function(error, response) {
                             if (error != null) {
@@ -85,46 +52,6 @@ api.account = function(userObject, callback) {
                                 callback(null, clientObject);
                             }
                         });
-                    //     api.world(serverQueryClient, user, httpsRequest, function(error, worldId) {
-                    //         logger.log('info', 'Current world name is: ' + user.worldName);
-                    //         if (error != null) {
-                    //             logger.log('error', 'Error while receiving worldId: ' + error);
-                    //             if (user.invokerdbid == undefined) {
-                    //                 serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function(error, response) {
-                    //                     console.log('err: ' + error);
-                    //                     console.log('res: ' + response);
-                    //                     if (error != null) {
-                    //                         logger.log('error', 'Error while receiving cldbid' + error);
-                    //                     } else {
-                    //                         user.invokerdbid = response;
-                    //                     };
-                    //                 });
-                    //             };
-                    //             console.log(util.inspect(user));
-                    //             serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: user.invokerdbid}, function(error, response) {
-                    //                 if (error != null) {
-                    //                     logger.log('error', 'Error while deleting server group:\n' + util.inspect(error));
-                    //                 } else {
-                    //                     var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
-                    //                     serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid world', message: report}, function(error, response) {
-                    //                         if (error != null) {
-                    //                             logger.log('error', 'Error while sending admin message\n' + error);
-                    //                         } else {
-                    //                             database.delApiKey(user, function(error, response) {
-                    //                                 if (error != null) {
-                    //                                     logger.log('error', 'Error while deleting API-key from database\n' + error);
-                    //                                 } else {
-                    //                                     logger.log('info', 'Deleted API-key from databse.\n' + '(' + user.invokerid + ')' + user.invokername + ' \'' + user.invokeruid + '\'');
-                    //                                 };
-                    //                             });
-                    //                         };
-                    //                     });
-                    //                 };
-                    //             });
-                    //         } else {
-                    //             logger.log('info', 'World checked and verified.')
-                    //         };
-                    //     });
                     };
                     break;
 
@@ -136,26 +63,6 @@ api.account = function(userObject, callback) {
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
-                            
-                            // database.delApiKey(user, function(error, response) {
-                            //     console.log('user: \n' + util.inspect(user));
-                            //     if (error != null) {
-                            //         logger.log('dbError: ' + error);
-                            //     } else {
-                            //         logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + token + '\'');
-                            //         var message = new chatMessage();
-                            //         serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', user));
-                            //         serverQueryClient.send('clientgetdbidfromuid', {cluid: user.invokeruid}, function (error, response){
-                            //             if (error != null) {
-                            //                 logger.log('error', 'Error while receiving cldbid: ' + error);
-                            //             } else {
-                            //                 var report = '[B]' + 'cluid: ' + '[/B]' + user.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + user.invokername;
-                            //                 serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
-                            //                 serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                            //             };
-                            //         });
-                            //     };
-                            // });
                             break;
 
                         case 'ErrBadData':
@@ -163,8 +70,6 @@ api.account = function(userObject, callback) {
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
-                            // var message = new chatMessage();
-                            // serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', user));
                             break;
 
                         default:
@@ -193,8 +98,6 @@ api.account = function(userObject, callback) {
                     logger.log('info', 'Server busy -> ' + response.statusCode);
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
-                    // var message = new chatMessage();
-                    // serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
                     break;
             };
         });
