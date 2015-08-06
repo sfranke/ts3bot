@@ -61,7 +61,7 @@ function databaseCleanup(serverQueryClient) {
 					});
 				});
 			};
-		}, function(err, response) {
+		}, function (err, response) {
 			if (response != 0) {
 				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.'); 
 			} else {
@@ -76,42 +76,42 @@ function databaseCleanup(serverQueryClient) {
 
 	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
-	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function(err, response, rawResponse){
+	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function (err, response, rawResponse){
 		if (err === undefined) {
 			logger.log('info', 'Login successful.');
 		} else {
 			logger.log('error', err);
 		};
 			//Select virtual server by virtualServerId.
-			serverQueryClient.send('use', {sid: config.virtualServerId}, function(err, response, rawResponse){
+			serverQueryClient.send('use', {sid: config.virtualServerId}, function (err, response, rawResponse){
 				if (err === undefined) {
 					logger.log('info', 'Virtual server selected successfully.');
 				} else {
 					logger.log('error', err);
 				};
 					//Clientupdate to change the name that's presented to the user.
-					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function(err, response, rawResponse) {
+					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function (err, response, rawResponse) {
 						if (err === undefined) {
 							logger.log('info', 'Client name changed successfully.');
 						} else {
 							logger.log('error', err);
 						};
 							//Register with server to be able to read incoming private messages.
-							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function(err, response, rawResponse){
+							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function (err, response, rawResponse){
 								if (err === undefined) {
 									logger.log('info', 'Registered for private textmessages successfully.');
 								} else {
 									logger.log('error', err);
 								};
 									//Register with server to recognize user entering the server.
-									serverQueryClient.send('servernotifyregister', {event: 'server'}, function(err, response, rawResponse){
+									serverQueryClient.send('servernotifyregister', {event: 'server'}, function (err, response, rawResponse){
 										if (err === undefined) {
 											logger.log('info','Registered for server events successfully.');
 										} else {
 											logger.log('error', err);
 										};
 											//Register with server to recognize user entering a specific channel.
-											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function(err, response, rawResponse){
+											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function (err, response, rawResponse){
 											if (err === undefined) {
 												logger.log('info','Registered for textserver events successfully.');
 												logger.log('info', 'Starting database clean-up routine.')
@@ -138,14 +138,45 @@ function databaseCleanup(serverQueryClient) {
 				logger.log('debug', 'api.account_callback_res:\n' + util.inspect(response));
 				var clientObject = response;
 
-				if (error != null && error.accountWorldName != undefined) {
-					logger.log('debug', 'While checking account API:\n' + util.inspect(error));
-					logger.log('info', 'Sending client textmessage - foreignWorld.');
-					var message = new chatMessage();
-					serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
+				if (error != null) {
+					logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error));
+
+					//check error cases here!
+					//If error object contains 'accountWorldName' and 'accountWorldId' which only is set if account is associated with foreign world.
+					if (error.accountWorldName != undefined && error.accountWorldId != config.homeWorld) {
+						logger.log('debug', 'Foreign world on registration.\n' + util.inspect(error));
+						logger.log('info', 'Foreign world on registration.\n' + '(' + error.invokerid + ')' + error.invokername + ': ' + error.invokeruid + ' \'' + error.apiKey + '\' ' + error.accountWorldName);
+						var message = new chatMessage();
+						serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error));
+					};
+					//If server responds with https status code 400 (invalid key).
+					if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
+						logger.log('debug', 'Invalid key on registration.\n' + util.inspect(error));
+						logger.log('info', 'Invalid key on registration.\n' + '(' + error.invokerid + ')' + error.invokername + ': ' + error.invokeruid + ' \'' + error.apiKey + '\'');
+                        var message = new chatMessage();
+                        serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', error));
+					};
+					//If server responds with http status code 400 (ErrBadData).
+                    if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'ErrBadData') {
+                    	logger.log('debug', 'Server responding with \'ErrBadData\' on registration.\n' + util.inspect(error));
+                    	logger.log('info', 'Server responding with \'ErrBadData\' on registration.');
+                        var message = new chatMessage();
+                        serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', error));
+					};
+					//If server responds with http status code 503 (Server busy).
+                    if (error.apiServerStatus === 503) {
+                    	logger.log('debug', 'Server responding with \'Server busy\' on registration.' + util.inspect(error));
+                    	logger.log('info', 'Server responding with \'Server busy\' on registration.');
+	                    var message = new chatMessage();
+	                    serverQueryClient.send('sendtextmessage', message.chatSend('api503', error));
+					};
+
 				} else {
+					//no error process valid data.
 					//Account and world checked, verified Gandaran!
 					database.updateAccountInformation(response, function (error, response) {
+						logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration' + util.inspect(error));
+						logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration' + util.inspect(response));
 						if (error != null) {
 							switch(error.errno) {
 								case 19:
@@ -172,6 +203,7 @@ function databaseCleanup(serverQueryClient) {
 					});
 				};
 			});
+
 		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
@@ -198,9 +230,10 @@ function databaseCleanup(serverQueryClient) {
 			if (groups.match(config.verifiedClientServerGroupId) === null) {
 
 				database.setNewUser(clientObject, function(error, response) {
+					logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
+					logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
 					if (error != null) {
-						logger.log('debug', 'Error while adding new client: ' + error);
-						logger.log('info', 'Noticed unregistered user re-visiting:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
+						logger.log('info', 'Noticed unregistered user re-visiting on connect.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
 					} else {
 						logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
 					};
@@ -279,13 +312,10 @@ function databaseCleanup(serverQueryClient) {
                                                 if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'ErrBadData') {
 						                            var message = new chatMessage();
 						                            serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', clientObject));
-						                        };
+												};
 						                        if (error.apiServerStatus === 503) {
 								                    var message = new chatMessage();
-								                    serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
-												} else {
-													logger.log('debug', 'Error while re-validating user:\n' + util.inspect(error));
-													logger.log('error', 'While re-validating user.');
+								                    serverQueryClient.send('sendtextmessage', message.chatSend('api503', clientObject));
 												};
 
 											} else {

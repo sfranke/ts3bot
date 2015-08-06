@@ -60,6 +60,9 @@ api.account = function(userObject, callback) {
                     switch(httpsRequest.text) {
                         case 'invalid key':
                             logger.log('info', 'Server responding with "Invalid key" -> ' + response.statusCode);
+                            if (clientObject.apiKey === undefined) {
+                                clientObject.apiKey = clientObject.msg;
+                            };
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
@@ -67,6 +70,9 @@ api.account = function(userObject, callback) {
 
                         case 'ErrBadData':
                             logger.log('info', 'Server responding with "ErrBadData" -> ' + response.statusCode);
+                            if (clientObject.apiKey === undefined) {
+                                clientObject.apiKey = clientObject.msg;
+                            };
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
@@ -74,6 +80,9 @@ api.account = function(userObject, callback) {
 
                         default:
                             logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                            if (clientObject.apiKey === undefined) {
+                                clientObject.apiKey = clientObject.msg;
+                            };
                             clientObject.apiServerStatus = response.statusCode;
                             callback(clientObject, null);
                             break;
@@ -84,18 +93,27 @@ api.account = function(userObject, callback) {
                 case 403:
                     var httpsRequest = JSON.parse(data);
                     logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    if (clientObject.apiKey === undefined) {
+                        clientObject.apiKey = clientObject.msg;
+                    };
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
 
                 case 502:
                     logger.log('info', 'Server not responding -> ' + response.statusCode);
+                    if (clientObject.apiKey === undefined) {
+                        clientObject.apiKey = clientObject.msg;
+                    };
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
 
                 case 503:
                     logger.log('info', 'Server busy -> ' + response.statusCode);
+                    if (clientObject.apiKey === undefined) {
+                        clientObject.apiKey = clientObject.msg;
+                    };
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
