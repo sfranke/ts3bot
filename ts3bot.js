@@ -369,7 +369,3 @@ function databaseCleanup(serverQueryClient) {
         }, 3000);
     });
 })();
-
-//test-key
-
-//    21C1A9D0-E2F9-5042-90D5-92B2BB5B83BF72BFA0C8-FAAA-4478-B7A6-F05BE9B1A6B6
