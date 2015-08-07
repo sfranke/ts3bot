@@ -25,6 +25,15 @@
 
 	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
 	"_adminClient_comment": "Uid of admin client.",
+
+	"cleanChannel" : 1,
+	"_cleanChannel_comment": "Channel that gets cleared from AFK-users.",
+
+	"afkChannel": 4,
+	"_afkChannel_comment": "Channel that AFK-users get moved to",
+
+	"idleTimeLimit": 10000,
+	"_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
 	
 	"verifiedClientServerGroupId": "9",
 	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
@@ -52,6 +61,9 @@
 
 	"foreignWorld": "Your key is associated with a different world.",
 	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
+
+	"idleMove": "You have been afk for an extended period of time. Moving you to AFK-channel.",
+	"_idleMove_comment": "Chat message for idle users.",
 
 	"serverNotResponding": "Servers are not responding, please resend me your key.",
 	"_serverNotResponding_comment": "If GW2 API servers are not responding.",

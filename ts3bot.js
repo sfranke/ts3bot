@@ -72,60 +72,96 @@ function databaseCleanup(serverQueryClient) {
 	databaseConnection.close();
 };
 
+function moveClient(serverQueryClient) {
+	serverQueryClient.send('clientlist', ['times'], function (error, response, rawResponse) {
+		logger.log('debug', 'clientlist -times _error.\n' + util.inspect(error));
+		logger.log('debug', 'clientlist -times _response.\n' + util.inspect(response));
+		if (error != null) {
+			logger.log('error', 'While \'clientlist -times\'.\n' + util.inspect(error));
+		} else {
+			for (user in response) {
+
+				if (response[user].client_nickname != config.clientName && response[user].client_idle_time >= config.idleTimeLimit && response[user].cid === config.cleanChannel) {
+					logger.log('debug', 'Moving idle user.\n' + util.inspect(response[user]));
+					logger.log('info', 'Moving idle user.\n' + '(' + response[user].clid + ')' + response[user].client_nickname);
+
+					var clientObject = {};
+					    clientObject.clid = response[user].clid;
+					
+					serverQueryClient.send('clientmove', {clid: clientObject.clid, cid: config.afkChannel}, function (error, response) {
+						logger.log('debug', 'clientmove_error.\n' + util.inspect(error));
+						//logger.log('debug', 'clientmove_response.\n' + util.inspect(response));
+						if (error != undefined) {
+							logger.log('error', 'While \'clientmove\'\n' + util.inspect(error));
+						} else {
+							logger.log('debug', 'Sending idle poke.\n' + util.inspect(clientObject));
+							serverQueryClient.send('clientpoke', {clid: clientObject.clid, msg: config.idleMove});
+						};
+					});
+				};
+			};
+		};
+		setTimeout(function() {
+            moveClient(serverQueryClient);
+        }, 4000);
+	});
+};
+
 (function ts3bot() {
 
 	var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
-	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function (err, response, rawResponse){
-		if (err === undefined) {
-			logger.log('info', 'Login successful.');
+	serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function (error, response, rawResponse){
+		if (error != undefined) {
+			logger.log('error', error);
 		} else {
-			logger.log('error', err);
-		};
+			logger.log('info', 'Login successful.');
 			//Select virtual server by virtualServerId.
-			serverQueryClient.send('use', {sid: config.virtualServerId}, function (err, response, rawResponse){
-				if (err === undefined) {
-					logger.log('info', 'Virtual server selected successfully.');
+			serverQueryClient.send('use', {sid: config.virtualServerId}, function (error, response, rawResponse){
+				if (error != undefined) {
+					logger.log('error', error);
 				} else {
-					logger.log('error', err);
-				};
+					logger.log('info', 'Virtual server selected successfully.');
 					//Clientupdate to change the name that's presented to the user.
-					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function (err, response, rawResponse) {
-						if (err === undefined) {
-							logger.log('info', 'Client name changed successfully.');
+					serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function (error, response, rawResponse) {
+						if (error != undefined) {
+							logger.log('error', error);
 						} else {
-							logger.log('error', err);
-						};
+							logger.log('info', 'Client name changed successfully.');
 							//Register with server to be able to read incoming private messages.
-							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function (err, response, rawResponse){
-								if (err === undefined) {
-									logger.log('info', 'Registered for private textmessages successfully.');
+							serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function (error, response, rawResponse) {
+								if (error != undefined) {
+									logger.log('error', error);
 								} else {
-									logger.log('error', err);
-								};
+									logger.log('info', 'Registered for private textmessages successfully.');
 									//Register with server to recognize user entering the server.
-									serverQueryClient.send('servernotifyregister', {event: 'server'}, function (err, response, rawResponse){
-										if (err === undefined) {
-											logger.log('info','Registered for server events successfully.');
+									serverQueryClient.send('servernotifyregister', {event: 'server'}, function (error, response, rawResponse) {
+										if (error != undefined) {
+											logger.log('error', error);
 										} else {
-											logger.log('error', err);
-										};
+											logger.log('info','Registered for server events successfully.');
 											//Register with server to recognize user entering a specific channel.
-											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function (err, response, rawResponse){
-											if (err === undefined) {
-												logger.log('info','Registered for textserver events successfully.');
-												logger.log('info', 'Starting database clean-up routine.')
-												databaseCleanup(serverQueryClient);
-											} else {
-												logger.log('error', err);
-											};
-
+											serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function (error, response, rawResponse) {
+												if (error != undefined) {
+													logger.log('error', error);
+												} else {
+													logger.log('info','Registered for textserver events successfully.');
+													logger.log('info', 'Starting database clean-up routine.')
+													databaseCleanup(serverQueryClient);
+													moveClient(serverQueryClient);
+												};
 											});
+										};
 									});
+								};
 							});
+						};
 					});
+				};
 			});
+		};
 	});
+
 
 	//listen on incoming private messages.
 	serverQueryClient.on('textmessage', function (response) {
