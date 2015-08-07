@@ -72,6 +72,7 @@ function databaseCleanup(serverQueryClient) {
 	databaseConnection.close();
 };
 
+//Function to move idle client from cleanChannel(lobby) to config.afkChannel(AFK-Channel).
 function moveClient(serverQueryClient) {
 	serverQueryClient.send('clientlist', ['times'], function (error, response, rawResponse) {
 		logger.log('debug', 'clientlist -times _error.\n' + util.inspect(error));
@@ -80,10 +81,14 @@ function moveClient(serverQueryClient) {
 			logger.log('error', 'While \'clientlist -times\'.\n' + util.inspect(error));
 		} else {
 			for (user in response) {
-
-				if (response[user].client_nickname != config.clientName && response[user].client_idle_time >= config.idleTimeLimit && response[user].cid === config.cleanChannel) {
+				//Declare server query clients
+				var serverQueryClientType = 1;
+				/*recognize only clients of client_type(0), 
+				  clients that are idle for more than idleTimeLimit and
+				  clients that are currently in cleanChannel.*/
+				if (response[user].client_type != serverQueryClientType && response[user].client_idle_time >= config.idleTimeLimit && response[user].cid === config.cleanChannel) {
 					logger.log('debug', 'Moving idle user.\n' + util.inspect(response[user]));
-					logger.log('info', 'Moving idle user.\n' + '(' + response[user].clid + ')' + response[user].client_nickname);
+					logger.log('info', 'Moving idle user.\n' + '(' + response[user].clid + ')' + response[user].client_nickname + '(cldbid: ' + response[user].client_database_id + ')');
 
 					var clientObject = {};
 					    clientObject.clid = response[user].clid;
@@ -95,7 +100,7 @@ function moveClient(serverQueryClient) {
 							logger.log('error', 'While \'clientmove\'\n' + util.inspect(error));
 						} else {
 							logger.log('debug', 'Sending idle poke.\n' + util.inspect(clientObject));
-							serverQueryClient.send('clientpoke', {clid: clientObject.clid, msg: config.idleMove});
+							serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.clid, msg: config.idleMove});
 						};
 					});
 				};
@@ -284,8 +289,13 @@ function moveClient(serverQueryClient) {
 					if (error != null) {
 						logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
 					} else {
-						logger.log('info', 'Received API-key from database.\n' + util.inspect(response));
-						clientObject.apiKey = response.key; 
+						logger.log('debug', 'Received API-key from database.\n' + util.inspect(response))
+						logger.log('info', 'Received API-key from database.');
+						if (clientObject.apiKey != undefined ) {
+							clientObject.apiKey = response.key;
+						} else {
+							logger.log('error', 'Verified client without API-Key!');
+						};
 
 						switch(response){
 							case null:
@@ -320,7 +330,7 @@ function moveClient(serverQueryClient) {
 						                                        if (error != null) {
 						                                            logger.log('error', 'Error while receiving cldbid: ' + error);
 						                                        } else {
-						                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername;
+						                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
 						                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
 						                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 						                                        };
@@ -356,7 +366,7 @@ function moveClient(serverQueryClient) {
 
 											} else {
 												logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
-												logger.log('info', 'Checked verified user, all good!\n' + util.inspect(response));
+												logger.log('info', 'Checked verified user, all good!');
 											};
 										});
 									};
