@@ -119,6 +119,9 @@ api.account = function(userObject, callback) {
                     break;
             };
         });
+        response.on('error', function (error) {
+            logger.log('error', 'While calling \'api.guildwars.com/v2/account\'.' + ' token: \'' + token + '\'');
+        });
     });
 };
 
@@ -181,6 +184,9 @@ api.world = function(clientObject, callback) {
                     // serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
                     break;
             };
+        });
+        response.on('error', function (error) {
+            logger.log('error', 'While calling \'api.guildwars.com/v2/worlds?ids=' + clientObject.accountWorldId + '.');
         });
     });
 };

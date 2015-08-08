@@ -291,11 +291,6 @@ function moveClient(serverQueryClient) {
 					} else {
 						logger.log('debug', 'Received API-key from database.\n' + util.inspect(response))
 						logger.log('info', 'Received API-key from database.');
-						if (clientObject.apiKey != undefined ) {
-							clientObject.apiKey = response.key;
-						} else {
-							logger.log('error', 'Verified client without API-Key!');
-						};
 
 						switch(response){
 							case null:
@@ -305,6 +300,11 @@ function moveClient(serverQueryClient) {
 								break;
 
 							default:
+								if (response.key != undefined ) {
+									clientObject.apiKey = response.key;
+								} else {
+									logger.log('error', 'Verified client without API-Key!');
+								};
 								database.updateLastSeen(clientObject, function (error, response) {
 									if (error != null) {
 										logger.log('error', 'While updating last_seen.\n' + util.inspect(error));
