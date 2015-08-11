@@ -152,11 +152,28 @@ function moveClient(serverQueryClient) {
 												} else {
 													logger.log('info', 'Registered for textserver events successfully.');
 													logger.log('info', 'Checking for database.');
-													database.createDatabase();
-													logger.log('info', 'Starting database clean-up routine.');
-													databaseCleanup(serverQueryClient);
-													logger.log('info', 'Moving AFK-clients is active and running.');
-													moveClient(serverQueryClient);
+													database.createDatabase(function (error, response) {
+
+											            if (error != null) {
+											                if (error.errno === 1) {
+											                    logger.log('info', 'Using existing database.');
+											                    logger.log('info', 'Starting database clean-up routine.');
+																databaseCleanup(serverQueryClient);
+																if (config.MoveAfkClientsFromLobby === true) {
+																	logger.log('info', 'Moving AFK-clients is active and running.');
+																	moveClient(serverQueryClient);
+											                	};
+											                } else {
+											                    logger.log('error', 'Unhandled error while creating database.');
+											                };  
+											            } else {
+											                logger.log('info', 'Creating new database and \'clients\' table.');
+											                if (config.MoveAfkClientsFromLobby === true) {
+																logger.log('info', 'Moving AFK-clients is active and running.');
+																moveClient(serverQueryClient);
+											                };
+											            };
+													});
 												};
 											});
 										};

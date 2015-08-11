@@ -10,20 +10,14 @@ function unixTime() {
     return unixStamp;
 };
 
-database.createDatabase = function () {
+database.createDatabase = function (callback) {
     var createDatabase = new sqlite.Database('ts3bot.sqlitedb');
     createDatabase.serialize(function() {
         createDatabase.run('CREATE TABLE clients (client_unique_id TEXT UNIQUE, client_nickname TEXT, last_seen INTEGER, gw2_api_key TEXT UNIQUE, gw2_account_id TEXT, gw2_account_name TEXT, gw2_guilds TEXT, gw2_account_created TEXT, PRIMARY KEY(client_unique_id))', function (error, response) {
-            logger.log('debug', 'createDatabase_error: ' + util.inspect(error));
-            logger.log('debug', 'createDatabase_response: ' + util.inspect(response));
             if (error != null) {
-                if (error.errno === 1) {
-                    logger.log('info', 'Using existing database.');
-                } else {
-                    logger.log('error', 'Unhandled error while creating database.');
-                };  
+                callback(error, null);
             } else {
-                logger.log('info', 'Creating new database and \'clients\' table.');
+                callback(null, response);
             };
         });
     });

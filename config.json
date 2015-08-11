@@ -26,6 +26,9 @@
 	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
 	"_adminClient_comment": "Uid of admin client.",
 
+	"MoveAfkClientsFromLobby": true,
+	"_MoveAfkClientsFromLobby_comment": "To enable this feature set flag to 'true'.",
+
 	"cleanChannel" : 1,
 	"_cleanChannel_comment": "Channel that gets cleared from AFK-users.",
 
