@@ -62,8 +62,8 @@ function databaseCleanup(serverQueryClient) {
 				});
 			};
 		}, function (err, response) {
-			if (response != 0) {
-				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.'); 
+			if (response != undefined) {
+				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.');
 			} else {
 				logger.log('info','All clients are up to date.')
 			};
@@ -150,9 +150,12 @@ function moveClient(serverQueryClient) {
 												if (error != undefined) {
 													logger.log('error', error);
 												} else {
-													logger.log('info','Registered for textserver events successfully.');
-													logger.log('info', 'Starting database clean-up routine.')
+													logger.log('info', 'Registered for textserver events successfully.');
+													logger.log('info', 'Checking for database.');
+													database.createDatabase();
+													logger.log('info', 'Starting database clean-up routine.');
 													databaseCleanup(serverQueryClient);
+													logger.log('info', 'Moving AFK-clients is active and running.');
 													moveClient(serverQueryClient);
 												};
 											});
@@ -230,7 +233,7 @@ function moveClient(serverQueryClient) {
 		                            break;
 							};
 						} else {
-							logger.log('info', 'Added new user to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+							logger.log('info', 'Added account information to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
 							serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
                                 if (error != undefined) {
                                     logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid + util.inspect(error));
@@ -299,12 +302,12 @@ function moveClient(serverQueryClient) {
 								serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
 								break;
 
+							case undefined:
+								logger.log('error', 'Verified client without API-Key!');
+								break;
+
 							default:
-								if (response.key != undefined ) {
-									clientObject.apiKey = response.key;
-								} else {
-									logger.log('error', 'Verified client without API-Key!');
-								};
+								clientObject.apiKey = response.key;
 								database.updateLastSeen(clientObject, function (error, response) {
 									if (error != null) {
 										logger.log('error', 'While updating last_seen.\n' + util.inspect(error));

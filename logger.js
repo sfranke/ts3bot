@@ -3,6 +3,7 @@ var logger = exports,
     fs = require('fs');
 
 logger.debuglevel = config.debuglevel;
+fs.openSync(__dirname + '/logs/log', 'a');
 
 function date() {
     var date = new Date();
