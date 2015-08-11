@@ -19,7 +19,7 @@
         "url": "https://github.com/sfranke/ts3bot"
     },
     "dependencies": {
-        "node-teamspeak": ">=1.0.4 <2.0.0",
+        "node-teamspeak": "1.0.10",
         "sqlite3": "3.0.8"
     }
 }

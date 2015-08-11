@@ -17,5 +17,6 @@ This is a simple bot that provides a registration process for new users on your 
 - Download the source files.
 - (Optional) unpack if you downloaded the *.zip archive.
 - Navigate to its root folder (*/ts3bot).
+- Type 'npm install' to install all dependencies.
 - Configure 'config.json'.
 - Type 'node ts3bot.js' and hit enter to start the bot.

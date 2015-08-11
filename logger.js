@@ -3,7 +3,7 @@ var logger = exports,
     fs = require('fs');
 
 logger.debuglevel = config.debuglevel;
-fs.openSync(__dirname + '/logs/log', 'a');
+fs.openSync(__dirname + '/log', 'a');
 
 function date() {
     var date = new Date();
@@ -17,7 +17,7 @@ logger.log = function(level, message) {
             message = JSON.stringify(message);
         };
         console.log(date() + ' ' + level + ': ' + message);
-        fs.appendFile(__dirname + '/logs/log', date() + ' ' + level + ': ' + message + '\n', function(err) {
+        fs.appendFile(__dirname + '/log', date() + ' ' + level + ': ' + message + '\n', function(err) {
             if (err) {
                 logger.log('error', 'Failed to write to log file!');
             };
