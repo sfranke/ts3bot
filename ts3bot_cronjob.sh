@@ -19,38 +19,37 @@ else
     echo "Backup folder already exists."
 fi
 
+backup() {
+    if [ -e ts3bot.pid ]; then
+        mv ts3bot.pid backup/$DATE/ts3bot.pid
+    fi
+    mv error.log backup/$DATE/error.log &&
+    mv log backup/$DATE/log &&
+    cp ts3bot.sqlitedb backup/$DATE/ts3bot_sqlitedb &&
+    ./$BOTSTARTSCRIPT start &&
+    echo "Creating backup."
+    cd backup/ &&
+    zip -r $DATE"_backup" $DATE/ >> /dev/null &&
+    rm -rf $DATE/
+}
+
 BOTSTATUS=$(exec ./ts3bot_startscript.sh status)
 
     case "$BOTSTATUS" in
-        "ts3bot is running")
+        "Ts3bot is running")
             echo "Ts3bot checked and still running."
             ./$BOTSTARTSCRIPT stop &&
-            mv error.log backup/$DATE/error.log &&
-            mv log backup/$DATE/log &&
-            cp ts3bot.sqlitedb backup/$DATE/ts3bot_sqlitedb &&
-            ./$BOTSTARTSCRIPT start &&
-            echo "Creating backup."
-            cd backup/ &&
-            zip -r $DATE"_backup" $DATE/ >> /dev/null &&
-            rm -rf $DATE/
+            backup
         ;;
 
-        "ts3bot seems to have died")
+        "Ts3bot seems to have died")
             echo "Ts3bot checked and it may have died."
-            mv ts3bot.pid backup/$DATE/ts3bot.pid &&
-            mv error.log backup/$DATE/error.log &&
-            mv log backup/$DATE/log &&
-            cp ts3bot.sqlitedb backup/$DATE/ts3bot_sqlitedb &&
-            ./$BOTSTARTSCRIPT start &&
-            echo "Creating backup."
-            cd backup/ &&
-            zip -r $DATE"_backup" $DATE/ >> /dev/null &&
-            rm -rf $DATE/
+            backup
         ;;
 
         "Ts3bot is not running (ts3bot.pid is missing)")
             echo "No ts3bot.pid found."
-            ./$BOTSTARTSCRIPT start
+            backup
         ;;
 esac
 exit 0
