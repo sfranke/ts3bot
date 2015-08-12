@@ -14,7 +14,7 @@ case "$1" in
 	start)
 		if [ -e ts3bot.pid ]; then
 			if ( kill -0 $(cat ts3bot.pid) 2> /dev/null ); then
-				echo "ts3bot is already running, try restart or stop"
+				echo "Ts3bot is already running, try restart or stop"
 				exit 1
 			else
 				echo "A previously run instance has not been shut down properly."
@@ -31,7 +31,7 @@ case "$1" in
 			done
 			echo "!"
 		fi
-		echo "Starting ts3bot.."
+		echo "Starting Ts3bot.."
 		if [ -e "$SCRIPTNAME" ]; then
                         if [ ! -x "$SCRIPTNAME" ]; then
                                 echo "${SCRIPTNAME} is not executable, trying to set it"
@@ -42,9 +42,9 @@ case "$1" in
                                 echo $line >> error.log
                                 "./${SCRIPTNAME}" >> /dev/null 2>>error.log &
                                 echo $! > ts3bot.pid
-                                echo "ts3bot for Teamspeak 3 started"
+                                echo "Ts3bot for Teamspeak 3 started"
                         else
-                                echo "${SCRIPTNAME} is not exectuable, cannot start ts3bot"
+                                echo "${SCRIPTNAME} is not exectuable, cannot start Ts3bot"
                         fi
 		else
 			echo "Could not find JS-File, aborting"
@@ -53,7 +53,7 @@ case "$1" in
 	;;
 	stop)
 		if [ -e ts3bot.pid ]; then
-			echo -n "Stopping ts3bot"
+			echo -n "Stopping Ts3bot"
 			if ( kill -TERM $(cat ts3bot.pid) 2> /dev/null ); then
 				c=1
 				while [ "$c" -le 300 ]; do
@@ -67,14 +67,14 @@ case "$1" in
 				done
 			fi
 			if ( kill -0 $(cat ts3bot.pid) 2> /dev/null ); then
-				echo "ts3bot is not shutting down properly - killing"
+				echo "Ts3bot is not shutting down properly - killing"
 				kill -KILL $(cat ts3bot.pid)
 			else
 				echo "done"
 			fi
 			rm ts3bot.pid
 		else
-			echo "ts3bot is not running (ts3bot.pid is missing)"
+			echo "Ts3bot is not running (ts3bot.pid is missing)"
 			exit 7
 		fi
 	;;
@@ -84,12 +84,12 @@ case "$1" in
 	status)
 		if [ -e ts3bot.pid ]; then
 			if ( kill -0 $(cat ts3bot.pid) 2> /dev/null ); then
-				echo "ts3bot is running"
+				echo "Ts3bot is running"
 			else
-				echo "ts3bot seems to have died"
+				echo "Ts3bot seems to have died"
 			fi
 		else
-			echo "ts3bot is not running (ts3bot.pid is missing)"
+			echo "Ts3bot is not running (ts3bot.pid is missing)"
 		fi
 	;;
 	*)
