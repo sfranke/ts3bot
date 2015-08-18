@@ -38,6 +38,7 @@ database.getApiKey = function(clientObject, callback) {
         });
         statement.finalize();
     });
+    databaseConnectionGet.close();
 };
 
 database.updateAccountInformation = function(clientObject, callback) {
@@ -53,6 +54,7 @@ database.updateAccountInformation = function(clientObject, callback) {
         });
         statement.finalize();
     });
+    databaseConnectionUpdateAccountInformation.close();
 };
 
 database.setNewUser = function(clientObject, callback) {
@@ -68,6 +70,7 @@ database.setNewUser = function(clientObject, callback) {
         });
         statement.finalize();
     });
+    databaseConnectionSetNewUser.close();
 };
 
 database.updateLastSeen = function(clientObject, callback) {
@@ -83,6 +86,7 @@ database.updateLastSeen = function(clientObject, callback) {
         });
         statement.finalize();
     });
+    databaseConnectionUpdateLastSeen.close();
 };
 
 database.delApiKey = function(clientObject, callback) {
@@ -98,4 +102,5 @@ database.delApiKey = function(clientObject, callback) {
         });
         statement.finalize();
     });
+    databaseConnectionDelApiKey.close();
 };
