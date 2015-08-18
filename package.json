@@ -1,25 +1,17 @@
 {
-    "name": "ts3bot",
-    "version": "0.0.1",
-    "description": "another teamspeak3 bot",
-    "homepage": "",
-    "bugs": "",
-    "licenses" : [
-        {
-        "type" : "",
-        "url" : ""
-        }
-    ],
-    "author": {
-        "name": "Impulse",
-        "email": "sfr4nke@gmail.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/sfranke/ts3bot"
-    },
-    "dependencies": {
-        "node-teamspeak": "1.0.10",
-        "sqlite3": "3.0.8"
-    }
+  "name": "ts3bot",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "~1.13.2",
+    "cookie-parser": "~1.3.5",
+    "debug": "~2.2.0",
+    "express": "~4.13.1",
+    "jade": "~1.11.0",
+    "morgan": "~1.6.1",
+    "serve-favicon": "~2.3.0"
+  }
 }
