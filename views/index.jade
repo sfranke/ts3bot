@@ -1,8 +1,13 @@
 extends layout
 
 block content
-  h1= title
-  p Status: #{status}
-  div
-    form(name='updateItems', method='post')
-      input(type='submit', value='Update Status')
+  .container
+    .jumbotron
+      .container
+        h1= title
+        p Status: #{status}
+        div
+          form(name='updateStatus', method='post')
+            button.btn.btn-lg.btn-info(type='submit') Update Status
+
+  include footer

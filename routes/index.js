@@ -6,15 +6,15 @@ var util = require('util');
 /* GET home page. */
 router.get('/', function (req, res, next) {
     exec('ts3bot/ts3bot_startscript.sh status', function (error, stdout, stderr) {
-        console.log('stdout: ' + stdout);
-        console.log('stderr: ' + stderr);
+        //console.log('stdout: ' + stdout);
+        //console.log('stderr: ' + stderr);
         if (error != null) {
             console.log('exec error: ' + error);
         } else {
             //Remove newlines.
             var status = stdout.replace(/(\r\n|\n|\r)/gm,"");
-            console.log('status after assignment: ' + status);
-            res.render('index', { title: 'Ts3Bot' , status: stdout });
+            //console.log('status after assignment: ' + status);
+            res.render('index', { title: 'Ts3Bot', status: stdout });
         }
     });
 });
