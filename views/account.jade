@@ -1,0 +1,37 @@
+extends layout
+
+block content
+
+  .container
+    .jumbotron
+      .container
+        h1= title
+        div
+          form(name='getAccountInfo', method='post')
+            input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
+            button.btn.btn-lg.btn-info(type='submit') Account Info
+
+        - if (name != undefied)
+          div
+            .col-md-6
+              table.table
+                thead
+                  tr
+                    th Name
+                    th Time
+                    th API key
+                    th Account Id
+                    th Account Name
+                    th Guilds
+                    th Created
+                tbody
+                  tr
+                    td #{name}
+                    td #{time}
+                    td #{apiKey}
+                    td #{accountId}
+                    td #{accountName}
+                    td #{guilds}
+                    td #{created}
+
+  include footer
