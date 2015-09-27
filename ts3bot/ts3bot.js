@@ -79,6 +79,7 @@ function moveClient(serverQueryClient) {
 		logger.log('debug', 'clientlist -times _response.\n' + util.inspect(response));
 		if (error != null) {
 			logger.log('error', 'While \'clientlist -times\'.\n' + util.inspect(error));
+			serverQueryClient.emit('close');
 		} else {
 			for (user in response) {
 				//Declare server query clients
