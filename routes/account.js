@@ -29,8 +29,8 @@ getAccountinformation = function (Uid, callback) {
 };
 
 getGuilds = function (gw2Guilds) {
-    var guilds =  [];
-            
+
+    var guilds = [];
     var guild = JSON.parse(gw2Guilds);
 
     for (var i in guild) {
@@ -52,17 +52,11 @@ getGuilds = function (gw2Guilds) {
 
 router.post('/', function (req, res, next) {
 
-    console.log('accountUid: ' + util.inspect(req.body.accountUid));
     var uid = req.body.accountUid;
-    console.log('variable_uid: ' + uid);
 
     getAccountinformation(uid, function (error, response) {
         if (response != undefined) {
-            console.log(response.last_seen);
             var time = new Date(response.last_seen * 1000);
-            // getGuilds(response.gw2_guilds, function (error, response) {
-            //     console.log('done');
-            // }
             res.render('account', {title: 'Ts3Bot', name: response.client_nickname, time: time, apiKey: response.gw2_api_key, accountId: response.gw2_account_id, accountName: response.gw2_account_name, guilds: response.gw2_guilds, created: response.gw2_account_created});
         } else {
             res.render('account', {title: 'Ts3Bot', name: undefined});

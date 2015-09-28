@@ -11,37 +11,37 @@ block content
             input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
             button.btn.btn-lg.btn-info(type='submit') Account Info
 
-
-
         - if (name != undefined)
           div.container
-            div.col-12
-              h2= 'Name'
-              div.row #{name}
-            -if (time != undefined)
-              div.col-12
-                h3= 'Time'
-                div.row #{time}
+            div.row
+              div.col-xs-6
+                h2 Name
+                P #{name}
+              div.col-xs-6
+                h2 Time
+                P #{time}
             - if (apiKey != undefined)
-              div.col-12
-                h3= 'API-Key'
-                div.row #{apiKey}
-            - if (accountId != undefined)
-              div.col-12
-                h3= 'Account Id'
-                div.row #{accountId}
+              div.row
+                div.col-xs-10
+                  h2 API-Key
+                  p #{apiKey}
             - if (accountName != undefined)
-              div.col-12
-                h3= 'Account Name'
-                div.row #{accountName}
+              div.row
+                div.col-xs-6
+                  h2 Account Name
+                  P #{accountName}
+                div.col-xs-6
+                  h2 Account ID
+                  P #{accountId}
             - if (guilds != undefined)
-              div.col-12
-                h3= 'Guilds'
-                div.row #{guilds}
+              div.row
+                div.col-xs-12
+                  h2 Guilds
+                  p #{guilds}
             - if (created != undefined)
-              div.col-12
-                h3= 'Created'
-                div.row #{created}
-
+              div.row
+                div.col-xs-12
+                  h2 Created
+                  p #{created}
 
   include footer
