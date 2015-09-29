@@ -28,8 +28,8 @@ getAccountinformation = function (Uid, callback) {
     databaseConnectionGet.close();
 };
 
-getGuilds = function (gw2Guilds) {
-
+getGuilds = function (gw2Guilds, callback) {
+        
     var guilds = [];
     var guild = JSON.parse(gw2Guilds);
 
@@ -39,13 +39,22 @@ getGuilds = function (gw2Guilds) {
             path: '/v1/guild_details.json?guild_id=' + guild[i],
             method: 'GET'
         };
-        https.get(options, function(response) {
-            response.on('data', function(data) {
-                var guildInfo = JSON.parse(data);
-                var guildName = guildInfo.guild_name;
-                guilds.push(guildName);
+        https.get(options, function (response) {
+            response.on('data', function (data) {
+                switch(response.statusCode) {
+                    case 200:
+                        var guildInfo = JSON.parse(data);
+                        var guildName = guildInfo.guild_name;
+                        guilds.push(guildName);
+                        //console.log(guilds);
+                        callback(guilds);
+                        break;
+
+                    default:
+                        console.log('Error while fetching guilds from API.');
+                        break;
+                };
             });
-            console.log(guilds);
         });
     };
 };
@@ -57,12 +66,16 @@ router.post('/', function (req, res, next) {
     getAccountinformation(uid, function (error, response) {
         if (response != undefined) {
             var time = new Date(response.last_seen * 1000);
+            
+            // getGuilds(response.gw2_guilds, function (guilds) {
+            //     console.log('callback_guilds: ' + guilds);
+            // });
+
             res.render('account', {title: 'Ts3Bot', name: response.client_nickname, time: time, apiKey: response.gw2_api_key, accountId: response.gw2_account_id, accountName: response.gw2_account_name, guilds: response.gw2_guilds, created: response.gw2_account_created});
         } else {
             res.render('account', {title: 'Ts3Bot', name: undefined});
         }
     });
-
 });
 
 module.exports = router;
