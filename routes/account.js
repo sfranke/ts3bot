@@ -2,7 +2,7 @@ var express = require('express');
 var router  = express.Router();
 var util    = require('util');
 var sqlite  = require('sqlite3');
-var https = require('https');
+var https   = require('https');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -29,7 +29,7 @@ getAccountinformation = function (Uid, callback) {
 };
 
 getGuilds = function (gw2Guilds, callback) {
-        
+
     var guilds = [];
     var guild = JSON.parse(gw2Guilds);
 
@@ -66,12 +66,16 @@ router.post('/', function (req, res, next) {
     getAccountinformation(uid, function (error, response) {
         if (response != undefined) {
             var time = new Date(response.last_seen * 1000);
+
+            var guilds = JSON.parse(response.gw2_guilds);
+            console.log(typeof(guilds));
             
             // getGuilds(response.gw2_guilds, function (guilds) {
             //     console.log('callback_guilds: ' + guilds);
+            //     var guildNames = guilds;
             // });
 
-            res.render('account', {title: 'Ts3Bot', name: response.client_nickname, time: time, apiKey: response.gw2_api_key, accountId: response.gw2_account_id, accountName: response.gw2_account_name, guilds: response.gw2_guilds, created: response.gw2_account_created});
+            res.render('account', {title: 'Ts3Bot', name: response.client_nickname, time: time, apiKey: response.gw2_api_key, accountId: response.gw2_account_id, accountName: response.gw2_account_name, guilds: guilds, created: response.gw2_account_created});
         } else {
             res.render('account', {title: 'Ts3Bot', name: undefined});
         }
