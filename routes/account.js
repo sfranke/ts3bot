@@ -75,7 +75,16 @@ router.post('/', function (req, res, next) {
             //     var guildNames = guilds;
             // });
 
-            res.render('account', {title: 'Ts3Bot', name: response.client_nickname, time: time, apiKey: response.gw2_api_key, accountId: response.gw2_account_id, accountName: response.gw2_account_name, guilds: guilds, created: response.gw2_account_created});
+            res.render('account', {
+                                    title: 'Ts3Bot',
+                                    name: response.client_nickname,
+                                    time: time,
+                                    apiKey: response.gw2_api_key,
+                                    accountId: response.gw2_account_id,
+                                    accountName: response.gw2_account_name,
+                                    guilds: guilds,
+                                    created: response.gw2_account_created
+                                });
         } else {
             res.render('account', {title: 'Ts3Bot', name: undefined});
         }

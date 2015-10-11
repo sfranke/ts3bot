@@ -11,15 +11,15 @@ block content
             input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
             button.btn.btn-lg.btn-info(type='submit') Account Info
 
-        div#test
-          h2 TEST
-          button.btn.btn-sm.btn-info(type='submit')#12 Test
-          p#test MyTestParagraph
-          p#test2
-          script
-            |  $('#12').on('click', function() {
-            |    var guilds = $('p#test2').html('#{guilds}');
-            |  });
+        //div#test
+          //h2 TEST
+          //button.btn.btn-sm.btn-info(type='submit')#12 Test
+          //p#test MyTestParagraph
+          //p#test2
+          //script
+            //|  $('#12').on('click', function() {
+            //|    var guilds = $('p#test2').html('#{guilds}');
+            //|  });
 
         - if (name != undefined)
           div.container
@@ -43,15 +43,15 @@ block content
                 div.col-xs-6
                   h2 Account ID
                   P #{accountId}
-            - if (guilds != undefined)
-              div.row
-                div.col-xs-12
-                  h2 Guilds
-                  p #{guilds}
             - if (created != undefined)
               div.row
-                div.col-xs-12
+                div.col-xs-6
                   h2 Created
                   p #{created}
+                - if (guilds != undefined)
+                  div.col-xs-6
+                    h2 Guilds
+                    - each i, key in guilds
+                      p #{i}
 
   include footer
