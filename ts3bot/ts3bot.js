@@ -50,28 +50,34 @@ function databaseCleanup(serverQueryClient) {
 					logger.log('debug', 'Get client DB Id via Uid [ERROR]\n' + util.inspect(err));
 					logger.log('debug', 'Get client DB Id via Uid [RESPONSE]\n' + util.inspect(response));
 					//Fails if '{ id: 512, msg: 'invalid clientID' }' occurs. response.client_unique_id cannot be found on TS server.
-					logger.log('info', 'Deleting client from TS3-server: ' + '\n\t' + ' UId: ' + response.cluid);
 					
-					serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (err, response) {
+					if (response != undefined) {
 
-						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-						databaseConnection.serialize(function() {
-							var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
-							statement.run(9999999999, cluid, function (error, response) {
-								if (error != undefined) {
-									logger.log('debug', 'TEST: ' + util.inspect(error));
-								} else {
-									statement.finalize();
-									logger.log('info', 'Marked deleted clients in database.');
-								}
+						logger.log('info', 'Deleting client from TS3-server: ' + '\n\t' + ' UId: ' + response.cluid);
+						
+						serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (err, response) {
+
+							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+							databaseConnection.serialize(function() {
+								var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
+								statement.run(9999999999, cluid, function (error, response) {
+									if (error != undefined) {
+										logger.log('debug', 'TEST: ' + util.inspect(error));
+									} else {
+										statement.finalize();
+										logger.log('info', 'Marked deleted clients in database.');
+									}
+								});
+							});
+							databaseConnection.close();
+							
+							var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + nickname + '\n' + '[B]' + 'account name: ' + '[/B]' + '\t' + accountname;
+							serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client', message: report}, function(err, response,rawResponse) {
 							});
 						});
-						databaseConnection.close();
-						
-						var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + nickname + '\n' + '[B]' + 'account name: ' + '[/B]' + '\t' + accountname;
-						serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client', message: report}, function(err, response,rawResponse) {
-						});
-					});
+					} else {
+						logger.log('info', 'Can\'t find user in server database.\n' + cluid);
+					}
 				});
 				
 			};
