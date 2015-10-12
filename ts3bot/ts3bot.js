@@ -17,41 +17,54 @@ function unixTime() {
 
 function databaseCleanup(serverQueryClient) {
 
-	//console.log(serverQueryClient);
-
 	//constant as typeof String for comparison in SQL statement.
 	var constant = {
 		'ninetyOneDays': '7862400'
 	};
 
 	var timeNow          = unixTime(),
-	    ninetyOneDaysOld = timeNow - constant.ninetyOneDays;
+	    ninetyOneDaysOld = timeNow - constant.ninetyOneDays,
+		oldClient       = [];
 
 	//Query database for old users.
 	var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-	databaseConnection.serialize(function() {
-
-		databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function(err, response) {
-
+	databaseConnection.serialize(function () {
+		databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function (error, response) {
+			logger.log('debug', 'Error on "each_connect": ' + util.inspect(error));
+			logger.log('debug', 'Response on "each_connect": ' + util.inspect(response));
+			
 			var cluid     = response.client_unique_id
 			, nickname    = response.client_nickname
 			, accountname = response.gw2_account_name;
-
-			if (err != undefined) {
-				console.log('error: ' + '\n' + util.inspect(err));
+			
+			if (error != undefined) {
+				console.log('error: ' + '\n' + util.inspect(error));
 			} else {
 				//Send offline message to admin
-				logger.log('info', 'Found old client! ');
+				logger.log('info', 'Found old client! \n' + response.client_unique_id);
+				oldClient.push(response.client_unique_id);
 
+				
 				serverQueryClient.send('clientgetdbidfromuid', {cluid: response.client_unique_id}, function (err, response){
+
+					logger.log('debug', 'Get client DB Id via Uid [ERROR]\n' + util.inspect(err));
+					logger.log('debug', 'Get client DB Id via Uid [RESPONSE]\n' + util.inspect(response));
+					//Fails if '{ id: 512, msg: 'invalid clientID' }' occurs. response.client_unique_id cannot be found on TS server.
 					logger.log('info', 'Deleting client from TS3-server: ' + '\n\t' + ' UId: ' + response.cluid);
+					
 					serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (err, response) {
+
 						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
 						databaseConnection.serialize(function() {
 							var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
-							statement.run(9999999999, cluid);
-							statement.finalize();
-							logger.log('info', 'Marked deleted clients in database.');
+							statement.run(9999999999, cluid, function (error, response) {
+								if (error != undefined) {
+									logger.log('debug', 'TEST: ' + util.inspect(error));
+								} else {
+									statement.finalize();
+									logger.log('info', 'Marked deleted clients in database.');
+								}
+							});
 						});
 						databaseConnection.close();
 						
@@ -60,9 +73,10 @@ function databaseCleanup(serverQueryClient) {
 						});
 					});
 				});
+				
 			};
 		}, function (err, response) {
-			if (response != undefined) {
+			if (response != 0) {
 				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.');
 			} else {
 				logger.log('info','All clients are up to date.')
