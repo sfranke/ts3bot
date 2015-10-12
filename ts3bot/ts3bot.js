@@ -77,6 +77,19 @@ function databaseCleanup(serverQueryClient) {
 						});
 					} else {
 						logger.log('info', 'Can\'t find user in server database.\n' + cluid);
+
+						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
+						databaseConnection.serialize(function() {
+							var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
+							statement.run(9999999999, cluid, function (error, response) {
+								if (error != undefined) {
+									logger.log('debug', 'TEST: ' + util.inspect(error));
+								} else {
+									statement.finalize();
+									logger.log('info', 'Marked deleted clients in database.');
+								}
+							});
+						});
 					}
 				});
 				
