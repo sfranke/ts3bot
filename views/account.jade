@@ -51,17 +51,18 @@ block content
                 - if (guilds != undefined)
                   div.col-xs-6
                     h2 Guilds
+                    p#guilds
                     - each i, key in guilds
                       div#test(name='#{i}')
                         button.btn.btn-sm.btn-info(id='#{i}', type='submit') #{i}
                         p#test2(class='#{i}')
-                        p#info
-                        //script
-                        //  |  $('##{i}').on('click', function() {
-                        //  |    $.getJSON('/guild/#{i}', function() {
-                        //  |      console.log(#{guild_name});
-                        //  |    });
-                        //  |  });
-                        p #{i}
+                        script
+                          |$(document).ready(function(){
+                          |  $('##{i}').on('click', function() {
+                          |    $.getJSON('/guild/#{i}', function(d) {
+                          |      $('##{i}').replaceWith(d.guild_name);
+                          |    });
+                          |  });
+                          |});
 
   include footer
