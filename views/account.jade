@@ -52,6 +52,16 @@ block content
                   div.col-xs-6
                     h2 Guilds
                     - each i, key in guilds
-                      p #{i}
+                      div#test(name='#{i}')
+                        button.btn.btn-sm.btn-info(id='#{i}', type='submit') #{i}
+                        p#test2(class='#{i}')
+                        p#info
+                        //script
+                        //  |  $('##{i}').on('click', function() {
+                        //  |    $.getJSON('/guild/#{i}', function() {
+                        //  |      console.log(#{guild_name});
+                        //  |    });
+                        //  |  });
+                        p #{i}
 
   include footer

@@ -28,52 +28,15 @@ getAccountinformation = function (Uid, callback) {
     databaseConnectionGet.close();
 };
 
-getGuilds = function (gw2Guilds, callback) {
-
-    var guilds = [];
-    var guild = JSON.parse(gw2Guilds);
-
-    for (var i in guild) {
-        var options = {
-            hostname: 'api.guildwars2.com',
-            path: '/v1/guild_details.json?guild_id=' + guild[i],
-            method: 'GET'
-        };
-        https.get(options, function (response) {
-            response.on('data', function (data) {
-                switch(response.statusCode) {
-                    case 200:
-                        var guildInfo = JSON.parse(data);
-                        var guildName = guildInfo.guild_name;
-                        guilds.push(guildName);
-                        //console.log(guilds);
-                        callback(guilds);
-                        break;
-
-                    default:
-                        console.log('Error while fetching guilds from API.');
-                        break;
-                };
-            });
-        });
-    };
-};
-
 router.post('/', function (req, res, next) {
 
     var uid = req.body.accountUid;
 
     getAccountinformation(uid, function (error, response) {
         if (response != undefined) {
-            var time = new Date(response.last_seen * 1000);
 
+            var time = new Date(response.last_seen * 1000);
             var guilds = JSON.parse(response.gw2_guilds);
-            console.log(typeof(guilds));
-            
-            // getGuilds(response.gw2_guilds, function (guilds) {
-            //     console.log('callback_guilds: ' + guilds);
-            //     var guildNames = guilds;
-            // });
 
             res.render('account', {
                                     title: 'Ts3Bot',
