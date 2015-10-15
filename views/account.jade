@@ -6,10 +6,13 @@ block content
     .jumbotron
       .container
         h1= title
-        div
-          form(name='getAccountInfo', method='post')
-            input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
-            button.btn.btn-lg.btn-info(type='submit') Account Info
+        form(name='getAccountInfo', method='post', action='/account')
+          div.form-group
+            div.row
+              div.col-xs-6.col-sm-3.col-md-2
+                button.btn.btn-lg.btn-info Account Info
+              div.col-xs-6.col-sm-8.col-md-10
+                input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
 
         //div#test
           //h2 TEST
@@ -30,11 +33,11 @@ block content
               div.col-xs-6
                 h2 Time
                 P #{time}
-            - if (apiKey != undefined)
-              div.row
-                div.col-xs-10
-                  h2 API-Key
-                  p #{apiKey}
+            //- if (apiKey != undefined)
+            //  div.row
+            //    div.col-xs-10
+            //      h2 API-Key
+            //      p #{apiKey}
             - if (accountName != undefined)
               div.row
                 div.col-xs-6
@@ -60,7 +63,7 @@ block content
                           |$(document).ready(function(){
                           |  $('##{i}').on('click', function() {
                           |    $.getJSON('/guild/#{i}', function(d) {
-                          |      $('##{i}').replaceWith(d.guild_name);
+                          |      $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.guild_name + '</p>');
                           |    });
                           |  });
                           |});
