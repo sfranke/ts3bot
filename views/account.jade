@@ -14,16 +14,6 @@ block content
               div.col-xs-6.col-sm-8.col-md-10
                 input.inputUid.form-control(type='accountname', autofocus='', required='', placeholder='Uid', name='accountUid')
 
-        //div#test
-          //h2 TEST
-          //button.btn.btn-sm.btn-info(type='submit')#12 Test
-          //p#test MyTestParagraph
-          //p#test2
-          //script
-            //|  $('#12').on('click', function() {
-            //|    var guilds = $('p#test2').html('#{guilds}');
-            //|  });
-
         - if (name != undefined)
           div.container
             div.row
@@ -33,11 +23,11 @@ block content
               div.col-xs-6
                 h2 Time
                 P #{time}
-            //- if (apiKey != undefined)
-            //  div.row
-            //    div.col-xs-10
-            //      h2 API-Key
-            //      p #{apiKey}
+            //- - if (apiKey != undefined)
+            //-  div.row
+            //-    div.col-xs-10
+            //-      h2 API-Key
+            //-      p #{apiKey}
             - if (accountName != undefined)
               div.row
                 div.col-xs-6
