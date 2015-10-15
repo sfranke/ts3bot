@@ -17,10 +17,10 @@ block content
         - if (name != undefined)
           div.container
             div.row
-              div.col-xs-6
+              div.col-xs-6.col-sm-6.col-md-6
                 h2 Name
                 P #{name}
-              div.col-xs-6
+              div.col-xs-6.col-sm-6.col-md-6
                 h2 Time
                 P #{time}
             //- - if (apiKey != undefined)
@@ -30,19 +30,19 @@ block content
             //-      p #{apiKey}
             - if (accountName != undefined)
               div.row
-                div.col-xs-6
+                div.col-xs-6.col-sm-6.col-md-6
                   h2 Account Name
                   P #{accountName}
-                div.col-xs-6
+                div.col-xs-6.col-sm-6.col-md-6
                   h2 Account ID
                   P #{accountId}
             - if (created != undefined)
               div.row
-                div.col-xs-6
+                div.col-xs-6.col-sm-6.col-md-6
                   h2 Created
                   p #{created}
                 - if (guilds != undefined)
-                  div.col-xs-6
+                  div.col-xs-6.col-sm-6.col-md-6
                     h2 Guilds
                     p#guilds
                     - each i, key in guilds
