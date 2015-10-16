@@ -15,94 +15,82 @@ function unixTime() {
 	return unixStamp;
 };
 
+//Search for 'old clients' that got deleted from the bot's database.
+//If these exist, delete them from the teamspeak server's database as well.
+//Also notify an admin via offline message.
+function purgeTsDatabase(serverQueryClient){
+	logger.log('debug', 'PurgeTsDatabase serverQueryClient: ' + util.inspect(serverQueryClient.oldClient));
+
+	serverQueryClient.send('clientgetdbidfromuid', {cluid: serverQueryClient.oldClient}, function (error, response){
+		logger.log('debug', 'Get clientDBidFromUid_error: ' + util.inspect(error));
+		logger.log('debug', 'Get clientDBidFromUid_response: ' + util.inspect(response));
+
+		if (error != undefined) {
+			logger.log('debug', 'Error while fetching DBid from teamspeak server.');
+			if (error.id === 512) {
+				logger.log('info', 'Client could not be found in teamspeak server database.\n' + serverQueryClient.oldClient);
+			};
+		} else  {
+			logger.log('debug', 'Client found in teamspeak database.\n' + util.inspect(response));
+			
+			var cluid = response.cluid,
+			   cldbid = response.cldbid;
+
+			serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (error, response) {
+				logger.log('debug', 'Deleting client from teamspeak server_error\n' + util.inspect(error));
+				logger.log('debug', 'Deleting client from teamspeak server_response\n' + util.inspect(response));
+
+				if (error != undefined) {
+					logger.log('debug', 'Error while deleting user from teamspeak server database.');
+				} else {
+					logger.log('info', 'Sending report to admin..');
+					var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'cldbid: ' + '[/B]' + cldbid;
+					serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
+						logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
+						logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
+					});
+				};
+			});
+		};
+	});
+};
+
+//Search for old clients 'last_seen' older than 91 days
+//and delete them from the bot's database.
 function databaseCleanup(serverQueryClient) {
 
-	//constant as typeof String for comparison in SQL statement.
-	var constant = {
-		'ninetyOneDays': '7862400'
-	};
+	database.getOldClients(function (error, response) {
+		logger.log('debug', 'GetOldClients callback error:\n' + util.inspect(error));
+		logger.log('debug', 'GetOldClients callback response:\n' + util.inspect(response));
 
-	var timeNow          = unixTime(),
-	    ninetyOneDaysOld = timeNow - constant.ninetyOneDays,
-		oldClient       = [];
+		// serverQueryClient.oldClients = response;
+		// purgeTsDatabase(serverQueryClient);
 
-	//Query database for old users.
-	var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-	databaseConnection.serialize(function () {
-		databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function (error, response) {
-			logger.log('debug', 'Error on "each_connect": ' + util.inspect(error));
-			logger.log('debug', 'Response on "each_connect": ' + util.inspect(response));
-			
-			var cluid     = response.client_unique_id
-			, nickname    = response.client_nickname
-			, accountname = response.gw2_account_name;
-			
-			if (error != undefined) {
-				console.log('error: ' + '\n' + util.inspect(error));
-			} else {
-				//Send offline message to admin
-				logger.log('info', 'Found old client! \n' + response.client_unique_id);
-				oldClient.push(response.client_unique_id);
+		if (response.length != 0) {
+			response.forEach(function (client) {
+				logger.log('debug', 'Cluid to delete: ' + client);
+				database.delClient(client, function (error, response) {
+					logger.log('debug', 'DelClient callback error:\n' + util.inspect(error));
+					logger.log('debug', 'DelClient callback response:\n' + util.inspect(response));
 
-				
-				serverQueryClient.send('clientgetdbidfromuid', {cluid: response.client_unique_id}, function (err, response){
-
-					logger.log('debug', 'Get client DB Id via Uid [ERROR]\n' + util.inspect(err));
-					logger.log('debug', 'Get client DB Id via Uid [RESPONSE]\n' + util.inspect(response));
-					//Fails if '{ id: 512, msg: 'invalid clientID' }' occurs. response.client_unique_id cannot be found on TS server.
-					
-					if (response != undefined) {
-
-						logger.log('info', 'Deleting client from TS3-server: ' + '\n\t' + ' UId: ' + response.cluid);
-						
-						serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (err, response) {
-
-							var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-							databaseConnection.serialize(function() {
-								var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
-								statement.run(9999999999, cluid, function (error, response) {
-									if (error != undefined) {
-										logger.log('debug', 'TEST: ' + util.inspect(error));
-									} else {
-										statement.finalize();
-										logger.log('info', 'Marked deleted clients in database.');
-									}
-								});
-							});
-							databaseConnection.close();
-							
-							var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + nickname + '\n' + '[B]' + 'account name: ' + '[/B]' + '\t' + accountname;
-							serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Found old client', message: report}, function(err, response,rawResponse) {
-							});
-						});
+					if (error != null) {
+						logger.log('debug', 'Failed on client: ' + error.client);
+						if (error.errno === 5) {
+							setTimeout(function() {
+								databaseCleanup(serverQueryClient);
+							}, 20000);
+						};
 					} else {
-						logger.log('info', 'Can\'t find user in server database.\n' + cluid);
-
-						var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
-						databaseConnection.serialize(function() {
-							var statement = databaseConnection.prepare('UPDATE clients SET last_seen = ? WHERE client_unique_id = ?');
-							statement.run(9999999999, cluid, function (error, response) {
-								if (error != undefined) {
-									logger.log('debug', 'TEST: ' + util.inspect(error));
-								} else {
-									statement.finalize();
-									logger.log('info', 'Marked deleted clients in database.');
-								}
-							});
-						});
-					}
+						logger.log('info', 'Old client got deleted from database!\ncluid: ' + response);
+						serverQueryClient.oldClient = response;
+						purgeTsDatabase(serverQueryClient);
+					};
 				});
-				
-			};
-		}, function (err, response) {
-			if (response != 0) {
-				logger.log('info', 'Found ' + response + ' old client(s).. ready for deletion.');
-			} else {
-				logger.log('info','All clients are up to date.')
-			};
-		});
+			});
+		} else {
+			logger.log('info', 'No old clients found!');
+		};
 	});
-	databaseConnection.close();
 };
 
 //Function to move idle client from cleanChannel(lobby) to config.afkChannel(AFK-Channel).
