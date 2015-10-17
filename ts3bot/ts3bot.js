@@ -119,8 +119,10 @@ function moveClient(serverQueryClient) {
 						logger.log('debug', 'clientmove_error.\n' + util.inspect(error));
 						//logger.log('debug', 'clientmove_response.\n' + util.inspect(response));
 						if (error != undefined) {
-							logger.log('error', 'While \'clientmove\'\n' + util.inspect(error));
+							logger.log('error', 'While \'clientmove\'');
+							logger.log('debug', 'While \'clientmove\'\n' + util.inspect(error));
 						} else {
+							logger.log('info', 'Sending idle poke.');
 							logger.log('debug', 'Sending idle poke.\n' + util.inspect(clientObject));
 							serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.clid, msg: config.idleMove});
 						};
@@ -277,7 +279,8 @@ function moveClient(serverQueryClient) {
                                 if (error != undefined) {
                                     logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid + util.inspect(error));
                                 } else {
-                                    logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+                                    logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+                                    logger.log('debug', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
                                     serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
                 					serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
                                 };
