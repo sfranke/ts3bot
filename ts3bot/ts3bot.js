@@ -434,22 +434,27 @@ function moveClient(serverQueryClient) {
 
     serverQueryClient.on('error', function (error, response, rawResponse) {
     	if (error != undefined) {
-    		logger.log('error', 'An error occured on close: ' + '\n' + util.inspect(error));
+    		logger.log('error', 'An error occured on close!');
+    		logger.log('debug', 'An error occured on close: ' + '\n' + util.inspect(error));
     	};
     	if (response != undefined) {
-    		logger.log('info', 'Response on close: ' + '\n' + util.inspect(response));
+    		logger.log('info', 'An error occured on close!');
+    		logger.log('debug', 'Response on close: ' + '\n' + util.inspect(response));
     	};
     	if (rawResponse != undefined) {
-	    	logger.log('error', 'An error has occured: ' + '\n' + util.inspect(rawResponse));	
+    		logger.log('error', 'An error occured on close!');
+	    	logger.log('debug', 'An error has occured: ' + '\n' + util.inspect(rawResponse));	
     	};
     });
 
     serverQueryClient.on('close', function (error, response) {
     	if (error != undefined) {
-    		logger.log('info', 'Close event has been fired! (err)' + '\n' + util.inspect(error));
+    		logger.log('info', 'Close event has been fired!');
+    		logger.log('debug', 'Close event has been fired! (err)' + '\n' + util.inspect(error));
     	};
     	if (response != undefined) {
-    		logger.log('info', 'Close event has been fired! (res)' + '\n' + util.inspect(response));
+    		logger.log('info', 'Close event has been fired!');
+    		logger.log('debug', 'Close event has been fired! (res)' + '\n' + util.inspect(response));
     	};
         //Try to reconnect/restart after 3 seconds
         setTimeout(function() {
