@@ -1,8 +1,8 @@
-# ts3bot
+# Ts3bot
 
 ## WIP
 
-This is a simple bot that provides a registration process for new users on your teamspeak server using a authentication key to validate users. Early stage, every little bit of help is much appreciated.
+Ts3Bot is a stand alone nodejs application that observes clients connecting to your Teamspeak3 server. It provides a fully automated way for users to register with your Teamspeak3 server and grants/revokes permissions accordingly. Early stage, every little bit of help is much appreciated.
 
 ## Dependencies
 
@@ -10,6 +10,7 @@ This is a simple bot that provides a registration process for new users on your 
 - npm (https://www.npmjs.com/)
 - node-teamspeak (https://github.com/gwTumm/node-teamspeak)
 - sqlite3 (https://www.npmjs.com/package/sqlite3)
+- expressjs 4.13.1 (http://expressjs.com/)
 
 ## Installation
 
@@ -17,6 +18,6 @@ This is a simple bot that provides a registration process for new users on your 
 - Download the source files.
 - (Optional) unpack if you downloaded the *.zip archive.
 - Navigate to its root folder (*/ts3bot).
-- Type 'npm install' to install all dependencies.
+- Use 'npm' to install all dependencies.
 - Configure 'config.json'.
-- Type 'node ts3bot.js' and hit enter to start the bot.
+- Start the web-server and update the bot's status via landing page.
