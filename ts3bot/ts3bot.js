@@ -44,32 +44,46 @@ function purgeTsDatabase(serverQueryClient){
 					logger.log('debug', 'Error while deleting user from teamspeak server database.');
 				} else {
 					logger.log('info', 'Sending report to admin..');
-					var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'cldbid: ' + '[/B]' + cldbid;
-					serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
-						logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
-						logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
-					});
+					// var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'cldbid: ' + '[/B]' + cldbid;
+					// serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
+					// 	logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
+					// 	logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
+					// });
 				};
 			});
 		};
 	});
 };
 
+var CleanupCount = 0;
+
 //Search for old clients 'last_seen' older than 91 days
 //and delete them from the bot's database.
 function databaseCleanup(serverQueryClient) {
 
+
 	database.getOldClients(function (error, response) {
 		logger.log('debug', 'GetOldClients callback error:\n' + util.inspect(error));
 		logger.log('debug', 'GetOldClients callback response:\n' + util.inspect(response));
+
+		CleanupCount++;	
 
 		// serverQueryClient.oldClients = response;
 		// purgeTsDatabase(serverQueryClient);
 
 		if (response.length != 0) {
 			response.forEach(function (client) {
-				logger.log('debug', 'Cluid to delete: ' + client);
-				database.delClient(client, function (error, response) {
+
+				if (CleanupCount === 1) {
+					var report = '[B]' + 'cluid: ' + '[/B]' + client.cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + client.name;
+					serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
+						logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
+						logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
+					});
+				}
+
+				logger.log('debug', 'Cluid to delete: ' + client.cluid);
+				database.delClient(client.cluid, function (error, response) {
 					logger.log('debug', 'DelClient callback error:\n' + util.inspect(error));
 					logger.log('debug', 'DelClient callback response:\n' + util.inspect(response));
 

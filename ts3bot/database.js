@@ -1,7 +1,7 @@
 #!/usr/bin/node
 
 var database = exports,
-    sqlite   = require('sqlite3').verbose(),
+    sqlite   = require('sqlite3'),
     util     = require('util'),
     logger   = require('./logger');
 
@@ -126,7 +126,7 @@ database.getOldClients = function (callback) {
     var databaseConnection = new sqlite.Database('ts3bot.sqlitedb');
     databaseConnection.serialize(function () {
         databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function (error, response) {
-            oldClients.push(response.client_unique_id);
+            oldClients.push({cluid: response.client_unique_id, name: response.client_nickname});
         },
         function (error, response) {
                 if (error != null) {
