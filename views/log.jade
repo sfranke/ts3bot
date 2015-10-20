@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  .container
+    .jumbotron
+      .container
+        h1= title
+        table.table.table-condensed.table-striped#log
+          - each i, key in log
+            tr
+              td #{i}
+
+  include footer
