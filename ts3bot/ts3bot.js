@@ -76,7 +76,7 @@ function databaseCleanup(serverQueryClient) {
 
 				if (CleanupCount === 1) {
 					var report = '[B]' + 'cluid: ' + '[/B]' + client.cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + client.name;
-					serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
+					serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted old client', message: report}, function (error, response) {
 						logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
 						logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
 					});
@@ -411,7 +411,7 @@ function moveClient(serverQueryClient) {
 						                                            logger.log('error', 'Error while receiving cldbid: ' + error);
 						                                        } else {
 						                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
-						                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of invalid key', message: report});
+						                                            serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted client because of invalid key', message: report});
 						                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 						                                        };
 						                                    });
@@ -430,7 +430,7 @@ function moveClient(serverQueryClient) {
 						                                    var message = new chatMessage();
 						                                    serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', clientObject));
 				                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-				                                            serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted client because of foreign world', message: report});
+				                                            serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted client because of foreign world', message: report});
 				                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 						                                };
 						                            });
