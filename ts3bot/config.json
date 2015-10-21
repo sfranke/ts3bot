@@ -23,10 +23,10 @@
 	"clientName": "Impulse_Bot",
 	"_clientName_comment": "Client name that is visible to other clients.",
 
-	"adminClient": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
+	"adminClient": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=", "FkNLFAomYW4f88N9rXI2V3skqUI="],
 	"_adminClient_comment": "Uid of admin client.",
 
-	"MoveAfkClientsFromLobby": true,
+	"MoveAfkClientsFromLobby": false,
 	"_MoveAfkClientsFromLobby_comment": "To enable this feature set flag to 'true'.",
 
 	"cleanChannel" : 1,
