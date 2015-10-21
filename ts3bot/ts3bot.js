@@ -307,7 +307,28 @@ function moveClient(serverQueryClient) {
 		} else if (response.invokeruid === config.adminClient) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
-			logger.log('info', 'Received message from admin: ' + '\n\t' + '\'' + response.msg + '\'');
+			logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'');
+
+			logger.log('debug', 'ResponseOnject on AdminMessage: ' + util.inspect(response));
+			var AdminMessageArray = response.msg.split(' ');
+			logger.log('debug', 'AdminMessageArray after split() ' + AdminMessageArray);
+
+			if (AdminMessageArray[0] === '!move') {
+
+				var clid = AdminMessageArray[1],
+				    cid   = AdminMessageArray[2];
+
+				serverQueryClient.send('clientmove', {clid: clid, cid: config.afkChannel}, function (error, response) {
+					if (error != undefined) {
+						logger.log('error', 'While \'clientmove\'');
+						logger.log('debug', 'While \'clientmove\'\n' + util.inspect(error));
+					} else {
+						logger.log('info', 'Sending idle poke.');
+						serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clid, msg: config.idleMove});
+					};
+				});
+			}
+
 		} else if (response.invokername != config.clientName && response.msg.length != 72) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid', response));
