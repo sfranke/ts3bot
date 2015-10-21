@@ -304,7 +304,7 @@ function moveClient(serverQueryClient) {
 				};
 			});
 
-		} else if (response.invokeruid === config.adminClient) {
+		} else if (config.adminClient.indexOf(response.invokeruid) != -1) {
 			var message = new chatMessage();
 			serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
 			logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'');
