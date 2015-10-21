@@ -79,7 +79,7 @@ function chatMessage(user) {
 						break;
 
 					case '!help':
-						message = {targetmode: '1', target: user.invokerid, msg: 'This could be your help command.'};
+						message = {targetmode: '1', target: user.invokerid, msg: 'Admin commands:\n\n!move <clid>\t\tMove <clid> to AFK-channel.'};
 						break;
 
 					case '!commands':
