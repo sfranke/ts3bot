@@ -43,7 +43,7 @@ function purgeTsDatabase(serverQueryClient){
 				if (error != undefined) {
 					logger.log('debug', 'Error while deleting user from teamspeak server database.');
 				} else {
-					logger.log('info', 'Sending report to admin..');
+					//logger.log('info', 'Sending report to admin..');
 					// var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'cldbid: ' + '[/B]' + cldbid;
 					// serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
 					// 	logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
@@ -320,7 +320,7 @@ function moveClient(serverQueryClient) {
 
 				serverQueryClient.send('clientmove', {clid: clid, cid: config.afkChannel}, function (error, response) {
 					if (error != undefined) {
-						logger.log('error', 'While \'clientmove\'');
+						logger.log('error', 'While \'clientmove\': ' + error.msg);
 						logger.log('debug', 'While \'clientmove\'\n' + util.inspect(error));
 					} else {
 						logger.log('info', 'Sending idle poke.');
