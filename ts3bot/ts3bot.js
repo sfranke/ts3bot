@@ -146,7 +146,7 @@ function moveClient(serverQueryClient) {
 		};
 		setTimeout(function() {
             moveClient(serverQueryClient);
-        }, 4000);
+        }, 30000);
 	});
 };
 
@@ -315,8 +315,7 @@ function moveClient(serverQueryClient) {
 
 			if (AdminMessageArray[0] === '!move') {
 
-				var clid = AdminMessageArray[1],
-				    cid   = AdminMessageArray[2];
+				var clid = AdminMessageArray[1];
 
 				serverQueryClient.send('clientmove', {clid: clid, cid: config.afkChannel}, function (error, response) {
 					if (error != undefined) {
@@ -366,21 +365,25 @@ function moveClient(serverQueryClient) {
 			} else {
 				logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
 				database.getApiKey(clientObject, function (error, response) {
+
 					if (error != null) {
 						logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
 					} else {
 						logger.log('debug', 'Received API-key from database.\n' + util.inspect(response))
 						logger.log('info', 'Received API-key from database.');
 
-						switch(response){
+						switch(response.key){
 							case null:
-								logger.log('info', 'API-key still \'NULL\', preparing welcome message.');
+								logger.log('info', 'Verified client without API-Key, preparing welcome message.');
+								//Remove permissions here!
+                                var message = new chatMessage();
+                                serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
+                                var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+                                serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Revoked client permissions because API-key was NULL', message: report});
+                                serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+
 								var message = new chatMessage();
 								serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
-								break;
-
-							case undefined:
-								logger.log('error', 'Verified client without API-Key!');
 								break;
 
 							default:
@@ -445,8 +448,16 @@ function moveClient(serverQueryClient) {
 												};
 
 											} else {
+												//Client revalidated, update account related information in database.
 												logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
 												logger.log('info', 'Checked verified user, all good!');
+												database.updateAccountInformation(response, function (error, response) {
+													if (error != null) {
+														logger.log('error', 'dbError: ' + util.inspect(error));
+													} else {
+														logger.log('info','Updated API-key related information in database.');
+													};
+												});
 											};
 										});
 									};

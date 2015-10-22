@@ -79,7 +79,7 @@ api.account = function(userObject, callback) {
                             break;
 
                         default:
-                            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
                             };
@@ -92,7 +92,7 @@ api.account = function(userObject, callback) {
 
                 case 403:
                     var httpsRequest = JSON.parse(data);
-                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     if (clientObject.apiKey === undefined) {
                         clientObject.apiKey = clientObject.msg;
                     };
@@ -158,14 +158,14 @@ api.world = function(clientObject, callback) {
 
                 case 400:
                     var httpsRequest = JSON.parse(data);
-                    logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
 
                 case 403:
                     var httpsRequest = JSON.parse(data);
-                    logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + httpsRequest);
+                    logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;

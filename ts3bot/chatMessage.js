@@ -47,7 +47,7 @@ function chatMessage(user) {
 				logger.log('info','Key used by other client.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + user.apiKey + '\'');
 				break;
 
-			case 'keyNotValid':
+			case 'keyNotValid  ':
 				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid};
 				logger.log('warning', 'Key not valid.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + '\'' + user.msg + '\'');
 				break;
@@ -60,6 +60,11 @@ function chatMessage(user) {
 			case 'keyNotValid400':
 				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid400};
 				logger.log('warning', 'Key not valid, confirmed by API.');
+				break;
+
+			case 'keyNotValidNull':
+				message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid400};
+				logger.log('warning', 'API-key is NULL.');
 				break;
 
 			case 'apiErrorErrBadData':
