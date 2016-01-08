@@ -127,15 +127,14 @@ database.getOldClients = function (callback) {
     databaseConnection.serialize(function () {
         databaseConnection.each('SELECT * FROM `clients` WHERE `last_seen` <= (?)',ninetyOneDaysOld, function (error, response) {
             oldClients.push({cluid: response.client_unique_id, name: response.client_nickname});
-        },
-        function (error, response) {
-                if (error != null) {
-                    callback(error, null);
-                } else {
-                    callback(null, oldClients);
-                };
-            });
+        }, function (error, response) {
+            if (error != null) {
+                callback(error, null);
+            } else {
+                callback(null, oldClients);
+            };
         });
+    });
     databaseConnection.close();
 };
 
@@ -161,4 +160,21 @@ database.delClient = function (clientUid, callback) {
         statement.finalize();
     });
     databaseConnectionDelClient.close();
+};
+
+database.delMultipleClients = function (clientUids, callback) {
+    logger.log('debug', '\'delMultipleClients\' clientUids:\n' + util.inspect(clientUids));
+    logger.log('debug', 'TEST_pop:\n' + util.inspect(clientUids.pop()));
+
+    var databaseConnectionDelMultipleClients = new sqlite.Database('tsbot.sqlitedb');
+    databaseConnectionDelMultipleClients.serialize(function () {
+        databaseConnectionDelMultipleClients.each('DELETE FROM clients WHERE client_unique_id = (?) AND client_nickname = (?)', clientUids, function (error, response) {
+            logger.log('debug', 'DelMultipleClients.each callback error: ' + util.inspect(error));
+            logger.log('debug', 'DelMultipleClients.each callback response: ' + util.inspect(response));
+        }, function (error, response) {
+            logger.log('debug', '\'DelMultipleClients.each\' completion callback error: ' + util.inspect(error));
+            logger.log('debug', '\'DelMultipleClients.each\' completion callback response: ' + util.inspect(response));
+        });
+    });
+    databaseConnectionDelMultipleClients.close();
 };

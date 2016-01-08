@@ -1,5 +1,5 @@
 {
-	"debuglevel": "info",
+	"debuglevel": "debug",
 	"_debuglevel_comment": "level of debugging.",
 
 	"homeWorld": 2003,

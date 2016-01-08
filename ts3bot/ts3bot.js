@@ -66,44 +66,47 @@ function databaseCleanup(serverQueryClient) {
 		logger.log('debug', 'GetOldClients callback error:\n' + util.inspect(error));
 		logger.log('debug', 'GetOldClients callback response:\n' + util.inspect(response));
 
-		CleanupCount++;	
+		setTimeout(function() {
 
-		// serverQueryClient.oldClients = response;
-		// purgeTsDatabase(serverQueryClient);
+			database.delMultipleClients(response);
 
-		if (response.length != 0) {
-			response.forEach(function (client) {
+			// CleanupCount++;	
 
-				if (CleanupCount === 1) {
-					var report = '[B]' + 'cluid: ' + '[/B]' + client.cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + client.name;
-					serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted old client', message: report}, function (error, response) {
-						logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
-						logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
-					});
-				}
+			// if (response.length != 0) {
+			// 	response.forEach(function (client) {
 
-				logger.log('debug', 'Cluid to delete: ' + client.cluid);
-				database.delClient(client.cluid, function (error, response) {
-					logger.log('debug', 'DelClient callback error:\n' + util.inspect(error));
-					logger.log('debug', 'DelClient callback response:\n' + util.inspect(response));
+			// 		if (CleanupCount === 1) {
+			// 			var report = '[B]' + 'cluid: ' + '[/B]' + client.cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + client.name;
+			// 			serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted old client', message: report}, function (error, response) {
+			// 				logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
+			// 				logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
+			// 			});
+			// 		}
 
-					if (error != null) {
-						logger.log('debug', 'Failed on client: ' + error.client);
-						if (error.errno === 5) {
-							setTimeout(function() {
-								databaseCleanup(serverQueryClient);
-							}, 20000);
-						};
-					} else {
-						logger.log('info', 'Old client got deleted from database!\ncluid: ' + response);
-						serverQueryClient.oldClient = response;
-						purgeTsDatabase(serverQueryClient);
-					};
-				});
-			});
-		} else {
-			logger.log('info', 'No old clients found!');
-		};
+			// 		logger.log('debug', 'Cluid to delete: ' + client.cluid);
+			// 		database.delClient(client.cluid, function (error, response) {
+			// 			logger.log('debug', 'DelClient callback error:\n' + util.inspect(error));
+			// 			logger.log('debug', 'DelClient callback response:\n' + util.inspect(response));
+
+			// 			if (error != null) {
+			// 				logger.log('debug', 'Failed on client: ' + error.client);
+			// 				if (error.errno === 5) {
+			// 					setTimeout(function() {
+			// 						databaseCleanup(serverQueryClient);
+			// 					}, 10000);
+			// 				};
+			// 			} else {
+			// 				logger.log('info', 'Old client got deleted from database!\ncluid: ' + response);
+			// 				serverQueryClient.oldClient = response;
+			// 				purgeTsDatabase(serverQueryClient);
+			// 			};
+			// 		});
+			// 	});
+			// } else {
+			// 	logger.log('info', 'No old clients found!');
+			// };
+
+		}, 1000);
 	});
 };
 
