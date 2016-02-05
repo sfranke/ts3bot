@@ -1,7 +1,6 @@
 var express = require('express');
 var router  = express.Router();
 var util    = require('util');
-var sqlite  = require('sqlite3');
 var https   = require('https');
 
 /* GET users listing. */
@@ -9,24 +8,24 @@ router.get('/', function(req, res, next) {
     res.render('account', {title: 'Ts3Bot', name: undefined});
 });
 
-getAccountinformation = function (Uid, callback) {
-    var databaseConnectionGet = new sqlite.Database('./ts3bot/ts3bot.sqlitedb');
-    databaseConnectionGet.serialize(function() {
-        var statement = databaseConnectionGet.prepare('SELECT * FROM `clients` WHERE `client_unique_id` = (?)');
-        console.log(statement);
-        statement.get(Uid, function(error, response) {
-            console.log('error: ' + error);
-            console.log('response: ' + util.inspect(response));
-            if (error != null) {
-                callback(error, null);
-            } else {
-                callback(null, response);
-            };
-        });
-        statement.finalize();
-    });
-    databaseConnectionGet.close();
-};
+// getAccountinformation = function (Uid, callback) {
+//     var databaseConnectionGet = new sqlite.Database('./ts3bot/ts3bot.sqlitedb');
+//     databaseConnectionGet.serialize(function() {
+//         var statement = databaseConnectionGet.prepare('SELECT * FROM `clients` WHERE `client_unique_id` = (?)');
+//         console.log(statement);
+//         statement.get(Uid, function(error, response) {
+//             console.log('error: ' + error);
+//             console.log('response: ' + util.inspect(response));
+//             if (error != null) {
+//                 callback(error, null);
+//             } else {
+//                 callback(null, response);
+//             };
+//         });
+//         statement.finalize();
+//     });
+//     databaseConnectionGet.close();
+// };
 
 router.post('/', function (req, res, next) {
 

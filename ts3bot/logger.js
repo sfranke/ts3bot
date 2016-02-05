@@ -1,6 +1,6 @@
 var logger = exports,
     config = JSON.parse(require('fs').readFileSync('config.json')),
-    fs = require('fs');
+    fs     = require('fs');
 
 logger.debuglevel = config.debuglevel;
 fs.openSync(__dirname + '/log', 'a');

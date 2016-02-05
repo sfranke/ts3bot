@@ -4,7 +4,6 @@ var TeamSpeakClient = require('node-teamspeak'),
 	config          = JSON.parse(require('fs').readFileSync('config.json')),
 	util            = require('util'),
 	https           = require('https'),
-	sqlite          = require('sqlite3').verbose()
 	logger          = require('./logger'),
 	events          = require('events');
 

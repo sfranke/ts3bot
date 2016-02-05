@@ -4,8 +4,8 @@ var api             = exports,
     util            = require('util'),
     https           = require('https'),
     config          = JSON.parse(require('fs').readFileSync('config.json')),
-    sqlite          = require('sqlite3').verbose(),
     chatMessage     = require('./chatMessage'),
+    logger          = require('./logger'),
     TeamSpeakClient = require('node-teamspeak');
 
 api.account = function(userObject, callback) {
