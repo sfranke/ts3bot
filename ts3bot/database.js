@@ -98,10 +98,11 @@ database.getOldClients = function (callback) {
 };
 
 //Delete a single client from the database.
-database.delClient = function (clientUid, callback) {
+database.delClient = function (client, callback) {
+    logger.log('debug', 'Database client to be deleted: ' + util.inspect(client.client_unique_identifier));
     mongoClient.connect(uri, function (err, db) {
         var collection = db.collection('clients');
-        collection.findOneAndDelete({client_unique_id: clientObject.invokeruid}, function (err, doc) {
+        collection.deleteOne({client_unique_id: client.client_unique_identifier}, function (err, doc) {
             if (err) callback(err, null);
             callback(null, doc);
             db.close();

@@ -23,7 +23,7 @@
 	"clientName": "Impulse_Bot",
 	"_clientName_comment": "Client name that is visible to other clients.",
 
-	"adminReport": "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
+	"adminReport": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=","FkNLFAomYW4f88N9rXI2V3skqUI="],
 	"_adminReport_comment": "The admin client that gets informed about the database cleanup routine.",
 
 	"adminClient": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=", "FkNLFAomYW4f88N9rXI2V3skqUI="],

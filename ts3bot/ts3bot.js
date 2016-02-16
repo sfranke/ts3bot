@@ -9,50 +9,11 @@ var TeamSpeakClient = require('node-teamspeak'),
     api             = require('./api'),
     database        = require('./database'),
     async           = require('async');
+    colors          = require('colors');
 
 function unixTime() {
     var unixStamp = Math.round((new Date()).getTime() / 1000);
     return unixStamp;
-};
-
-//Search for 'old clients' that got deleted from the bot's database.
-//If these exist, delete them from the teamspeak server's database as well.
-//Also notify an admin via offline message.
-function purgeTsDatabase(serverQueryClient){
-    logger.log('debug', 'PurgeTsDatabase serverQueryClient: ' + util.inspect(serverQueryClient.oldClient));
-
-    serverQueryClient.send('clientgetdbidfromuid', {cluid: serverQueryClient.oldClient}, function (error, response){
-        logger.log('debug', 'Get clientDBidFromUid_error: ' + util.inspect(error));
-        logger.log('debug', 'Get clientDBidFromUid_response: ' + util.inspect(response));
-
-        if (error != undefined) {
-            logger.log('debug', 'Error while fetching DBid from teamspeak server.');
-            if (error.id === 512) {
-                logger.log('info', 'Client could not be found in teamspeak server database.\n' + serverQueryClient.oldClient);
-            };
-        } else  {
-            logger.log('debug', 'Client found in teamspeak database.\n' + util.inspect(response));
-            
-            var cluid = response.cluid,
-               cldbid = response.cldbid;
-
-            serverQueryClient.send('clientdbdelete', {cldbid: response.cldbid}, function (error, response) {
-                logger.log('debug', 'Deleting client from teamspeak server_error\n' + util.inspect(error));
-                logger.log('debug', 'Deleting client from teamspeak server_response\n' + util.inspect(response));
-
-                if (error != undefined) {
-                    logger.log('debug', 'Error while deleting user from teamspeak server database.');
-                } else {
-                    //logger.log('info', 'Sending report to admin..');
-                    // var report = '[B]' + 'cluid: ' + '[/B]' + cluid + '\n' + '[B]' + 'cldbid: ' + '[/B]' + cldbid;
-                    // serverQueryClient.send('messageadd', {cluid: config.adminClient, subject: 'Deleted old client', message: report}, function (error, response) {
-                    //     logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
-                    //     logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
-                    // });
-                };
-            });
-        };
-    });
 };
 
 function deleteClientFromTsDatabase (serverQueryClient, client, callback) {
@@ -74,99 +35,82 @@ function databaseCleanup(serverQueryClient) {
 
     // Connect to TS-server database and fetch a list of all clients and their 'client_lastconnected'.
     serverQueryClient.send('clientdblist', function (error, response) {
-        //console.log('error: ', error);
-        //console.log('response: ', response);
 
-        // Check which client is 'old enough' to be deleted.
-        response.forEach(function (client) {
-            //console.log('client: ', client);
+        var timeConstraint = {'ninetyOneDays': '7862400'}
+        ,   timeNow        = unixTime()
+        ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
+        ,   clientList     = response
+        ,   deletedClients = []
+        ,   oldClients     = []
+        ,   completeReport = []
+        ,   report         = '';
 
-            var timeConstraint = {'ninetyOneDays': '7862400'}
-            ,   timeNow        = unixTime()
-            ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
-            ,   oldClients     = [];
-
-            async.series({
-
-                one: function(callback) {
-
+        async.series({
+            
+            one: function (callback) {
+                clientList.forEach(function (client) {
                     if (client.client_lastconnected < ninetyOneDays) {
-
-                        deleteClientFromTsDatabase(serverQueryClient, client, function (error, response) {
-                            console.log('error: ', error);
-                            console.log('response: ', response);
-                            if (error) logger.log('debug', 'Error while deletig from TS3-server database: ' + util.inspect(error));
-                            deletedClients.push(response);
-                        });
-                        callback();
+                        var clientToBeDeleted = client;
+                        oldClients.push(clientToBeDeleted);
+                        //logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
                     }
-                },
+                });
+                callback();
+            },
 
-                two: function(callback) {
-                    console.log('TEST');
-                    callback();
-                }
+            /* Delete old clients from TS-server database. */
+            two: function (callback) {
+                logger.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                oldClients.forEach(function (client) {
+                    serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
+                        if(error) logger.log(colors.red('error', 'Deleting from TS database error: ' + util.inspect(error)));
+                        logger.log(colors.green('debug', 'Deleting from TS database response: ' + util.inspect(response)));
+                    });
+                });
 
+                callback();
 
             },
-            function (error, result) {
-                console.log('Everything done!');
+            
+            /* Delete old clients from TS3Bot database. */
+            three: function (callback) {
+                console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                oldClients.forEach(function (client) {
+                    logger.log(colors.bold('debug', 'Client to delete from mongodb:' + util.inspect(client)));
+                    database.delClient(client, function (error, cb) {
+                        if(error) logger.log('error', 'database.delClient.cb_error: ' + error);
+                        logger.log('debug', 'database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
+                    });
+                });
+                callback();
+            },
+
+            /* Prepare report for admins. */
+            four:  function (callback) {
+                oldClients.forEach(function (client) {
+                    var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
+                    completeReport.push(report);
+                    logger.log(colors.bold('debug', 'Complete Report: ' + completeReport));
+                });
+                callback();
+            }
+        },
+
+        /* Send message to all admin clients. */
+        function (error, result) {
+            config.adminReport.forEach(function (client) {
+                //console.log(colors.bold('TEST:' + client));
+                /* Send reports here -> query TS command to send prepared report for every admin client. */
+                serverQueryClient.send('messageadd', {cluid: client
+                                                    , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
+                                                    , message: completeReport.toString().replace(/,/g, '\n')}
+                                                    , function (error, response) {
+                     if(error) logger.log(colors.red('debug', 'Report to admin_error: ' + util.inspect(error)));
+                     logger.log(colors.green('debug', 'Report to admin_response: ' + util.inspect(response)));
+                });
             });
-
         });
-        //console.log('deletedClients:', util.inspect(deletedClients));
     });
-    // Delete old clients from the TS-server database.
-    // Check if there is a record of an 'old client' in the TS3Bot's database and remove those.
-    // Send a message with all the deleted 'old clients' to an admin.
-
-
-    // database.getOldClients(function (error, response) {
-    //     logger.log('debug', 'GetOldClients callback error:\n' + util.inspect(error));
-    //     logger.log('debug', 'GetOldClients callback response:\n' + util.inspect(response));
-
-    //     //setTimeout(function() {
-
-    //         database.delMultipleClients(response);
-
-    //          CleanupCount++;    
-
-    //          if (response.length != 0) {
-    //              response.forEach(function (client) {
-
-    //                  if (CleanupCount === 1) {
-    //                      var report = '[B]' + 'cluid: ' + '[/B]' + client.cluid + '\n' + '[B]' + 'nick: ' + '[/B]' + client.name;
-    //                      serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted old client', message: report}, function (error, response) {
-    //                          logger.log('debug', 'Report to admin_error: ' + util.inspect(error));
-    //                          logger.log('debug', 'Report to admin_response: ' + util.inspect(response));
-    //                      });
-    //                  }
-
-    //                  logger.log('debug', 'Cluid to delete: ' + client.cluid);
-    //                  database.delClient(client.cluid, function (error, response) {
-    //                      logger.log('debug', 'DelClient callback error:\n' + util.inspect(error));
-    //                      logger.log('debug', 'DelClient callback response:\n' + util.inspect(response));
-
-    //                      if (error != null) {
-    //                          logger.log('debug', 'Failed on client: ' + error.client);
-    //                          if (error.errno === 5) {
-    //                              setTimeout(function() {
-    //                                  databaseCleanup(serverQueryClient);
-    //                              }, 10000);
-    //                          };
-    //                      } else {
-    //                          logger.log('info', 'Old client got deleted from database!\ncluid: ' + response);
-    //                          serverQueryClient.oldClient = response;
-    //                          purgeTsDatabase(serverQueryClient);
-    //                      };
-    //                  });
-    //              });
-    //          } else {
-    //              logger.log('info', 'No old clients found!');
-    //          };
-
-    //     //}, 1000);
-    // });
 };
 
 //Function to move idle client from cleanChannel(lobby) to config.afkChannel(AFK-Channel).
