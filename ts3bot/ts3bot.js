@@ -52,7 +52,7 @@ function databaseCleanup(serverQueryClient) {
                     if (client.client_lastconnected < ninetyOneDays) {
                         var clientToBeDeleted = client;
                         oldClients.push(clientToBeDeleted);
-                        //logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
+                        logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
                     }
                 });
                 callback();
