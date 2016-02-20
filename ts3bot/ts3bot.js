@@ -27,89 +27,139 @@ function deleteClientFromTsDatabase (serverQueryClient, client, callback) {
     });
 };
 
+
+function checkClientList (serverQueryClient, offset, callback) {
+    
+    console.log('offset: ' + offset);
+
+    // var allClients  = clientList;
+    // var clientCount = 0;
+
+    serverQueryClient.send('clientdblist', {start: offset, duration: 7200},  function (error, response) {
+
+        
+        // console.log(colors.bold('error: ' + error));
+        // console.log(colors.bold('response: ' + util.inspect(response)));
+        // console.log(colors.green('TEST: ' + response.length));
+        // console.log(colors.green('TEST_clientCount: ' + clientCount));
+
+
+        if (error === undefined) {
+            console.log(colors.green('got some clients from ts-server.'));
+            // clientCount = response.length;
+            // allClients.push(response);
+            // checkClientList(serverQueryClient, (offset += 200), allClients);
+            callback(null, response);
+        } else {
+            console.log(colors.red('received empty list! = No clients in this batch!'));
+            callback(error, null);
+        };
+    });
+};
+
 //Search for old clients 'last_seen' older than 91 days
 //and delete them from the bot's database.
 function databaseCleanup(serverQueryClient) {
 
     var deletedClients = [];
+    var clientList     = [];
+    var offset         = 0;
 
-    // Connect to TS-server database and fetch a list of all clients and their 'client_lastconnected'.
-    serverQueryClient.send('clientdblist', function (error, response) {
+    checkClientList(serverQueryClient, offset, function (error, callback) {
+        console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
+        console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
+        // console.log(colors.red('ClientCount' + clientCount));
 
-        var timeConstraint = {'ninetyOneDays': '7862400'}
-        ,   timeNow        = unixTime()
-        ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
-        ,   clientList     = response
-        ,   deletedClients = []
-        ,   oldClients     = []
-        ,   completeReport = []
-        ,   report         = '';
-
-        async.series({
-            
-            one: function (callback) {
-                clientList.forEach(function (client) {
-                    if (client.client_lastconnected < ninetyOneDays) {
-                        var clientToBeDeleted = client;
-                        oldClients.push(clientToBeDeleted);
-                        logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
-                    }
-                });
-                callback();
-            },
-
-            /* Delete old clients from TS-server database. */
-            two: function (callback) {
-                logger.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                oldClients.forEach(function (client) {
-                    serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
-                        if(error) logger.log(colors.red('error', 'Deleting from TS database error: ' + util.inspect(error)));
-                        logger.log(colors.green('debug', 'Deleting from TS database response: ' + util.inspect(response)));
-                    });
-                });
-
-                callback();
-
-            },
-            
-            /* Delete old clients from TS3Bot database. */
-            three: function (callback) {
-                console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                oldClients.forEach(function (client) {
-                    logger.log(colors.bold('debug', 'Client to delete from mongodb:' + util.inspect(client)));
-                    database.delClient(client, function (error, cb) {
-                        if(error) logger.log('error', 'database.delClient.cb_error: ' + error);
-                        logger.log('debug', 'database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
-                    });
-                });
-                callback();
-            },
-
-            /* Prepare report for admins. */
-            four:  function (callback) {
-                oldClients.forEach(function (client) {
-                    var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
-                    completeReport.push(report);
-                    logger.log(colors.bold('debug', 'Complete Report: ' + completeReport));
-                });
-                callback();
-            }
-        },
-
-        /* Send message to all admin clients. */
-        function (error, result) {
-            config.adminReport.forEach(function (client) {
-                //console.log(colors.bold('TEST:' + client));
-                /* Send reports here -> query TS command to send prepared report for every admin client. */
-                serverQueryClient.send('messageadd', {cluid: client
-                                                    , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
-                                                    , message: completeReport.toString().replace(/,/g, '\n')}
-                                                    , function (error, response) {
-                     if(error) logger.log(colors.red('debug', 'Report to admin_error: ' + util.inspect(error)));
-                     logger.log(colors.green('debug', 'Report to admin_response: ' + util.inspect(response)));
-                });
+        while (error != null) {
+            checkClientList(serverQueryClient, (offset+=200), function (error, callback) {
+                clientList.push(callback);
             });
-        });
+        }
+
+        if (error === null) {
+
+            console.log('Completed collecting clientdblist: ' + util.inspect(clientList));
+
+            var timeConstraint = {'ninetyOneDays': '7862400'}
+            ,   timeNow        = unixTime()
+            ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
+            ,   clientList     = callback
+            ,   deletedClients = []
+            ,   oldClients     = []
+            ,   completeReport = []
+            ,   report         = '';
+
+            async.series({
+                
+                one: function (callback) {
+                    
+                    if(clientList != undefined){
+                        clientList.forEach(function (client) {
+                            if (client.client_lastconnected < ninetyOneDays) {
+                                var clientToBeDeleted = client;
+                                oldClients.push(clientToBeDeleted);
+                                logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
+                            }
+                        });
+                        callback();
+                    } else {
+                        console.log('clientList is empty!');
+                    }
+                },
+
+                /* Delete old clients from TS-server database. */
+                two: function (callback) {
+                    console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                    oldClients.forEach(function (client) {
+                        serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
+                            if(error) console.log(colors.red('error', 'Deleting from TS database error: ' + util.inspect(error)));
+                            console.log(colors.green('debug', 'Deleting from TS database response: ' + util.inspect(response)));
+                        });
+                    });
+                    callback();
+                },
+                
+                /* Delete old clients from TS3Bot database. */
+                three: function (callback) {
+                    console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                    oldClients.forEach(function (client) {
+                        console.log(colors.bold('debug', 'Client to delete from mongodb:' + util.inspect(client)));
+                        database.delClient(client, function (error, cb) {
+                            if(error) console.log('database.delClient.cb_error: ' + error);
+                            console.log('database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
+                        });
+                    });
+                    callback();
+                },
+
+                /* Prepare report for admins. */
+                four:  function (callback) {
+                    oldClients.forEach(function (client) {
+                        var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
+                        completeReport.push(report);
+                        console.log(colors.bold('debug', 'Complete Report: ' + completeReport));
+                    });
+                    callback();
+                }
+            },
+
+            /* Send message to all admin clients. */
+            function (error, result) {
+                if (completeReport != undefined) {
+                    config.adminReport.forEach(function (client) {
+                        //console.log(colors.bold('TEST:' + client));
+                        /* Send reports here -> query TS command to send prepared report for every admin client. */
+                        serverQueryClient.send('messageadd', {cluid: client
+                                                            , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
+                                                            , message: completeReport.toString().replace(/,/g, '\n')}
+                                                            , function (error, response) {
+                             if(error) console.log(colors.red('debug', 'Report to admin_error: ' + util.inspect(error)));
+                             console.log(colors.green('debug', 'Report to admin_response: ' + util.inspect(response)));
+                        });
+                    });
+                }
+            });
+        }
     });
 };
 
@@ -317,7 +367,7 @@ function moveClient(serverQueryClient) {
                 };
             });
 
-        } else if (config.adminClient.indexOf(response.invokeruid) != -1) {
+        } else if (config.adminReport.indexOf(response.invokeruid) != -1) {
             var message = new chatMessage();
             serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
             logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'');
@@ -397,7 +447,11 @@ function moveClient(serverQueryClient) {
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
                                     var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                    serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Revoked client permissions because API-key was NULL', message: report});
+                                    
+                                    config.adminReport.forEach(function (client) {
+                                        serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions because API-key was NULL', message: report});
+                                    }
+                                    
                                     serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 
                                     var message = new chatMessage();
@@ -436,7 +490,9 @@ function moveClient(serverQueryClient) {
                                                                         logger.log('error', 'Error while receiving cldbid: ' + error);
                                                                     } else {
                                                                         var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
-                                                                        serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted client because of invalid key', message: report});
+                                                                        config.adminReport.forEach(function (client) {
+                                                                            serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of invalid key', message: report});
+                                                                        }
                                                                         serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
                                                                     };
                                                                 });
@@ -455,7 +511,9 @@ function moveClient(serverQueryClient) {
                                                                 var message = new chatMessage();
                                                                 serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', clientObject));
                                                                 var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                                                serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Deleted client because of foreign world', message: report});
+                                                                config.adminReport.forEach(function (client) {
+                                                                    serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of foreign world', message: report});
+                                                                }
                                                                 serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
                                                             };
                                                         });
@@ -501,7 +559,9 @@ function moveClient(serverQueryClient) {
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
                                     var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                    serverQueryClient.send('messageadd', {cluid: config.adminReport, subject: 'Revoked client permissions for client without database entry.', message: report});
+                                    config.adminReport.forEach(function (client) {
+                                        serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions for client without database entry.', message: report});
+                                    }
                                     serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 
                                     var message = new chatMessage();

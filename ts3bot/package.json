@@ -4,6 +4,9 @@
   "description": "another teamspeak3 bot",
   "homepage": "",
   "bugs": "",
+  "scripts": {
+    "start": "node ts3bot.js"
+  },
   "licenses": [
     {
       "type": "",
@@ -22,7 +25,7 @@
     "async": "1.5.2",
     "colors": "1.1.2",
     "kerberos": "0.0.18",
-    "mongodb": "node_modules/mongodb",
+    "mongodb": "2.1.7",
     "node-teamspeak": "1.0.10"
   }
 }

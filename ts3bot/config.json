@@ -26,9 +26,6 @@
 	"adminReport": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=","FkNLFAomYW4f88N9rXI2V3skqUI="],
 	"_adminReport_comment": "The admin client that gets informed about the database cleanup routine.",
 
-	"adminClient": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=", "FkNLFAomYW4f88N9rXI2V3skqUI="],
-	"_adminClient_comment": "Uid of admin client.",
-
 	"MoveAfkClientsFromLobby": false,
 	"_MoveAfkClientsFromLobby_comment": "To enable this feature set flag to 'true'.",
 
@@ -47,8 +44,7 @@
 	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
 	"_welcomePoke_comment": "",
 	
-	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://thisisgandara.com/showthread.php?1173-How-to-interact-with-the-TS-Permission-Bot[/URL].",
-	"_welcomMessage_comment": "Welcome message that is send to every new client.",
+	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
 	
 	"confirmAccessMsg": "You are Gandaran. Welcome to our community!",
 	"_confirmAccessMsg_comment": "Message that is send after successful registration.",

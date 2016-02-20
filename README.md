@@ -9,8 +9,8 @@ Ts3Bot is a stand alone nodejs application that observes clients connecting to y
 - node (https://nodejs.org/)
 - npm (https://www.npmjs.com/)
 - node-teamspeak (https://github.com/gwTumm/node-teamspeak)
-- sqlite3 (https://www.npmjs.com/package/sqlite3)
-- expressjs 4.13.1 (http://expressjs.com/)
+- mongodb (https://www.mongodb.org/)
+- expressjs (http://expressjs.com/)
 
 ## Installation
 
