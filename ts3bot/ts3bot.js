@@ -45,13 +45,13 @@ function checkClientList (serverQueryClient, offset, callback) {
 
 
         if (error === undefined) {
-            console.log(colors.green('got some clients from ts-server.'));
+            console.log('got some clients from ts-server.');
             // clientCount = response.length;
             // allClients.push(response);
             // checkClientList(serverQueryClient, (offset += 200), allClients);
             callback(null, response);
         } else {
-            console.log(colors.red('received empty list! = No clients in this batch!'));
+            console.log('received empty list! = No clients in this batch!');
             callback(error, null);
         };
     });
@@ -66,8 +66,8 @@ function databaseCleanup(serverQueryClient) {
     var offset         = 0;
 
     checkClientList(serverQueryClient, offset, function (error, callback) {
-        console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
-        console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
+        // console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
+        // console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
         // console.log(colors.red('ClientCount' + clientCount));
 
         while (error != null) {
@@ -112,8 +112,8 @@ function databaseCleanup(serverQueryClient) {
                     console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
                     oldClients.forEach(function (client) {
                         serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
-                            if(error) console.log(colors.red('error', 'Deleting from TS database error: ' + util.inspect(error)));
-                            console.log(colors.green('debug', 'Deleting from TS database response: ' + util.inspect(response)));
+                            if(error) console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
+                            console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
                         });
                     });
                     callback();
@@ -123,7 +123,7 @@ function databaseCleanup(serverQueryClient) {
                 three: function (callback) {
                     console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
                     oldClients.forEach(function (client) {
-                        console.log(colors.bold('debug', 'Client to delete from mongodb:' + util.inspect(client)));
+                        console.log('debug', 'Client to delete from mongodb:' + util.inspect(client));
                         database.delClient(client, function (error, cb) {
                             if(error) console.log('database.delClient.cb_error: ' + error);
                             console.log('database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
@@ -137,7 +137,7 @@ function databaseCleanup(serverQueryClient) {
                     oldClients.forEach(function (client) {
                         var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
                         completeReport.push(report);
-                        console.log(colors.bold('debug', 'Complete Report: ' + completeReport));
+                        console.log('debug', 'Complete Report: ' + completeReport);
                     });
                     callback();
                 }
@@ -153,8 +153,8 @@ function databaseCleanup(serverQueryClient) {
                                                             , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
                                                             , message: completeReport.toString().replace(/,/g, '\n')}
                                                             , function (error, response) {
-                             if(error) console.log(colors.red('debug', 'Report to admin_error: ' + util.inspect(error)));
-                             console.log(colors.green('debug', 'Report to admin_response: ' + util.inspect(response)));
+                             if(error) console.log('Report to admin_error: ' + util.inspect(error));
+                             console.log('Report to admin_response: ' + util.inspect(response));
                         });
                     });
                 }
