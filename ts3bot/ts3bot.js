@@ -450,7 +450,7 @@ function moveClient(serverQueryClient) {
                                     
                                     config.adminReport.forEach(function (client) {
                                         serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions because API-key was NULL', message: report});
-                                    }
+                                    });
                                     
                                     serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 
@@ -492,7 +492,7 @@ function moveClient(serverQueryClient) {
                                                                         var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
                                                                         config.adminReport.forEach(function (client) {
                                                                             serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of invalid key', message: report});
-                                                                        }
+                                                                        });
                                                                         serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
                                                                     };
                                                                 });
@@ -513,7 +513,7 @@ function moveClient(serverQueryClient) {
                                                                 var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
                                                                 config.adminReport.forEach(function (client) {
                                                                     serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of foreign world', message: report});
-                                                                }
+                                                                });
                                                                 serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
                                                             };
                                                         });
@@ -561,7 +561,7 @@ function moveClient(serverQueryClient) {
                                     var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
                                     config.adminReport.forEach(function (client) {
                                         serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions for client without database entry.', message: report});
-                                    }
+                                    });
                                     serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
 
                                     var message = new chatMessage();
