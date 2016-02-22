@@ -147,7 +147,7 @@ function databaseCleanup(serverQueryClient) {
 
                     /* Send message to all admin clients. */
                     function (error, result) {
-                        if (completeReport != undefined) {
+                        if (completeReport.length != 0) {
                             config.adminReport.forEach(function (client) {
                                 //console.log(colors.bold('TEST:' + client));
                                 /* Send reports here -> query TS command to send prepared report for every admin client. */
