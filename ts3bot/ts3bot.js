@@ -65,102 +65,108 @@ function databaseCleanup(serverQueryClient) {
     var clientList     = [];
     var offset         = 0;
 
-    checkClientList(serverQueryClient, offset, function (error, callback) {
-        // console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
-        // console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
-        // console.log(colors.red('ClientCount' + clientCount));
+    serverQueryClient.send('clientdblist', ['count'], function (error, response) {
+        console.log(colors.red('error: ' + util.inspect(error)));
+        console.log(colors.bold(util.inspect(response[0].count)));
 
-        while (error != null) {
-            checkClientList(serverQueryClient, (offset+=200), function (error, callback) {
-                clientList.push(callback);
-            });
-        }
+        var totalClientsInDatabase = response[0].count;
 
-        if (error === null) {
+        while (offset <= totalClientsInDatabase) {
 
-            console.log('Completed collecting clientdblist: ' + util.inspect(clientList));
-
-            var timeConstraint = {'ninetyOneDays': '7862400'}
-            ,   timeNow        = unixTime()
-            ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
-            ,   clientList     = callback
-            ,   deletedClients = []
-            ,   oldClients     = []
-            ,   completeReport = []
-            ,   report         = '';
-
-            async.series({
+            checkClientList(serverQueryClient, offset, function (error, callback) {
                 
-                one: function (callback) {
-                    
-                    if(clientList != undefined){
-                        clientList.forEach(function (client) {
-                            if (client.client_lastconnected < ninetyOneDays) {
-                                var clientToBeDeleted = client;
-                                oldClients.push(clientToBeDeleted);
-                                logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
+                console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
+                console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
+
+                if (error === null) {
+
+                    console.log('Completed collecting clientdblist: ' + util.inspect(clientList));
+
+                    var timeConstraint = {'ninetyOneDays': '7862400'}
+                    ,   timeNow        = unixTime()
+                    ,   ninetyOneDays  = timeNow - timeConstraint.ninetyOneDays
+                    ,   clientList     = callback
+                    ,   deletedClients = []
+                    ,   oldClients     = []
+                    ,   completeReport = []
+                    ,   report         = '';
+
+                    async.series({
+                        
+                        one: function (callback) {
+                            
+                            if(clientList != undefined){
+                                clientList.forEach(function (client) {
+                                    if (client.client_lastconnected < ninetyOneDays) {
+                                        var clientToBeDeleted = client;
+                                        oldClients.push(clientToBeDeleted);
+                                        logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
+                                    }
+                                });
+                                callback();
+                            } else {
+                                console.log('clientList is empty!');
                             }
-                        });
-                        callback();
-                    } else {
-                        console.log('clientList is empty!');
-                    }
-                },
+                        },
 
-                /* Delete old clients from TS-server database. */
-                two: function (callback) {
-                    console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                    oldClients.forEach(function (client) {
-                        serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
-                            if(error) console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
-                            console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
-                        });
-                    });
-                    callback();
-                },
-                
-                /* Delete old clients from TS3Bot database. */
-                three: function (callback) {
-                    console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                    oldClients.forEach(function (client) {
-                        console.log('debug', 'Client to delete from mongodb:' + util.inspect(client));
-                        database.delClient(client, function (error, cb) {
-                            if(error) console.log('database.delClient.cb_error: ' + error);
-                            console.log('database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
-                        });
-                    });
-                    callback();
-                },
+                        /* Delete old clients from TS-server database. */
+                        two: function (callback) {
+                            console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                            oldClients.forEach(function (client) {
+                                serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
+                                    if(error) console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
+                                    console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
+                                });
+                            });
+                            callback();
+                        },
+                        
+                        /* Delete old clients from TS3Bot database. */
+                        three: function (callback) {
+                            console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
+                            oldClients.forEach(function (client) {
+                                console.log('debug', 'Client to delete from mongodb:' + util.inspect(client));
+                                database.delClient(client, function (error, cb) {
+                                    if(error) console.log('database.delClient.cb_error: ' + error);
+                                    console.log('database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
+                                });
+                            });
+                            callback();
+                        },
 
-                /* Prepare report for admins. */
-                four:  function (callback) {
-                    oldClients.forEach(function (client) {
-                        var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
-                        completeReport.push(report);
-                        console.log('debug', 'Complete Report: ' + completeReport);
-                    });
-                    callback();
-                }
-            },
+                        /* Prepare report for admins. */
+                        four:  function (callback) {
+                            oldClients.forEach(function (client) {
+                                var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
+                                completeReport.push(report);
+                                console.log('debug', 'Complete Report: ' + completeReport);
+                            });
+                            callback();
+                        }
+                    },
 
-            /* Send message to all admin clients. */
-            function (error, result) {
-                if (completeReport != undefined) {
-                    config.adminReport.forEach(function (client) {
-                        //console.log(colors.bold('TEST:' + client));
-                        /* Send reports here -> query TS command to send prepared report for every admin client. */
-                        serverQueryClient.send('messageadd', {cluid: client
-                                                            , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
-                                                            , message: completeReport.toString().replace(/,/g, '\n')}
-                                                            , function (error, response) {
-                             if(error) console.log('Report to admin_error: ' + util.inspect(error));
-                             console.log('Report to admin_response: ' + util.inspect(response));
-                        });
+                    /* Send message to all admin clients. */
+                    function (error, result) {
+                        if (completeReport != undefined) {
+                            config.adminReport.forEach(function (client) {
+                                //console.log(colors.bold('TEST:' + client));
+                                /* Send reports here -> query TS command to send prepared report for every admin client. */
+                                serverQueryClient.send('messageadd', {cluid: client
+                                                                    , subject: 'Database-Cleanup - List of deleted clients older than 90 days.'
+                                                                    , message: completeReport.toString().replace(/,/g, '\n')}
+                                                                    , function (error, response) {
+                                     if(error) console.log('Report to admin_error: ' + util.inspect(error));
+                                     console.log('Report to admin_response: ' + util.inspect(response));
+                                });
+                            });
+                        }
                     });
                 }
             });
+            offset += 200;
         }
     });
+
 };
 
 //Function to move idle client from cleanChannel(lobby) to config.afkChannel(AFK-Channel).
