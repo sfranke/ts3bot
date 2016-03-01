@@ -8,7 +8,7 @@ var TeamSpeakClient = require('node-teamspeak'),
     chatMessage     = require('./chatMessage')
     api             = require('./api'),
     database        = require('./database'),
-    async           = require('async');
+    async           = require('async'),
     colors          = require('colors');
 
 function unixTime() {
@@ -17,43 +17,36 @@ function unixTime() {
 };
 
 function deleteClientFromTsDatabase (serverQueryClient, client, callback) {
-    serverQueryClient.send('clientdbdelete', {'cldbid': client.cldbid}, function (error, response) {
-        //console.log('error: ', error);
-        //console.log('response: ', response);
-
-        if(error) callback(error, null);
-        callback(null, client);
-
+    serverQueryClient.send('clientdbdelete', {'cldbid': client.cldbid},
+        function (error, response) {
+            //console.log('error: ', error);
+            //console.log('response: ', response);
+            if(error) callback(error, null);
+            callback(null, client);
     });
 };
 
 
 function checkClientList (serverQueryClient, offset, callback) {
-    
     console.log('offset: ' + offset);
-
     // var allClients  = clientList;
     // var clientCount = 0;
-
-    serverQueryClient.send('clientdblist', {start: offset, duration: 7200},  function (error, response) {
-
-        
-        // console.log(colors.bold('error: ' + error));
-        // console.log(colors.bold('response: ' + util.inspect(response)));
-        // console.log(colors.green('TEST: ' + response.length));
-        // console.log(colors.green('TEST_clientCount: ' + clientCount));
-
-
-        if (error === undefined) {
-            console.log('got some clients from ts-server.');
-            // clientCount = response.length;
-            // allClients.push(response);
-            // checkClientList(serverQueryClient, (offset += 200), allClients);
-            callback(null, response);
-        } else {
-            console.log('received empty list! = No clients in this batch!');
-            callback(error, null);
-        };
+    serverQueryClient.send('clientdblist', {start: offset, duration: 7200},
+        function (error, response) {
+            // console.log(colors.bold('error: ' + error));
+            // console.log(colors.bold('response: ' + util.inspect(response)));
+            // console.log(colors.green('TEST: ' + response.length));
+            // console.log(colors.green('TEST_clientCount: ' + clientCount));
+            if (error === undefined) {
+                console.log('got some clients from ts-server.');
+                // clientCount = response.length;
+                // allClients.push(response);
+                // checkClientList(serverQueryClient, (offset += 200), allClients);
+                callback(null, response);
+            } else {
+                console.log('received empty list! = No clients in this batch!');
+                callback(error, null);
+            };
     });
 };
 
@@ -74,7 +67,7 @@ function databaseCleanup(serverQueryClient) {
         while (offset <= totalClientsInDatabase) {
 
             checkClientList(serverQueryClient, offset, function (error, callback) {
-                
+
                 console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
                 console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
 
@@ -92,9 +85,9 @@ function databaseCleanup(serverQueryClient) {
                     ,   report         = '';
 
                     async.series({
-                        
+
                         one: function (callback) {
-                            
+
                             if(clientList != undefined){
                                 clientList.forEach(function (client) {
                                     if (client.client_lastconnected < ninetyOneDays) {
@@ -120,7 +113,7 @@ function databaseCleanup(serverQueryClient) {
                             });
                             callback();
                         },
-                        
+
                         /* Delete old clients from TS3Bot database. */
                         three: function (callback) {
                             console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
@@ -181,7 +174,7 @@ function moveClient(serverQueryClient) {
             for (user in response) {
                 //Declare server query clients
                 var serverQueryClientType = 1;
-                /*recognize only clients of client_type(0), 
+                /*recognize only clients of client_type(0),
                   clients that are idle for more than idleTimeLimit and
                   clients that are currently in cleanChannel.*/
                 if (response[user].client_type != serverQueryClientType && response[user].client_idle_time >= config.idleTimeLimit && response[user].cid === config.cleanChannel) {
@@ -190,7 +183,7 @@ function moveClient(serverQueryClient) {
 
                     var clientObject = {};
                         clientObject.clid = response[user].clid;
-                    
+
                     serverQueryClient.send('clientmove', {clid: clientObject.clid, cid: config.afkChannel}, function (error, response) {
                         logger.log('debug', 'clientmove_error.\n' + util.inspect(error));
                         //logger.log('debug', 'clientmove_response.\n' + util.inspect(response));
@@ -270,7 +263,7 @@ function moveClient(serverQueryClient) {
                                                                         };
                                                                     } else {
                                                                         logger.log('error', 'Unhandled error while creating database.');
-                                                                    };  
+                                                                    };
                                                                 } else {
                                                                     logger.log('info', 'Creating new database and \'clients\' table.');
                                                                     if (config.MoveAfkClientsFromLobby === true) {
@@ -297,18 +290,13 @@ function moveClient(serverQueryClient) {
 
     //listen on incoming private messages.
     serverQueryClient.on('textmessage', function (response) {
-
         if (response.invokername != config.clientName && response.msg.length === 72) {
-            
             api.account(response, function (error, response) {
-
                 logger.log('debug', 'api.account_callback_err: ' + util.inspect(error));
                 logger.log('debug', 'api.account_callback_res:\n' + util.inspect(response));
                 var clientObject = response;
-
                 if (error != null) {
                     logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error));
-
                     //check error cases here!
                     //If error object contains 'accountWorldName' and 'accountWorldId' which only is set if account is associated with foreign world.
                     if (error.accountWorldName != undefined && error.accountWorldId != config.homeWorld) {
@@ -338,7 +326,6 @@ function moveClient(serverQueryClient) {
                         var message = new chatMessage();
                         serverQueryClient.send('sendtextmessage', message.chatSend('api503', error));
                     };
-
                 } else {
                     //no error process valid data.
                     //Account and world checked, verified Gandaran!
@@ -377,16 +364,12 @@ function moveClient(serverQueryClient) {
             var message = new chatMessage();
             serverQueryClient.send('sendtextmessage', message.chatSend('admin', response));
             logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'');
-
             logger.log('debug', 'ResponseOnject on AdminMessage: ' + util.inspect(response));
             if (response.msg.length > 1) {
                 var AdminMessageArray = response.msg.split(' ');
                 logger.log('debug', 'AdminMessageArray after split() ' + AdminMessageArray);
-
                 if (AdminMessageArray[0] === '!move') {
-
                     var clid = AdminMessageArray[1];
-
                     serverQueryClient.send('clientmove', {clid: clid, cid: config.afkChannel}, function (error, response) {
                         if (error != undefined) {
                             logger.log('error', 'While \'clientmove\': ' + error.msg);
@@ -398,29 +381,24 @@ function moveClient(serverQueryClient) {
                     });
                 }
             }
-
         } else if (response.invokername != config.clientName && response.msg.length != 72) {
             var message = new chatMessage();
             serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid', response));
         };
-
     });
 
     //Listen on server event 'cliententerview'.
     serverQueryClient.on('cliententerview', function(response){
-
         var clientObject             = response;
             clientObject.invokername = clientObject.client_nickname;
             clientObject.invokeruid  = clientObject.client_unique_identifier;
             clientObject.invokerdbid = clientObject.client_database_id;
             clientObject.invokerid   = clientObject.clid;
-
         //If a user is connecting via the teamspeak client, ignore server query clients.
         if (clientObject.client_type === 0) {
             //Server groups should always be a string even if it's just a single one.
             var groups = clientObject.client_servergroups.toString();
             if (groups.match(config.verifiedClientServerGroupId) === null) {
-
                 database.setNewUser(clientObject, function(error, response) {
                     logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
                     logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
@@ -430,22 +408,18 @@ function moveClient(serverQueryClient) {
                         logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
                     };
                 });
-
                 var message = new chatMessage();
                 serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
                 serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
             } else {
                 logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                 database.getApiKey(clientObject, function (error, response) {
-
                     if (error != null) {
                         logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
                     } else {
                         logger.log('debug', 'Received API-key from database.\n' + util.inspect(response))
                         logger.log('info', 'Received API-key from database.');
-
                         if (response != undefined) {
-
                             switch(response.gw2_api_key){
                                 case null:
                                     logger.log('info', 'Verified client without API-Key, preparing welcome message.');
@@ -453,17 +427,13 @@ function moveClient(serverQueryClient) {
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
                                     var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                    
                                     config.adminReport.forEach(function (client) {
                                         serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions because API-key was NULL', message: report});
                                     });
-                                    
                                     serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
-
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
                                     break;
-
                                 default:
                                     clientObject.apiKey         = response.gw2_api_key;
                                     clientObject.accountId      = response.gw2_account_id;
@@ -532,7 +502,6 @@ function moveClient(serverQueryClient) {
                                                         var message = new chatMessage();
                                                         serverQueryClient.send('sendtextmessage', message.chatSend('api503', clientObject));
                                                     };
-
                                                 } else {
                                                     //Client revalidated, update account related information in database.
                                                     logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
@@ -551,25 +520,37 @@ function moveClient(serverQueryClient) {
                                     break;
                             };
                         } else {
-
                             database.setNewUser(clientObject, function(error, response) {
                                 logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
                                 logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
                                 if (error != null) {
-                                    logger.log('info', 'Noticed unregistered user re-visiting on connect.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
+                                    logger.log('info', 'Noticed unregistered user re-visiting on connect.\n'
+                                                        + '(' + clientObject.invokerid + ')'
+                                                        + clientObject.invokername + ' \''
+                                                        + clientObject.invokeruid + '\'');
                                 } else {
-                                    logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
-                                
+                                    logger.log('info', 'Added new client:\n'
+                                                        + '(' + clientObject.invokerid + ')'
+                                                        + clientObject.invokername
+                                                        + ' \'' + clientObject.invokeruid + '\'');
                                     logger.log('info', 'Unknown client! Preparing welcome message..');
                                     //Remove permissions here!
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
-                                    var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+                                    var report  = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n'
+                                                + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n'
+                                                + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
                                     config.adminReport.forEach(function (client) {
-                                        serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions for client without database entry.', message: report});
+                                        serverQueryClient.send('messageadd', {
+                                            cluid: client,
+                                            subject: 'Revoked client permissions for client without database entry.',
+                                            message: report
+                                        });
                                     });
-                                    serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
-
+                                    serverQueryClient.send('servergroupdelclient', {
+                                        sgid: config.verifiedClientServerGroupId,
+                                        cldbid: clientObject.invokerdbid
+                                    });
                                     var message = new chatMessage();
                                     serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
                                 };
@@ -580,7 +561,6 @@ function moveClient(serverQueryClient) {
             };
         };
     });
-
     serverQueryClient.on('queryError', function (error, response) {
         //Error id for banned status.
         if (error.id === '3329') {
@@ -591,7 +571,6 @@ function moveClient(serverQueryClient) {
             console.log('error', 'Invalid loginname or password')
         };
     });
-
     serverQueryClient.on('error', function (error, response, rawResponse) {
         if (error != undefined) {
             logger.log('error', 'An error occured on close!');
@@ -606,7 +585,6 @@ function moveClient(serverQueryClient) {
             logger.log('debug', 'An error has occured: ' + '\n' + util.inspect(rawResponse));
         };
     });
-
     serverQueryClient.on('close', function (error, response) {
         if (error != undefined) {
             logger.log('info', 'Close event has been fired!');

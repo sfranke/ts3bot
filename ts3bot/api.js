@@ -9,10 +9,8 @@ var api             = exports,
     TeamSpeakClient = require('node-teamspeak');
 
 api.account = function(userObject, callback) {
-    
     var token        = userObject.msg || userObject.apiKey,
         clientObject = userObject;
-
     var options = {
         hostname: 'api.guildwars2.com',
         path: '/v2/account',
@@ -21,14 +19,12 @@ api.account = function(userObject, callback) {
             Authorization: 'Bearer ' + token
         }
     };
-
     https.get(options, function(response) {
         response.on('data', function(data) {
             switch(response.statusCode) {
                 case 200:
                     var httpsRequest = JSON.parse(data);
                     var guilds = JSON.stringify(httpsRequest.guilds);
-
                     if (httpsRequest.world === config.homeWorld) {
                         //Add information gathered with api call to clientObject.
                         clientObject.apiKey         = token;
@@ -36,15 +32,12 @@ api.account = function(userObject, callback) {
                         clientObject.accountName    = httpsRequest.name;
                         clientObject.accountGuilds  = guilds;
                         clientObject.accountCreated = httpsRequest.created;
-
                         callback(null, clientObject);
                     } else {
-                        
                         clientObject.accountWorldId = httpsRequest.world;
                         if (clientObject.apiKey === undefined) {
                             clientObject.apiKey = clientObject.msg;
                         };
-                        
                         api.world(clientObject, function(error, response) {
                             if (error != null) {
                                 callback(error, null);
@@ -54,7 +47,6 @@ api.account = function(userObject, callback) {
                         });
                     };
                     break;
-
                 case 400:
                     var httpsRequest = JSON.parse(data);
                     switch(httpsRequest.text) {
@@ -67,7 +59,6 @@ api.account = function(userObject, callback) {
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
                             break;
-
                         case 'ErrBadData':
                             logger.log('info', 'Server responding with "ErrBadData" -> ' + response.statusCode);
                             if (clientObject.apiKey === undefined) {
@@ -77,7 +68,6 @@ api.account = function(userObject, callback) {
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
                             break;
-
                         default:
                             logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                             if (clientObject.apiKey === undefined) {
@@ -86,10 +76,8 @@ api.account = function(userObject, callback) {
                             clientObject.apiServerStatus = response.statusCode;
                             callback(clientObject, null);
                             break;
-
                     };
                     break;
-
                 case 403:
                     var httpsRequest = JSON.parse(data);
                     logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
@@ -99,7 +87,6 @@ api.account = function(userObject, callback) {
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
-
                 case 502:
                     logger.log('info', 'Server not responding -> ' + response.statusCode);
                     if (clientObject.apiKey === undefined) {
@@ -108,7 +95,6 @@ api.account = function(userObject, callback) {
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
-
                 case 503:
                     logger.log('info', 'Server busy -> ' + response.statusCode);
                     if (clientObject.apiKey === undefined) {
@@ -127,15 +113,14 @@ api.account = function(userObject, callback) {
 
 //World gets only checked if a foreign world is already detected.
 api.world = function(clientObject, callback) {
-    
-    logger.log('info', 'Checking API-key for foreign world.' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
-
+    logger.log('info', 'Checking API-key for foreign world.' + '\n'
+            + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid
+            + ' \'' + clientObject.apiKey + '\'');
     var options = {
                     hostname: 'api.guildwars2.com',
                     path: '/v2/worlds?ids=' + clientObject.accountWorldId,
                     method: 'GET'
                 };
-                
     https.get(options, function(response) {
         logger.log('info', 'GW2 Worlds-API status code: ' + response.statusCode);
         var statusCode = response.statusCode;
@@ -155,27 +140,23 @@ api.world = function(clientObject, callback) {
                         callback(null, clientObject);
                     };
                     break;
-
                 case 400:
                     var httpsRequest = JSON.parse(data);
                     logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
-
                 case 403:
                     var httpsRequest = JSON.parse(data);
                     logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
-
                 case 502:
                     logger.log('error', 'Server not responding -> ' + statusCode);
                     clientObject.apiServerStatus = statusCode;
                     callback(clientObject, null);
                     break;
-
                 case 503:
                     logger.log('error', 'Server busy -> ' + statusCode);
                     clientObject.apiServerStatus = statusCode;

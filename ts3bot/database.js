@@ -80,7 +80,7 @@ database.updateLastSeenVerified = function(clientObject, callback) {
 };
 
 //Delete only the API-key from a given data set to reset a client
-//to 'new client status'. Ready to register again. 
+//to 'new client status'. Ready to register again.
 database.delApiKey = function(clientObject, callback) {
     mongoClient.connect(uri, function (err, db) {
         var collection = db.collection('clients');
@@ -90,11 +90,6 @@ database.delApiKey = function(clientObject, callback) {
             db.close();
         });
     });
-};
-
-//Fetch all clients considered 'old' and return an array containing these.
-database.getOldClients = function (callback) {
-
 };
 
 //Delete a single client from the database.
@@ -108,8 +103,4 @@ database.delClient = function (client, callback) {
             db.close();
         });
     });
-};
-
-database.delMultipleClients = function (clientUids, callback) {
-
 };
