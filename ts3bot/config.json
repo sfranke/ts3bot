@@ -7,19 +7,19 @@
 
 	"host": "",
 	"_host_comment": "Server adress you want to connect to, default: 'localhost'.",
-	
+
 	"port": "",
 	"_port_comment": "Server query port, default: '10011'",
-	
+
 	"loginName": "likasd9",
 	"_loginName_comment": "Server query login name.",
-	
+
 	"clientPassword": "nfPse73Y",
 	"_clientPassword_comment": "Server query password",
-	
+
 	"virtualServerId": "1",
 	"_virtualServerId_comment": "Virtual server id you want to issue your commands.",
-	
+
 	"clientName": "Impulse_Bot",
 	"_clientName_comment": "Client name that is visible to other clients.",
 
@@ -37,21 +37,21 @@
 
 	"idleTimeLimit": 10000,
 	"_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
-	
+
 	"verifiedClientServerGroupId": "9",
 	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
 
 	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
 	"_welcomePoke_comment": "",
-	
+
 	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
-	
+
 	"confirmAccessMsg": "You are Gandaran. Welcome to our community!",
 	"_confirmAccessMsg_comment": "Message that is send after successful registration.",
-	
+
 	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
 	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
-	
+
 	"keyNotValid": "This does not seem to be an API-key.",
 	"_keyNotValid_comment": "Error message for the user if a key does not match the relevant criteria.",
 

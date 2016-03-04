@@ -25,7 +25,11 @@ function chatMessage(user) {
                 logger.log('info', 'Checking valid key.. ' + '\n\t' + '\'' + user.msg + '\'');
                 break;
             case 'foreignWorld':
-                message = {targetmode: '1', target: user.invokerid, msg: config.foreignWorld + ' -> ' + user.accountWorldName};
+                message = {
+                    targetmode: '1',
+                    target: user.invokerid,
+                    msg: config.foreignWorld + ' -> ' + user.accountWorldName
+                };
                 logger.log('info', 'API-key is associated with ' + user.accountWorldName);
                 break;
             case 'httpError':
@@ -34,11 +38,19 @@ function chatMessage(user) {
                 break;
             case 'alreadyInUse':
                 message = {targetmode: '1', target: user.invokerid, msg: config.alreadyInUse};
-                logger.log('info','Key used by other client.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + user.invokeruid + ' \'' + user.apiKey + '\'');
+                logger.log(
+                    'info','Key used by other client.\n' +
+                    '(' + user.invokerid + ')' + user.invokername + ': '+
+                    user.invokeruid + ' \'' + user.apiKey + '\''
+                );
                 break;
             case 'keyNotValid  ':
                 message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid};
-                logger.log('warning', 'Key not valid.\n' + '(' + user.invokerid + ')' + user.invokername + ': ' + '\'' + user.msg + '\'');
+                logger.log(
+                    'warning', 'Key not valid.\n' +
+                    '(' + user.invokerid + ')' +
+                    user.invokername + ': ' + '\'' + user.msg + '\''
+                );
                 break;
             case 'keyNotValidWhitespace':
                 message = {targetmode: '1', target: user.invokerid, msg: config.keyNotValid};
@@ -54,7 +66,11 @@ function chatMessage(user) {
                 break;
             case 'apiErrorErrBadData':
                 message = {targetmode: '1', target: user.invokerid, msg: config.apiErrorErrBadData};
-                logger.log('error', 'Received - ErrBadData for:\n\tNick: ' + user.invokername + ' Uid: ' + user.invokeruid);
+                logger.log(
+                    'error',
+                    'Received - ErrBadData for:\n\tNick: ' + user.invokername +
+                    ' Uid: ' + user.invokeruid
+                );
                 break;
             case 'api503':
                 message = {targetmode: '1', target: user.invokerid, msg: config.api503};
@@ -63,10 +79,18 @@ function chatMessage(user) {
             case 'admin':
                 switch(user.msg) {
                     case '!bot':
-                        message = {targetmode: '1', target: user.invokerid, msg: 'At your service oh mighty Admin! *bow'};
+                        message = {
+                            targetmode: '1',
+                            target: user.invokerid,
+                            msg: 'At your service oh mighty Admin! *bow'
+                        };
                         break;
                     case '!help':
-                        message = {targetmode: '1', target: user.invokerid, msg: 'Admin commands:\n\n!move <clid>\t\tMove <clid> to AFK-channel.'};
+                        message = {
+                            targetmode: '1',
+                            target: user.invokerid,
+                            msg: 'Admin commands:\n\n!move <clid>\t\tMove <clid> to AFK-channel.'
+                        };
                         break;
                     case '!commands':
                         message = {targetmode: '1', target: user.invokerid, msg: 'This could be a list of commands.'};
@@ -76,14 +100,14 @@ function chatMessage(user) {
                         break;
                     default:
                         break;
-                };
+                }
                 break;
             default:
                 break;
-        };
+        }
         return message;
     };
-};
+}
 
 util.inherits(chatMessage, events.EventEmitter);
 module.exports = chatMessage;

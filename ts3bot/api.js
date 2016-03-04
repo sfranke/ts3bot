@@ -37,15 +37,15 @@ api.account = function(userObject, callback) {
                         clientObject.accountWorldId = httpsRequest.world;
                         if (clientObject.apiKey === undefined) {
                             clientObject.apiKey = clientObject.msg;
-                        };
+                        }
                         api.world(clientObject, function(error, response) {
-                            if (error != null) {
+                            if (error !== null) {
                                 callback(error, null);
                             } else {
                                 callback(null, clientObject);
                             }
                         });
-                    };
+                    }
                     break;
                 case 400:
                     var httpsRequest = JSON.parse(data);
@@ -54,7 +54,7 @@ api.account = function(userObject, callback) {
                             logger.log('info', 'Server responding with "Invalid key" -> ' + response.statusCode);
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
-                            };
+                            }
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
@@ -63,7 +63,7 @@ api.account = function(userObject, callback) {
                             logger.log('info', 'Server responding with "ErrBadData" -> ' + response.statusCode);
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
-                            };
+                            }
                             clientObject.apiServerStatus = response.statusCode;
                             clientObject.apiServerStatusReason = httpsRequest.text;
                             callback(clientObject, null);
@@ -72,18 +72,18 @@ api.account = function(userObject, callback) {
                             logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
-                            };
+                            }
                             clientObject.apiServerStatus = response.statusCode;
                             callback(clientObject, null);
                             break;
-                    };
+                    }
                     break;
                 case 403:
                     var httpsRequest = JSON.parse(data);
                     logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
                     if (clientObject.apiKey === undefined) {
                         clientObject.apiKey = clientObject.msg;
-                    };
+                    }
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
@@ -91,7 +91,7 @@ api.account = function(userObject, callback) {
                     logger.log('info', 'Server not responding -> ' + response.statusCode);
                     if (clientObject.apiKey === undefined) {
                         clientObject.apiKey = clientObject.msg;
-                    };
+                    }
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
@@ -99,11 +99,11 @@ api.account = function(userObject, callback) {
                     logger.log('info', 'Server busy -> ' + response.statusCode);
                     if (clientObject.apiKey === undefined) {
                         clientObject.apiKey = clientObject.msg;
-                    };
+                    }
                     clientObject.apiServerStatus = response.statusCode;
                     callback(clientObject, null);
                     break;
-            };
+            }
         });
         response.on('error', function (error) {
             logger.log('error', 'While calling \'api.guildwars.com/v2/account\'.' + ' token: \'' + token + '\'');
@@ -113,9 +113,13 @@ api.account = function(userObject, callback) {
 
 //World gets only checked if a foreign world is already detected.
 api.world = function(clientObject, callback) {
-    logger.log('info', 'Checking API-key for foreign world.' + '\n'
-            + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid
-            + ' \'' + clientObject.apiKey + '\'');
+    logger.log(
+        'info',
+        'Checking API-key for foreign world.' + '\n' +
+        '(' + clientObject.invokerid + ')' +
+        clientObject.invokername + ': ' + clientObject.invokeruid +
+        ' \'' + clientObject.apiKey + '\''
+    );
     var options = {
                     hostname: 'api.guildwars2.com',
                     path: '/v2/worlds?ids=' + clientObject.accountWorldId,
@@ -133,12 +137,12 @@ api.world = function(clientObject, callback) {
                         var world = httpsRequest[response];
                         //Add worldname to response-object.
                         clientObject.accountWorldName = world.name;
-                    };
+                    }
                     if (clientObject.accountWorldId != config.homeWorld) {
                         callback(clientObject, null);
                     } else {
                         callback(null, clientObject);
-                    };
+                    }
                     break;
                 case 400:
                     var httpsRequest = JSON.parse(data);
@@ -164,7 +168,7 @@ api.world = function(clientObject, callback) {
                     // var message = new chatMessage();
                     // serverQueryClient.send('sendtextmessage', message.chatSend('api503', user));
                     break;
-            };
+            }
         });
         response.on('error', function (error) {
             logger.log('error', 'While calling \'api.guildwars.com/v2/worlds?ids=' + clientObject.accountWorldId + '.');
