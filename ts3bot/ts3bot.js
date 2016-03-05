@@ -20,96 +20,117 @@ function unixTime() {
 
 (function ts3bot() {
     var serverQueryClient = new TeamSpeakClient(config.host, config.port);
-    serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function (error, response, rawResponse){
-        if (error !== undefined) {
-            logger.log('error', error);
-        } else {
-            logger.log('info', 'Login successful.');
-            //Select virtual server by virtualServerId.
+
+    async.series({
+
+        login: function (callback) {
+            serverQueryClient.send(
+                'login',
+                {
+                    client_login_name: config.loginName,
+                    client_login_password: config.clientPassword
+                },
+            function (error, response, rawResponse){
+                if (error !== undefined) logger.log('error', error);
+                logger.log('info', 'Login successful.');
+                callback();
+            });
+        },
+
+        selectServer: function(callback) {
             serverQueryClient.send('use', {sid: config.virtualServerId}, function (error, response, rawResponse){
-                if (error !== undefined) {
-                    logger.log('error', error);
+                if (error !== undefined) logger.log('error', error);
+                logger.log('info', 'Virtual server selected successfully.');
+                callback();
+            });
+        },
+
+        changeNick: function (callback) {
+            serverQueryClient.send(
+                'clientupdate',
+                {
+                    client_nickname: config.clientName
+                },
+                function (error, response, rawResponse) {
+                    if (error !== undefined) logger.log('error', error);
+                    logger.log('info', 'Client name changed successfully.');
+                    callback();
+            });
+        },
+
+        registerForPrivateTextMessages: function (callback) {
+            serverQueryClient.send(
+                'servernotifyregister',
+                {
+                    event: 'textprivate'
+                },
+                function (error, response, rawResponse) {
+                    if (error !== undefined) logger.log('error', error);
+                    logger.log('info', 'Registered for private textmessages successfully.');
+                    callback();
+            });
+        },
+
+        registerForServerEvents: function (callback) {
+            serverQueryClient.send(
+                'servernotifyregister',
+                {
+                    event: 'server'
+                },
+                function (error, response, rawResponse) {
+                    if (error !== undefined) logger.log('error', error);
+                    logger.log('info','Registered for server events successfully.');
+                    callback();
+            });
+        },
+
+        registerForTextServer: function (callback) {
+            serverQueryClient.send(
+                'servernotifyregister',
+                {
+                    event: 'textchannel', id: '3'
+                },
+                function (error, response, rawResponse) {
+                    if (error !== undefined) logger.log('error', error);
+                    logger.log('info', 'Registered for textchannel events successfully.');
+                    callback();
+            });
+        },
+
+        connectDatabase: function (callback) {
+            database.createDatabase(function (error, response) {
+                if (error !== null) {
+                    logger.log('debug', 'Database error: ' + error);
+                    logger.log('error', 'Could not connect to database. Aborting.');
+                    process.exit();
                 } else {
-                    logger.log('info', 'Virtual server selected successfully.');
-                    //Clientupdate to change the name that's presented to the user.
-                    serverQueryClient.send("clientupdate", {client_nickname: config.clientName}, function (error, response, rawResponse) {
-                        if (error !== undefined) {
-                            logger.log('error', error);
-                        } else {
-                            logger.log('info', 'Client name changed successfully.');
-                            //Register with server to be able to read incoming private messages.
-                            serverQueryClient.send('servernotifyregister', {event: 'textprivate'}, function (error, response, rawResponse) {
-                                if (error !== undefined) {
-                                    logger.log('error', error);
-                                } else {
-                                    logger.log('info', 'Registered for private textmessages successfully.');
-                                    //Register with server to recognize user entering the server.
-                                    serverQueryClient.send('servernotifyregister', {event: 'server'}, function (error, response, rawResponse) {
-                                        if (error !== undefined) {
-                                            logger.log('error', error);
-                                        } else {
-                                            logger.log('info','Registered for server events successfully.');
-                                            //Register for channel messages.
-                                            serverQueryClient.send('servernotifyregister', {event: 'textchannel', id: '3'}, function (error, response, rawResponse) {
-                                                if (error !== undefined) {
-                                                    logger.log('error', error);
-                                                } else {
-                                                    logger.log('info', 'Registered for textchannel events successfully.');
-                                                    //Register with server to recognize user entering a specific channel.
-                                                    serverQueryClient.send('servernotifyregister', {event: 'textserver'}, function (error, response, rawResponse) {
-                                                        if (error !== undefined) {
-                                                            logger.log('error', error);
-                                                        } else {
-                                                            logger.log('info', 'Registered for textserver events successfully.');
-                                                            logger.log('info', 'Checking for database.');
-                                                            // Multiple things here:
-                                                            // DO NOT move on, once the database is not available!
-                                                            // Exit with critical error!
-                                                            // Reduce the behavior below and remove the duplications.
-                                                            database.createDatabase(function (error, response) {
-                                                                // This can be reduced to a minimum.
-                                                                // Avoid code duplication! Also Error handling for
-                                                                // MongoDB changes fundamentally, make use of that.
-                                                                if (error !== null) {
-                                                                    if (error.errno === 1) {
-                                                                        logger.log('info', 'Using existing database.');
-                                                                        logger.log('info', 'Starting database clean-up routine.');
-                                                                        databasePurge.databaseCleanup(serverQueryClient);
-                                                                        if (config.MoveAfkClientsFromLobby === true) {
-                                                                            logger.log('info', 'Moving AFK-clients is active and running.');
-                                                                            clientIdleMove.moveClient(serverQueryClient);
-                                                                        }
-                                                                    } else {
-                                                                        // A single generic error message should be enough here.
-                                                                        logger.log('error', 'Unhandled error while creating database.');
-                                                                    }
-                                                                } else {
-                                                                    logger.log('info', 'Creating new database and \'clients\' table.');
-                                                                    if (config.MoveAfkClientsFromLobby === true) {
-                                                                        logger.log('info', 'Moving AFK-clients is active and running.');
-                                                                        clientIdleMove.moveClient(serverQueryClient);
-                                                                    }
-                                                                }
-                                                            });
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
+                    logger.log('info', 'Connected to database.');
+                    logger.log('info', 'Starting database clean-up routine.');
+                    callback();
                 }
             });
+        },
+
+        databasePurge: function (callback) {
+            databasePurge.databaseCleanup(serverQueryClient);
+            callback();
+        },
+
+        clientIdleMove: function (callback) {
+            if (config.MoveAfkClientsFromLobby === true) {
+                logger.log('info', 'Moving AFK-clients is active and running.');
+                clientIdleMove.moveClient(serverQueryClient);
+            }
+            callback();
         }
+    },
+    function (error, result) {
+        logger.log('info', 'End of start-up routine.');
     });
 
-
-    // This is all the behavior regarding text messages. This behavior has been testted and has proven to be working as
-    // expected. All the error handling neccessary is included and can be reworked to avoid code duplication.
-    // One thing taht could be improved:
+    // This is all the behavior regarding text messages. This behavior has been tested and has proven to be working as
+    // expected. All error handling neccessary is included and can be refined to avoid code duplication.
+    // One thing that should be improved:
     // Since we have a comprehensive database of API-keys, we might consider checking for any API-key first in the
     // local storage (mongodB) and secondly validate against the official API.
     serverQueryClient.on('textmessage', function (response) {
