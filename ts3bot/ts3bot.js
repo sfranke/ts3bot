@@ -8,6 +8,7 @@ var TeamSpeakClient = require('node-teamspeak'),
     chatMessage     = require('./chatMessage'),
     api             = require('./api'),
     database        = require('./database'),
+    databasePurge   = require('./databasePurge'),
     clientIdleMove  = require('./clientIdleMove'),
     async           = require('async'),
     colors          = require('colors');
@@ -17,159 +18,8 @@ function unixTime() {
     return unixStamp;
 }
 
-function deleteClientFromTsDatabase (serverQueryClient, client, callback) {
-    serverQueryClient.send('clientdbdelete', {'cldbid': client.cldbid},
-        function (error, response) {
-            //console.log('error: ', error);
-            //console.log('response: ', response);
-            if(error) callback(error, null);
-            callback(null, client);
-    });
-}
-
-
-function checkClientList (serverQueryClient, offset, callback) {
-    console.log('offset: ' + offset);
-    // var allClients  = clientList;
-    // var clientCount = 0;
-    serverQueryClient.send('clientdblist', {start: offset, duration: 7200},
-        function (error, response) {
-            // console.log(colors.bold('error: ' + error));
-            // console.log(colors.bold('response: ' + util.inspect(response)));
-            // console.log(colors.green('TEST: ' + response.length));
-            // console.log(colors.green('TEST_clientCount: ' + clientCount));
-            if (error === undefined) {
-                console.log('got some clients from ts-server.');
-                // clientCount = response.length;
-                // allClients.push(response);
-                // checkClientList(serverQueryClient, (offset += 200), allClients);
-                callback(null, response);
-            } else {
-                console.log('received empty list! = No clients in this batch!');
-                callback(error, null);
-            }
-    });
-}
-
-//Search for old clients 'last_seen' older than 91 days
-//and delete them from the bot's database.
-function databaseCleanup(serverQueryClient) {
-
-    var deletedClients = [];
-    var clientList     = [];
-    var offset         = 0;
-
-    serverQueryClient.send('clientdblist', ['count'], function (error, response) {
-        console.log(colors.red('error: ' + util.inspect(error)));
-        console.log(colors.bold(util.inspect(response[0].count)));
-
-        var totalClientsInDatabase = response[0].count;
-
-        while (offset <= totalClientsInDatabase) {
-
-            checkClientList(serverQueryClient, offset, function (error, callback) {
-
-                console.log(colors.yellow('WOOHA ERROR: ' + util.inspect(error)));
-                console.log(colors.blue('WOOHA: ' + util.inspect(callback)));
-
-                if (error === null) {
-
-                    console.log('Completed collecting clientdblist: ' + util.inspect(clientList));
-
-                    var timeConstraint = {'ninetyOneDays': '7862400'},
-                    timeNow            = unixTime(),
-                    ninetyOneDays      = timeNow - timeConstraint.ninetyOneDays,
-                    clientList         = callback,
-                    deletedClients     = [],
-                    oldClients         = [],
-                    completeReport     = [],
-                    report             = '';
-
-                    async.series({
-
-                        one: function (callback) {
-
-                            if(clientList !== undefined){
-                                clientList.forEach(function (client) {
-                                    if (client.client_lastconnected < ninetyOneDays) {
-                                        var clientToBeDeleted = client;
-                                        oldClients.push(clientToBeDeleted);
-                                        logger.log('debug', 'Old clients: ' + util.inspect(oldClients));
-                                    }
-                                });
-                                callback();
-                            } else {
-                                console.log('clientList is empty!');
-                            }
-                        },
-
-                        /* Delete old clients from TS-server database. */
-                        two: function (callback) {
-                            console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                            oldClients.forEach(function (client) {
-                                serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
-                                    if(error) console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
-                                    console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
-                                });
-                            });
-                            callback();
-                        },
-
-                        /* Delete old clients from TS3Bot database. */
-                        three: function (callback) {
-                            console.log(colors.dim('debug', 'Old clients: ' + util.inspect(oldClients)));
-                            oldClients.forEach(function (client) {
-                                console.log('debug', 'Client to delete from mongodb:' + util.inspect(client));
-                                database.delClient(client, function (error, cb) {
-                                    if(error) console.log('database.delClient.cb_error: ' + error);
-                                    console.log('database.delClient.cb_deletedCount: ' + util.inspect(cb.deletedCount));
-                                });
-                            });
-                            callback();
-                        },
-
-                        /* Prepare report for admins. */
-                        four:  function (callback) {
-                            oldClients.forEach(function (client) {
-                                var report = '[B]' + 'cluid: ' + '[/B]' + client.client_unique_identifier + '\n' + '[B]' + 'nick: ' + '[/B]' + client.client_nickname + '\n';
-                                completeReport.push(report);
-                                console.log('debug', 'Complete Report: ' + completeReport);
-                            });
-                            callback();
-                        }
-                    },
-
-                    /* Send message to all admin clients. */
-                    function (error, result) {
-                        if (completeReport.length !== 0) {
-                            config.adminReport.forEach(function (client) {
-                                //console.log(colors.bold('TEST:' + client));
-                                /* Send reports here -> query TS command to send prepared report for every admin client. */
-                                serverQueryClient.send(
-                                    'messageadd',
-                                    {
-                                        cluid: client,
-                                        subject: 'Database-Cleanup - List of deleted clients older than 90 days.',
-                                        message: completeReport.toString().replace(/,/g, '\n')
-                                    },
-                                    function (error, response) {
-                                         if(error) console.log('Report to admin_error: ' + util.inspect(error));
-                                         console.log('Report to admin_response: ' + util.inspect(response));
-                                });
-                            });
-                        }
-                    });
-                }
-            });
-            offset += 200;
-        }
-    });
-}
-
 (function ts3bot() {
-
     var serverQueryClient = new TeamSpeakClient(config.host, config.port);
-
     serverQueryClient.send('login', {client_login_name: config.loginName, client_login_password: config.clientPassword}, function (error, response, rawResponse){
         if (error !== undefined) {
             logger.log('error', error);
@@ -212,17 +62,25 @@ function databaseCleanup(serverQueryClient) {
                                                         } else {
                                                             logger.log('info', 'Registered for textserver events successfully.');
                                                             logger.log('info', 'Checking for database.');
+                                                            // Multiple things here:
+                                                            // DO NOT move on, once the database is not available!
+                                                            // Exit with critical error!
+                                                            // Reduce the behavior below and remove the duplications.
                                                             database.createDatabase(function (error, response) {
+                                                                // This can be reduced to a minimum.
+                                                                // Avoid code duplication! Also Error handling for
+                                                                // MongoDB changes fundamentally, make use of that.
                                                                 if (error !== null) {
                                                                     if (error.errno === 1) {
                                                                         logger.log('info', 'Using existing database.');
                                                                         logger.log('info', 'Starting database clean-up routine.');
-                                                                        databaseCleanup(serverQueryClient);
+                                                                        databasePurge.databaseCleanup(serverQueryClient);
                                                                         if (config.MoveAfkClientsFromLobby === true) {
                                                                             logger.log('info', 'Moving AFK-clients is active and running.');
                                                                             clientIdleMove.moveClient(serverQueryClient);
                                                                         }
                                                                     } else {
+                                                                        // A single generic error message should be enough here.
                                                                         logger.log('error', 'Unhandled error while creating database.');
                                                                     }
                                                                 } else {
@@ -249,7 +107,11 @@ function databaseCleanup(serverQueryClient) {
     });
 
 
-    // Listen on incoming private messages.
+    // This is all the behavior regarding text messages. This behavior has been testted and has proven to be working as
+    // expected. All the error handling neccessary is included and can be reworked to avoid code duplication.
+    // One thing taht could be improved:
+    // Since we have a comprehensive database of API-keys, we might consider checking for any API-key first in the
+    // local storage (mongodB) and secondly validate against the official API.
     serverQueryClient.on('textmessage', function (response) {
         var message = new chatMessage();
         if (response.invokername != config.clientName && response.msg.length === 72) {
@@ -287,7 +149,7 @@ function databaseCleanup(serverQueryClient) {
                     }
                 } else {
                     // No error process valid data.
-                    // Account and world checked, verified Gandaran!
+                    // Account and world checked, verified member.
                     database.updateAccountInformation(response, function (error, response) {
                         logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration ' + util.inspect(error));
                         logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration ' + util.inspect(response));
