@@ -25,9 +25,13 @@ getAccountinformation = function(Uid, callback) {
 router.post('/', function (req, res, next) {
     var uid = req.body.accountUid;
     getAccountinformation(uid, function (error, response) {
+        console.log('error: ', error);
+        console.log('response: ', response);
         if (response !== undefined) {
             var time = new Date(response.last_seen * 1000);
-            var guilds = JSON.parse(response.gw2_guilds);
+            if (response.gw2_guilds !== '') {
+                var guilds = JSON.parse(response.gw2_guilds);
+            }
             res.render('account', {
                                     title: 'Ts3Bot',
                                     name: response.client_nickname,
