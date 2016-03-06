@@ -25,8 +25,6 @@ getAccountinformation = function(Uid, callback) {
 router.post('/', function (req, res, next) {
     var uid = req.body.accountUid;
     getAccountinformation(uid, function (error, response) {
-        console.log('error: ', error);
-        console.log('response: ', response);
         if (response !== null) {
             var time = new Date(response.last_seen * 1000);
             if (response.gw2_guilds !== '' && response.gw2_guilds !== undefined) {
@@ -45,11 +43,7 @@ router.post('/', function (req, res, next) {
                 res.render('account', {
                     title: 'Ts3Bot',
                     name: response.client_nickname,
-                    time: time,
-                    apiKey: response.gw2_api_key,
-                    accountId: response.gw2_account_id,
-                    accountName: response.gw2_account_name,
-                    created: response.gw2_account_created
+                    time: time
                 });
             }
         } else {
