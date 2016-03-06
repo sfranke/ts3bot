@@ -27,21 +27,31 @@ router.post('/', function (req, res, next) {
     getAccountinformation(uid, function (error, response) {
         console.log('error: ', error);
         console.log('response: ', response);
-        if (response !== undefined) {
+        if (response !== null) {
             var time = new Date(response.last_seen * 1000);
             if (response.gw2_guilds !== '') {
                 var guilds = JSON.parse(response.gw2_guilds);
+                res.render('account', {
+                    title: 'Ts3Bot',
+                    name: response.client_nickname,
+                    time: time,
+                    apiKey: response.gw2_api_key,
+                    accountId: response.gw2_account_id,
+                    accountName: response.gw2_account_name,
+                    guilds: guilds,
+                    created: response.gw2_account_created
+                });
+            } else {
+                res.render('account', {
+                    title: 'Ts3Bot',
+                    name: response.client_nickname,
+                    time: time,
+                    apiKey: response.gw2_api_key,
+                    accountId: response.gw2_account_id,
+                    accountName: response.gw2_account_name,
+                    created: response.gw2_account_created
+                });
             }
-            res.render('account', {
-                                    title: 'Ts3Bot',
-                                    name: response.client_nickname,
-                                    time: time,
-                                    apiKey: response.gw2_api_key,
-                                    accountId: response.gw2_account_id,
-                                    accountName: response.gw2_account_name,
-                                    guilds: guilds,
-                                    created: response.gw2_account_created
-                                });
         } else {
             res.render('account', {title: 'Ts3Bot', name: undefined});
         }
