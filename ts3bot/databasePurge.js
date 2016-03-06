@@ -2,6 +2,7 @@
 
 var databasePurge   = exports,
     TeamSpeakClient = require('node-teamspeak'),
+    database        = require('./database'),
     config          = JSON.parse(require('fs').readFileSync('config.json')),
     util            = require('util'),
     async           = require('async'),
