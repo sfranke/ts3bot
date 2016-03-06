@@ -5,9 +5,42 @@ block content
     .jumbotron
       .container
         h1= title
-        p Status: #{status}
+        div#status
+          - if (status[0].pm2_env.status === 'online')
+            span.label.label-success Online
+          - if (status[0].pm2_env.status !== 'online')
+            span.label.label-danger Offline
         div
-          form(name='updateStatus', method='post')
-            button.btn.btn-lg.btn-info(type='submit') Update Status
+          - for i in status
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p PID:
+              .col-sm-10
+                p #{i.pid}
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p Name:
+              .col-sm-10
+                p #{i.name}
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p Environment:
+              .col-sm-10
+                p #{i.pm2_env.APPLICATION_ENV}
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p Memory:
+              .col-sm-10
+                p=(i.monit.memory /1024)/1024 + ' MB'
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p Restarts:
+              .col-sm-10
+                p #{i.pm2_env.restart_time}
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                p Started:
+              .col-sm-10
+                p=moment(i.pm2_env.pm_uptime).format("MMM Do YYYY, h:mm:ss a")
 
   include footer

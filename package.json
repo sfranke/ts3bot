@@ -15,6 +15,7 @@
     "jsdom": "3.1.2",
     "morgan": "1.6.1",
     "serve-favicon": "2.3.0",
+    "moment": "2.10.6",
     "kerberos": "0.0.18",
     "mongodb": "2.1.7"
   }
