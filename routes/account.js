@@ -29,7 +29,7 @@ router.post('/', function (req, res, next) {
         console.log('response: ', response);
         if (response !== null) {
             var time = new Date(response.last_seen * 1000);
-            if (response.gw2_guilds !== '') {
+            if (response.gw2_guilds !== '' || response.gw2_guilds !== undefined) {
                 var guilds = JSON.parse(response.gw2_guilds);
                 res.render('account', {
                     title: 'Ts3Bot',
