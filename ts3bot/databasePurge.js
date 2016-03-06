@@ -72,8 +72,15 @@ databasePurge.databaseCleanup = function (serverQueryClient) {
                         two: function (callback) {
                             oldClients.forEach(function (client) {
                                 serverQueryClient.send('clientdbdelete', {cldbid: client.cldbid}, function (error, response) {
-                                    if(error) console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
-                                    console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
+                                    if(error) {
+                                        // If there is an error while trying to delete the client. Find the index of
+                                        // that element and remove it from the list.
+                                        console.log('error', 'Deleting from TS database error: ' + util.inspect(error));
+                                        var indexOfThisElement = oldClients.indexOf(client);
+                                        oldClients.splice(indexOfThisElement,1);
+                                    } else {
+                                        console.log('debug', 'Deleting from TS database response: ' + util.inspect(response));
+                                    }
                                 });
                             });
                             callback();
