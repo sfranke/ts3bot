@@ -13,10 +13,11 @@
     "jade": "1.11.0",
     "jquery": "2.1.4",
     "jsdom": "3.1.2",
+    "kerberos": "0.0.18",
+    "moment": "2.10.6",
+    "mongodb": "2.1.7",
     "morgan": "1.6.1",
     "serve-favicon": "2.3.0",
-    "moment": "2.10.6",
-    "kerberos": "0.0.18",
-    "mongodb": "2.1.7"
+    "socket.io": "1.4.5"
   }
 }

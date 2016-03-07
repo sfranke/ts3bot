@@ -22,12 +22,7 @@ block content
                 P #{name}
               div.col-xs-6.col-sm-6.col-md-6
                 h2 Time
-                P #{time}
-            //- - if (apiKey != undefined)
-            //-  div.row
-            //-    div.col-xs-10
-            //-      h2 API-Key
-            //-      p #{apiKey}
+                P=moment(time).format("MMM Do YYYY, h:mm:ss a")
             - if (accountName != undefined)
               div.row
                 div.col-xs-6.col-sm-6.col-md-6
@@ -40,7 +35,7 @@ block content
               div.row
                 div.col-xs-6.col-sm-6.col-md-6
                   h2 Created
-                  p #{created}
+                  p=moment(created).format("MMM Do YYYY, h:mm:ss a")
                 - if (guilds != undefined)
                   div.col-xs-6.col-sm-6.col-md-6
                     h2 Guilds

@@ -1,15 +1,16 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
+var express      = require('express');
+var path         = require('path');
+var favicon      = require('serve-favicon');
+var logger       = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var bodyParser   = require('body-parser');
+var io           = require('socket.io')();
 
-var routes = require('./routes/index');
-var about = require('./routes/about');
+var routes  = require('./routes/index');
+var about   = require('./routes/about');
 var account = require('./routes/account');
-var guild = require('./routes/guild');
-var log = require('./routes/log');
+var guild   = require('./routes/guild');
+var log     = require('./routes/log');
 
 var app = express();
 

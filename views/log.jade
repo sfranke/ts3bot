@@ -9,5 +9,13 @@ block content
           - each i, key in log
             tr
               td #{i}
-
+              
+  script(src='socket.io/socket.io.js')
+  script
+      |$(function () {
+      |  socket = io.connect();
+      |  socket.on('testEvent', function (data) {
+      |    $('table').append('<tr><td>' + data + '</td></tr>');
+      |  });
+      |});
   include footer
