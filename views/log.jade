@@ -16,6 +16,7 @@ block content
       |  socket = io.connect();
       |  socket.on('testEvent', function (data) {
       |    $('table').append('<tr><td>' + data + '</td></tr>');
+      |    $("html, body").animate({ scrollTop: $(document).height() }, 1000);
       |  });
       |});
   include footer
