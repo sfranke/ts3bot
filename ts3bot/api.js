@@ -25,13 +25,16 @@ api.account = function(userObject, callback) {
                 case 200:
                     var httpsRequest = JSON.parse(data);
                     var guilds = JSON.stringify(httpsRequest.guilds);
-                    if (httpsRequest.world === config.homeWorld) {
+                    //if (httpsRequest.world === config.homeWorld) {
+                    if (config.worldsAllowed.indexOf(httpsRequest.world) != -1) {
+                        logger.log('debug', '[API WORLD TEST] - ' + httpsRequest.world);
                         //Add information gathered with api call to clientObject.
                         clientObject.apiKey         = token;
                         clientObject.accountId      = httpsRequest.id;
                         clientObject.accountName    = httpsRequest.name;
                         clientObject.accountGuilds  = guilds;
                         clientObject.accountCreated = httpsRequest.created;
+                        clientObject.world          = httpsRequest.world.toString();
                         callback(null, clientObject);
                     } else {
                         clientObject.accountWorldId = httpsRequest.world;

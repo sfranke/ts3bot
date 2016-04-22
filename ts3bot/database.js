@@ -48,6 +48,7 @@ database.updateAccountInformation = function(clientObject, callback) {
                         last_seen: unixTime(),
                         gw2_api_key: clientObject.apiKey,
                         gw2_account_id: clientObject.accountId,
+                        gw2_account_world: clientObject.world,
                         gw2_account_name: clientObject.accountName,
                         gw2_guilds: clientObject.accountGuilds,
                         gw2_account_created: clientObject.accountCreated
@@ -111,6 +112,7 @@ database.updateLastSeen = function(clientObject, callback) {
 
 // Update last_seen and invokername for any given user that connects.
 database.updateLastSeenVerified = function(clientObject, callback) {
+    console.log('[TEST LAST UPDATE] :', clientObject);
     mongoClient.connect(uri, function (err, db) {
         var collection = db.collection('clients');
         collection.update(
@@ -123,6 +125,7 @@ database.updateLastSeenVerified = function(clientObject, callback) {
                 last_seen: unixTime(),
                 gw2_api_key: clientObject.apiKey,
                 gw2_account_id: clientObject.accountId,
+                gw2_account_world: clientObject.world,
                 gw2_account_name: clientObject.accountName,
                 gw2_guilds: clientObject.guilds,
                 gw2_account_created: clientObject.accountCreated

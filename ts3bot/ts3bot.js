@@ -172,6 +172,7 @@ function unixTime() {
                     // No error process valid data.
                     // Account and world checked, verified member.
                     database.updateAccountInformation(response, function (error, response) {
+                        logger.log('debug', '[TEST RESPONSE] : ' + response);
                         logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration ' + util.inspect(error));
                         logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration ' + util.inspect(response));
                         if (error !== null) {
@@ -185,8 +186,21 @@ function unixTime() {
                                 } else {
                                     logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                                     logger.log('debug', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
-                                    serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                                    serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
+                                    logger.log('debug' , '[TEST GRANT PERMISSIONS] : ' + util.inspect(clientObject));
+                                    if (clientObject.world === "2204") {
+                                        serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid});
+                                        serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
+                                    }
+
+                                    if (clientObject.world === "2004") {
+                                        serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                                        serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
+                                    }
+
+                                    if (clientObject.world === undefined || clientObject.world === "2003") {
+                                        serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                                        serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
+                                    }
                                 }
                             });
                         }
@@ -231,175 +245,223 @@ function unixTime() {
         if (clientObject.client_type === 0) {
             //Server groups should always be a string even if it's just a single one.
             var groups = clientObject.client_servergroups.toString();
-            if (groups.match(config.verifiedClientServerGroupId) === null) {
-                database.setNewUser(clientObject, function(error, response) {
-                    logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
-                    logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
-                    if (error !== null) {
-                        logger.log('info', 'Noticed unregistered user re-visiting on connect.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
-                    } else {
-                        logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
-                    }
-                });
-                var message = new chatMessage();
-                serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
-                serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
-            } else {
-                logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
-                database.getApiKey(clientObject, function (error, response) {
-                    if (error !== null) {
-                        logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
-                    } else {
-                        logger.log('debug', 'Received API-key from database.\n' + util.inspect(response));
-                        logger.log('info', 'Received API-key from database.');
-                        if (response !== undefined) {
-                            switch(response.gw2_api_key){
-                                case null:
-                                    logger.log('info', 'Verified client without API-Key, preparing welcome message.');
-                                    //Remove permissions here!
-                                    var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
-                                    var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                    config.adminReport.forEach(function (client) {
-                                        serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions because API-key was NULL', message: report});
-                                    });
-                                    serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
-                                    var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
-                                    break;
-                                default:
-                                    clientObject.apiKey         = response.gw2_api_key;
-                                    clientObject.accountId      = response.gw2_account_id;
-                                    clientObject.accountName    = response.gw2_account_name;
-                                    clientObject.guilds         = response.gw2_guilds;
-                                    clientObject.accountCreated = response.gw2_account_created;
-                                    database.updateLastSeenVerified(clientObject, function (error, response) {
-                                        if (error !== null) {
-                                            logger.log('error', 'While updating last_seen.\n' + util.inspect(error));
-                                        } else {
-                                            logger.log('info', 'Updated last_seen.\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
-                                            logger.log('debug', 'clientObject_after_last_seen_update:\n' + util.inspect(clientObject));
-                                            //Account validation and error handling.
-                                            api.account(clientObject, function (error, response) {
-                                                if (error !== null) {
-                                                    logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error));
-                                                    //If API-key is invalid.
-                                                    if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
-                                                        database.delApiKey(error, function(error, response) {
-                                                            logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
-                                                            logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
-                                                            if (error !== null) {
-                                                                logger.log('error', 'while deleting API-Key via database.delApiKey.');
-                                                            } else {
-                                                                logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
-                                                                var message = new chatMessage();
-                                                                serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', clientObject));
-                                                                serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
-                                                                    if (error !== null) {
-                                                                        logger.log('error', 'Error while receiving cldbid: ' + error);
-                                                                    } else {
-                                                                        var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
-                                                                        config.adminReport.forEach(function (client) {
-                                                                            serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of invalid key', message: report});
-                                                                        });
-                                                                        serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    }
-                                                    //If worldId is invalid.
-                                                    if (error.accountWorldId !== undefined && error.accountWorldId != config.homeWorld) {
-                                                        database.delApiKey(error, function(error, response) {
-                                                            logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
-                                                            logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
+            console.log('TYPE of GROUPS :', typeof(groups));
+            logger.log('debug', 'Server groups: ' + clientObject.client_servergroups.toString());
+            //if (groups.match(config.verifiedClientServerGroupId) === null) {
+            console.log('TEST --- ' + config.verifiedClientServerGroupId.indexOf(clientObject.client_servergroups.toString()));
+
+
+            async.series({
+
+                userState: function (callback) {
+                    var userState;
+                    var serverGroups = groups.split(',');
+                    serverGroups.forEach(function(serverGroup) {
+                        console.log(config.verifiedClientServerGroupId.indexOf(serverGroup));
+                        if (config.verifiedClientServerGroupId.indexOf(serverGroup) != -1) {
+                            userState = 'verified';
+                        } else {
+                            userState = 'unverified';
+                        }
+                    });
+                    callback(null, userState);
+                },
+            },
+            function (error, result) {
+                logger.log('error', error);
+                logger.log('info', result);
+                logger.log('info', 'End of async series.');
+                if (result.userState === 'verified') {
+                    console.log('Recognized a verified user.');
+                    logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+                    database.getApiKey(clientObject, function (error, response) {
+                        logger.log('debug', 'Database get API key error: ' + util.inspect(error));
+                        logger.log('debug', 'Database get API key response: ' + util.inspect(response));
+                        if (error !== null) {
+                            logger.log('error', 'While receiving API-key from database.\n' + util.inspect(error));
+                        } else {
+                            logger.log('debug', 'Received API-key from database.\n' + util.inspect(response));
+                            logger.log('info', 'Received API-key from database.');
+                            if (response !== undefined) {
+                                switch(response.gw2_api_key){
+                                    case null:
+                                        logger.log('info', 'Verified client without API-Key, preparing welcome message.');
+                                        //Remove permissions here!
+                                        var message = new chatMessage();
+                                        serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
+                                        var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+                                        config.adminReport.forEach(function (client) {
+                                            serverQueryClient.send('messageadd', {cluid: client, subject: 'Revoked client permissions because API-key was NULL', message: report});
+                                        });
+                                        serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+                                        var message = new chatMessage();
+                                        serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
+                                        break;
+                                    default:
+                                        clientObject.apiKey         = response.gw2_api_key;
+                                        clientObject.accountId      = response.gw2_account_id;
+                                        clientObject.world          = response.gw2_account_world;
+                                        clientObject.accountName    = response.gw2_account_name;
+                                        clientObject.guilds         = response.gw2_guilds;
+                                        clientObject.accountCreated = response.gw2_account_created;
+                                        database.updateLastSeenVerified(clientObject, function (error, response) {
+                                            if (error !== null) {
+                                                logger.log('error', 'While updating last_seen.\n' + util.inspect(error));
+                                            } else {
+                                                logger.log('info', 'Updated last_seen.\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
+                                                logger.log('debug', 'clientObject_after_last_seen_update:\n' + util.inspect(clientObject));
+                                                //Account validation and error handling.
+                                                api.account(clientObject, function (error, response) {
+                                                    if (error !== null) {
+                                                        logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error));
+                                                        //If API-key is invalid.
+                                                        if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
+                                                            database.delApiKey(error, function(error, response) {
+                                                                logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
+                                                                logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
+                                                                if (error !== null) {
+                                                                    logger.log('error', 'while deleting API-Key via database.delApiKey.');
+                                                                } else {
+                                                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+                                                                    var message = new chatMessage();
+                                                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', clientObject));
+                                                                    serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
+                                                                        if (error !== null) {
+                                                                            logger.log('error', 'Error while receiving cldbid: ' + error);
+                                                                        } else {
+                                                                            var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
+                                                                            config.adminReport.forEach(function (client) {
+                                                                                serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of invalid key', message: report});
+                                                                            });
+                                                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
+                                                        }
+                                                        //If worldId is invalid.
+                                                        if (error.accountWorldId !== undefined) {
+                                                            database.delApiKey(error, function(error, response) {
+                                                                logger.log('debug', 'Error object callback after database.delApiKey:\n' + util.inspect(error));
+                                                                logger.log('debug', 'Response object callback after database.delApiKey:\n' + util.inspect(response));
+                                                                if (error !== null) {
+                                                                    logger.log('error', 'dbError: ' + util.inspect(error));
+                                                                } else {
+                                                                    logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
+                                                                    var message = new chatMessage();
+                                                                    serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', clientObject));
+                                                                    var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+                                                                    config.adminReport.forEach(function (client) {
+                                                                        serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of foreign world', message: report});
+                                                                    });
+                                                                    logger.log('debug', 'Remove servergroups : ' + clientObject.client_servergroups);
+                                                                    async.series({
+                                                                        userState: function (callback) {
+                                                                            var userState;
+                                                                            var serverGroups = groups.split(',');
+                                                                            serverGroups.forEach(function(serverGroup) {
+                                                                                if (config.verifiedClientServerGroupId.indexOf(serverGroup) != -1) {
+                                                                                    serverQueryClient.send('servergroupdelclient', {sgid: serverGroup, cldbid: clientObject.invokerdbid});
+                                                                                }
+                                                                            });
+                                                                            callback();
+                                                                        },
+                                                                    },
+                                                                    function (error, result) {
+                                                                        logger.log('info', 'Done purging server groups.');
+                                                                    });
+                                                                }
+                                                            });
+                                                        }
+                                                        if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'ErrBadData') {
+                                                            var message = new chatMessage();
+                                                            serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', clientObject));
+                                                        }
+                                                        if (error.apiServerStatus === 503) {
+                                                            var message = new chatMessage();
+                                                            serverQueryClient.send('sendtextmessage', message.chatSend('api503', clientObject));
+                                                        }
+                                                    } else {
+                                                        //Client revalidated, update account related information in database.
+                                                        logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
+                                                        logger.log('info', 'Checked verified user, all good!');
+                                                        database.updateAccountInformation(response, function (error, response) {
                                                             if (error !== null) {
                                                                 logger.log('error', 'dbError: ' + util.inspect(error));
                                                             } else {
-                                                                logger.log('info', 'Removed gw2_api_key from database' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
-                                                                var message = new chatMessage();
-                                                                serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', clientObject));
-                                                                var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                                                config.adminReport.forEach(function (client) {
-                                                                    serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of foreign world', message: report});
-                                                                });
-                                                                serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+                                                                logger.log('info','Updated API-key related information in database.');
                                                             }
                                                         });
                                                     }
-                                                    if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'ErrBadData') {
-                                                        var message = new chatMessage();
-                                                        serverQueryClient.send('sendtextmessage', message.chatSend('apiErrorErrBadData', clientObject));
-                                                    }
-                                                    if (error.apiServerStatus === 503) {
-                                                        var message = new chatMessage();
-                                                        serverQueryClient.send('sendtextmessage', message.chatSend('api503', clientObject));
-                                                    }
-                                                } else {
-                                                    //Client revalidated, update account related information in database.
-                                                    logger.log('debug', 'Checked verified user.\n' + util.inspect(response));
-                                                    logger.log('info', 'Checked verified user, all good!');
-                                                    database.updateAccountInformation(response, function (error, response) {
-                                                        if (error !== null) {
-                                                            logger.log('error', 'dbError: ' + util.inspect(error));
-                                                        } else {
-                                                            logger.log('info','Updated API-key related information in database.');
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    });
-                                    break;
-                            }
-                        } else {
-                            database.setNewUser(clientObject, function(error, response) {
-                                logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
-                                logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
-                                if (error !== null) {
-                                    logger.log(
-                                        'info',
-                                        'Noticed unregistered user re-visiting on connect.\n'+
-                                        '(' + clientObject.invokerid + ')' +
-                                        clientObject.invokername +
-                                        ' \'' + clientObject.invokeruid + '\''
-                                    );
-                                } else {
-                                    logger.log(
-                                        'info',
-                                        'Added new client:\n' +
-                                        '(' + clientObject.invokerid + ')' +
-                                        clientObject.invokername +
-                                        ' \'' + clientObject.invokeruid + '\''
-                                    );
-                                    logger.log('info', 'Unknown client! Preparing welcome message..');
-                                    //Remove permissions here!
-                                    var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
-                                    var report  = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' +
-                                                  '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' +
-                                                  '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
-                                    config.adminReport.forEach(function (client) {
-                                        serverQueryClient.send('messageadd', {
-                                            cluid: client,
-                                            subject: 'Revoked client permissions for client without database entry.',
-                                            message: report
+                                                });
+                                            }
                                         });
-                                    });
-                                    serverQueryClient.send('servergroupdelclient', {
-                                        sgid: config.verifiedClientServerGroupId,
-                                        cldbid: clientObject.invokerdbid
-                                    });
-                                    var message = new chatMessage();
-                                    serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
+                                        break;
                                 }
-                            });
+                            } else {
+                                database.setNewUser(clientObject, function(error, response) {
+                                    logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
+                                    logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
+                                    if (error !== null) {
+                                        logger.log(
+                                            'info',
+                                            'Noticed unregistered user re-visiting on connect.\n'+
+                                            '(' + clientObject.invokerid + ')' +
+                                            clientObject.invokername +
+                                            ' \'' + clientObject.invokeruid + '\''
+                                        );
+                                    } else {
+                                        logger.log(
+                                            'info',
+                                            'Added new client:\n' +
+                                            '(' + clientObject.invokerid + ')' +
+                                            clientObject.invokername +
+                                            ' \'' + clientObject.invokeruid + '\''
+                                        );
+                                        logger.log('info', 'Unknown client! Preparing welcome message..');
+                                        //Remove permissions here!
+                                        var message = new chatMessage();
+                                        serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValidNull', clientObject));
+                                        var report  = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' +
+                                                      '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' +
+                                                      '[B]' + 'world: ' + '[/B]' + clientObject.accountWorldName;
+                                        config.adminReport.forEach(function (client) {
+                                            serverQueryClient.send('messageadd', {
+                                                cluid: client,
+                                                subject: 'Revoked client permissions for client without database entry.',
+                                                message: report
+                                            });
+                                        });
+                                        serverQueryClient.send('servergroupdelclient', {
+                                            sgid: config.verifiedClientServerGroupId,
+                                            cldbid: clientObject.invokerdbid
+                                        });
+                                        var message = new chatMessage();
+                                        serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                } else {
+                    console.log('Recognized an unverified user.');
+                    database.setNewUser(clientObject, function(error, response) {
+                        logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
+                        logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
+                        if (error !== null) {
+                            logger.log('info', 'Noticed unregistered user re-visiting on connect.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
+                        } else {
+                            logger.log('info', 'Added new client:\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ' \'' + clientObject.invokeruid + '\'');
+                        }
+                    });
+                    var message = new chatMessage();
+                    serverQueryClient.send('clientpoke', message.chatSend('welcomePoke', response));
+                    serverQueryClient.send('sendtextmessage', message.chatSend('welcome', response));
+                }
+            });
         }
     });
+
     serverQueryClient.on('queryError', function (error, response) {
         //Error id for banned status.
         if (error.id === '3329') {

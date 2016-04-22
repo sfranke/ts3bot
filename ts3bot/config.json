@@ -5,6 +5,9 @@
 	"homeWorld": 2003,
 	"_homeWorld_comment": "Server id of the game server you want to check for.",
 
+    "worldsAllowed": [2003, 2204, 2005],
+    "_worldsAllowed_comment": "Hardcoded world IDs that are also allowed during matchups.",
+
 	"host": "",
 	"_host_comment": "Server adress you want to connect to, default: 'localhost'.",
 
@@ -38,7 +41,7 @@
 	"idleTimeLimit": 10000,
 	"_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
 
-	"verifiedClientServerGroupId": "9",
+	"verifiedClientServerGroupId": ["9", "14"],
 	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
 
 	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
@@ -46,7 +49,7 @@
 
 	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
 
-	"confirmAccessMsg": "You are Gandaran. Welcome to our community!",
+	"confirmAccessMsg": "Welcome to our community!",
 	"_confirmAccessMsg_comment": "Message that is send after successful registration.",
 
 	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
@@ -61,7 +64,7 @@
 	"apiErrorErrBadData": "There is a problem with the API response, please create a new key and try again. If this error persists please contact a moderator or an admin.",
 	"_apiErrorErrBadData_comment": "If while calling the API we get a response 'ErrBadData' we have to ask the user to take extreme measures, since we're uable to validate that key.",
 
-	"foreignWorld": "Your key is associated with a different world.",
+	"foreignWorld": "Your key is associated with",
 	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
 
 	"idleMove": "You have been afk for an extended period of time. Moving you to AFK-channel.",

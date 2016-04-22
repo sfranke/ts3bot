@@ -28,7 +28,7 @@ function chatMessage(user) {
                 message = {
                     targetmode: '1',
                     target: user.invokerid,
-                    msg: config.foreignWorld + ' -> ' + user.accountWorldName
+                    msg: config.foreignWorld + ' ' + user.accountWorldName
                 };
                 logger.log('info', 'API-key is associated with ' + user.accountWorldName);
                 break;
