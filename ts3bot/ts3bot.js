@@ -246,11 +246,10 @@ function unixTime() {
         if (clientObject.client_type === 0) {
             //Server groups should always be a string even if it's just a single one.
             var groups = clientObject.client_servergroups.toString();
-            console.log('TYPE of GROUPS :', typeof(groups));
             logger.log('debug', 'Server groups: ' + clientObject.client_servergroups.toString());
             //if (groups.match(config.verifiedClientServerGroupId) === null) {
             logger.log('debug', 'String of server groups: ' + config.verifiedClientServerGroupId.indexOf(clientObject.client_servergroups.toString()));
-            
+
             async.series({
                 serverGroups: function(callback){
                     var serverGroups = groups.split(',');
@@ -262,11 +261,10 @@ function unixTime() {
                 },
             },
             function (error, result) {
-                logger.log('error', error);
-                logger.log('info', result);
-                logger.log('info', 'End of async series.');
+                logger.log('debug', 'error: ' + error);
+                logger.log('debug', 'result: ' + result);
                 if (result.serverGroups.indexOf(0) != -1) {
-                    console.log('Recognized a verified user.');
+                    logger.log('debug', 'Recognized a verified user.');
                     logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                     database.getApiKey(clientObject, function (error, response) {
                         logger.log('debug', 'Database get API key error: ' + util.inspect(error));
@@ -290,6 +288,15 @@ function unixTime() {
                                         serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
                                         var message = new chatMessage();
                                         serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));
+                                        break;
+                                    case undefined:
+                                        logger.log('debug', 'Undefined API for this user!');
+                                        console.log('clientObject: ' + util.inspect(clientObject));
+                                        database.setNewUser(clientObject, function(error, response) {
+                                            logger.log('debug', 'error: ' + error);
+                                            logger.log('debug', 'response: ' + response);
+                                            logger.log('debug', 'Set new user!')
+                                        });
                                         break;
                                     default:
                                         clientObject.apiKey         = response.gw2_api_key;
@@ -320,7 +327,9 @@ function unixTime() {
                                                                     var message = new chatMessage();
                                                                     serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid400', clientObject));
                                                                     serverQueryClient.send('clientgetdbidfromuid', {cluid: clientObject.invokeruid}, function (error, response){
-                                                                        if (error !== null) {
+                                                                        logger.log('debug', 'error: ' + util.inspect(error));
+                                                                        logger.log('debug', 'response: ' + util.inspect(response));
+                                                                        if (error !== undefined) {
                                                                             logger.log('error', 'Error while receiving cldbid: ' + error);
                                                                         } else {
                                                                             var report = '[B]' + 'cluid: ' + '[/B]' + clientObject.invokeruid + '\n' + '[B]' + 'nick: ' + '[/B]' + clientObject.invokername + '\n' + '[B]' + 'api-key: ' + '[/B]' + clientObject.apiKey;
@@ -426,9 +435,11 @@ function unixTime() {
                                                 message: report
                                             });
                                         });
-                                        serverQueryClient.send('servergroupdelclient', {
-                                            sgid: config.verifiedClientServerGroupId,
-                                            cldbid: clientObject.invokerdbid
+                                        config.verifiedClientServerGroupId.forEach(function (serverGroupId) {
+                                            serverQueryClient.send('servergroupdelclient', {
+                                                sgid: serverGroupId,
+                                                cldbid: clientObject.invokerdbid
+                                            });
                                         });
                                         var message = new chatMessage();
                                         serverQueryClient.send('sendtextmessage', message.chatSend('welcome', clientObject));

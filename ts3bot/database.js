@@ -77,7 +77,13 @@ database.setNewUser = function(clientObject, callback) {
             {
                 client_unique_id: clientObject.invokeruid,
                 client_nickname: clientObject.invokername,
-                last_seen: unixTime()
+                last_seen: unixTime(),
+                gw2_api_key : null,
+                gw2_account_id : null,
+                gw2_account_world : null,
+                gw2_account_name : null,
+                gw2_guilds : null,
+                gw2_account_created : null
             },
             {
                 upsert: true
@@ -153,7 +159,13 @@ database.delApiKey = function(clientObject, callback) {
             {
                 client_unique_id: clientObject.invokeruid,
                 client_nickname: clientObject.invokername,
-                last_seen: unixTime()
+                last_seen: unixTime(),
+                gw2_api_key: clientObject.apiKey,
+                gw2_account_id: clientObject.accountId,
+                gw2_account_world: clientObject.world,
+                gw2_account_name: clientObject.accountName,
+                gw2_guilds: clientObject.guilds,
+                gw2_account_created: clientObject.accountCreated
             },
             {
                 upsert: true
