@@ -241,6 +241,7 @@ function unixTime() {
             clientObject.invokeruid  = clientObject.client_unique_identifier;
             clientObject.invokerdbid = clientObject.client_database_id;
             clientObject.invokerid   = clientObject.clid;
+            var serverGroupsArray = [];
         //If a user is connecting via the teamspeak client, ignore server query clients.
         if (clientObject.client_type === 0) {
             //Server groups should always be a string even if it's just a single one.
@@ -248,30 +249,23 @@ function unixTime() {
             console.log('TYPE of GROUPS :', typeof(groups));
             logger.log('debug', 'Server groups: ' + clientObject.client_servergroups.toString());
             //if (groups.match(config.verifiedClientServerGroupId) === null) {
-            console.log('TEST --- ' + config.verifiedClientServerGroupId.indexOf(clientObject.client_servergroups.toString()));
-
-
+            logger.log('debug', 'String of server groups: ' + config.verifiedClientServerGroupId.indexOf(clientObject.client_servergroups.toString()));
+            
             async.series({
-
-                userState: function (callback) {
-                    var userState;
+                serverGroups: function(callback){
                     var serverGroups = groups.split(',');
                     serverGroups.forEach(function(serverGroup) {
-                        console.log(config.verifiedClientServerGroupId.indexOf(serverGroup));
-                        if (config.verifiedClientServerGroupId.indexOf(serverGroup) != -1) {
-                            userState = 'verified';
-                        } else {
-                            userState = 'unverified';
-                        }
+                        console.log('ServerGroup match:', config.verifiedClientServerGroupId.indexOf(serverGroup));
+                        serverGroupsArray.push(config.verifiedClientServerGroupId.indexOf(serverGroup));
                     });
-                    callback(null, userState);
+                    callback(null, serverGroupsArray);
                 },
             },
             function (error, result) {
                 logger.log('error', error);
                 logger.log('info', result);
                 logger.log('info', 'End of async series.');
-                if (result.userState === 'verified') {
+                if (result.serverGroups.indexOf(0) != -1) {
                     console.log('Recognized a verified user.');
                     logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                     database.getApiKey(clientObject, function (error, response) {
