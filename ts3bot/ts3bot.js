@@ -13,16 +13,23 @@ var TeamSpeakClient = require('node-teamspeak'),
     async           = require('async'),
     colors          = require('colors');
 
+// Function to create a unix timestamp.
 function unixTime() {
     var unixStamp = Math.round((new Date()).getTime() / 1000);
     return unixStamp;
 }
 
+// Main function to create an instance of the ts3bot itself.
 (function ts3bot() {
+
+    // Configuration of the teamspeak server query client.
     var serverQueryClient = new TeamSpeakClient(config.host, config.port);
 
+    // Start-up routine of the the bot. Connecting  to all services to run properly.
+    // All routines that should be run on start-up should be implemented here.
     async.series({
 
+        // Login routine. login name and password are provided via config file.
         login: function (callback) {
             serverQueryClient.send(
                 'login',
@@ -37,6 +44,7 @@ function unixTime() {
             });
         },
 
+        // Server selection. Server ID is provided via config file.
         selectServer: function(callback) {
             serverQueryClient.send('use', {sid: config.virtualServerId}, function (error, response, rawResponse){
                 if (error !== undefined) logger.log('error', error);
@@ -45,6 +53,7 @@ function unixTime() {
             });
         },
 
+        // Change client name. This will change the visible client name provided via the config file.
         changeNick: function (callback) {
             serverQueryClient.send(
                 'clientupdate',
@@ -58,6 +67,8 @@ function unixTime() {
             });
         },
 
+        // Register to the server for private text messages. This will ensure we can receive private text
+        // messages once registered to the server.
         registerForPrivateTextMessages: function (callback) {
             serverQueryClient.send(
                 'servernotifyregister',
@@ -71,6 +82,8 @@ function unixTime() {
             });
         },
 
+        // Register to the server for server events. This will ensure we can hook into server events
+        // like 'onConnect' to get notified when a client connects to the server.
         registerForServerEvents: function (callback) {
             serverQueryClient.send(
                 'servernotifyregister',
@@ -84,6 +97,7 @@ function unixTime() {
             });
         },
 
+        // Register to the server for receiving text message within a specified channel (lobby).
         registerForTextServer: function (callback) {
             serverQueryClient.send(
                 'servernotifyregister',
