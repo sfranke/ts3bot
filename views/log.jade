@@ -14,7 +14,7 @@ block content
   script
       |$(function () {
       |  socket = io.connect();
-      |  socket.on('testEvent', function (data) {
+      |  socket.on('newLine', function (data) {
       |    $('table').append('<tr><td>' + data + '</td></tr>');
       |    $("html, body").animate({ scrollTop: $(document).height() }, 1000);
       |  });

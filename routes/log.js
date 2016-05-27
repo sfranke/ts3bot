@@ -39,7 +39,7 @@ function updateLog() {
             });
             rl.on('line', function (line) {
                 if (tempLogArray.indexOf(line) == -1) {
-                    io.emit('testEvent', line);
+                    io.emit('newLine', line);
                     tempLogArray.push(line);
                 }
             });

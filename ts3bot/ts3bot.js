@@ -111,6 +111,7 @@ function unixTime() {
             });
         },
 
+        // Connect to database to ensure the database is installed and available.
         connectDatabase: function (callback) {
             database.createDatabase(function (error, response) {
                 if (error !== null) {
@@ -125,11 +126,16 @@ function unixTime() {
             });
         },
 
+        // Clean-up routine to delete old/inactive clients from the teamspeak servers SQLite database.
+        // Because of the amount of hits to the SQLite database. This function is one of the reasons
+        // why the host of this program should be whitelisted for the teamspeak server.
         databasePurge: function (callback) {
             databasePurge.databaseCleanup(serverQueryClient);
             callback();
         },
 
+        // Routine to move idle clients from the lobby to a designated AFK channel. Timer for this routine
+        // can be adjusted via the config file.
         clientIdleMove: function (callback) {
             if (config.MoveAfkClientsFromLobby === true) {
                 logger.log('info', 'Moving AFK-clients is active and running.');
@@ -138,6 +144,7 @@ function unixTime() {
             callback();
         }
     },
+    // End of the async series.
     function (error, result) {
         logger.log('info', 'End of start-up routine.');
     });
@@ -199,8 +206,7 @@ function unixTime() {
                                     logger.log('error', 'Error while clientgetdbidfromuid: ' + clientObject.invokeruid + util.inspect(error));
                                 } else {
                                     logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
-                                    logger.log('debug', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid + ' \'' + clientObject.apiKey + '\'');
-                                    logger.log('debug' , '[TEST GRANT PERMISSIONS] : ' + util.inspect(clientObject));
+                                    logger.log('debug' , '[TEST GRANT PERMISSIONS]: ' + util.inspect(clientObject));
                                     if (clientObject.world === "2204") {
                                         serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid});
                                         serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
@@ -243,8 +249,7 @@ function unixTime() {
                 }
             }
         } else if (response.invokername != config.clientName && response.msg.length != 72) {
-            //var message = new chatMessage();
-            serverQueryClient.send('sendtextmessage', message.chatSend('keyNotValid', response));
+            // No response to an obviously invalid key.
         }
     });
 
@@ -268,7 +273,7 @@ function unixTime() {
                 serverGroups: function(callback){
                     var serverGroups = groups.split(',');
                     serverGroups.forEach(function(serverGroup) {
-                        console.log('ServerGroup match:', config.verifiedClientServerGroupId.indexOf(serverGroup));
+                        logger.log('debug', 'ServerGroup match: ' + config.verifiedClientServerGroupId.indexOf(serverGroup));
                         serverGroupsArray.push(config.verifiedClientServerGroupId.indexOf(serverGroup));
                     });
                     callback(null, serverGroupsArray);
@@ -305,11 +310,11 @@ function unixTime() {
                                         break;
                                     case undefined:
                                         logger.log('debug', 'Undefined API for this user!');
-                                        console.log('clientObject: ' + util.inspect(clientObject));
+                                        logger.log('debug', 'clientObject: ' + util.inspect(clientObject));
                                         database.setNewUser(clientObject, function(error, response) {
                                             logger.log('debug', 'error: ' + error);
                                             logger.log('debug', 'response: ' + response);
-                                            logger.log('debug', 'Set new user!')
+                                            logger.log('debug', 'Set new user!');
                                         });
                                         break;
                                     default:
@@ -463,7 +468,7 @@ function unixTime() {
                         }
                     });
                 } else {
-                    console.log('Recognized an unverified user.');
+                    logger.log('info', 'Recognized an unverified user.');
                     database.setNewUser(clientObject, function(error, response) {
                         logger.log('debug', 'Error of \'database.setNewUser\' on connect.\n' + util.inspect(error));
                         logger.log('debug', 'Response of \'database.setNewUser\' on connect.\n' + util.inspect(response));
@@ -488,7 +493,7 @@ function unixTime() {
         }
         //Error id for invalid loginname or password.
         if (error.id === '520') {
-            console.log('error', 'Invalid loginname or password');
+            logger.log('error', 'Invalid loginname or password');
         }
     });
     serverQueryClient.on('error', function (error, response, rawResponse) {
