@@ -19,7 +19,7 @@ router.get('/', function (req, res, next) {
 
 function serverTime() {
     setInterval(function(){
-        io.emit('serverTime', moment(new Date().getTime()).format("h:mm:ss"));
+        io.emit('serverTime', moment(new Date().getTime()).format("HH:mm:ss"));
     }, 1000);
 }
 

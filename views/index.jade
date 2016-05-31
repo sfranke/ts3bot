@@ -7,7 +7,9 @@ block content
         h1= title
         div#status
           - if (status[0].pm2_env.status === 'online')
-            span.label.label-success Online
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                span.label.label-success Online
           - if (status[0].pm2_env.status !== 'online')
             span.label.label-danger Offline
         div

@@ -42,14 +42,12 @@ block content
                     p#guilds
                     - each i, key in guilds
                       div#test(name='#{i}')
-                        button.btn.btn-sm.btn-info(id='#{i}', type='submit') #{i}
+                        button.btn.btn-sm.btn-info(id='#{i}', type='submit', style='display: none;') #{i}
                         p#test2(class='#{i}')
                         script
                           |$(document).ready(function(){
-                          |  $('##{i}').on('click', function() {
-                          |    $.getJSON('/guild/#{i}', function(d) {
-                          |      $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.guild_name + '</p>');
-                          |    });
+                          |  $.getJSON('/guild/#{i}', function(d) {
+                          |    $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.guild_name + '</p>');
                           |  });
                           |});
 
