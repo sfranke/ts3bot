@@ -22,6 +22,17 @@ getAccountinformation = function(Uid, callback) {
     });
 };
 
+getAccountinformationByName = function(name, callback) {
+    mongoClient.connect(uri, function (err, db) {
+        var collection = db.collection('clients');
+        collection.find({client_nickname: name}).limit(1).next(function (err, doc) {
+            if (err) callback(err, null);
+            callback(null, doc);
+            db.close();
+        });
+    });
+};
+
 router.post('/', function (req, res, next) {
     var uid = req.body.accountUid;
     getAccountinformation(uid, function (error, response) {
@@ -47,7 +58,31 @@ router.post('/', function (req, res, next) {
                 });
             }
         } else {
-            res.render('account', {title: 'Ts3Bot', name: undefined});
+            getAccountinformationByName(uid, function (error, response) {
+                if (response !== null) {
+                    var time = new Date(response.last_seen * 1000);
+                    if (response.gw2_guilds !== '' && response.gw2_guilds !== undefined) {
+                        var guilds = JSON.parse(response.gw2_guilds);
+                        res.render('account', {
+                            title: 'Ts3Bot',
+                            name: response.client_nickname,
+                            time: time,
+                            apiKey: response.gw2_api_key,
+                            accountId: response.gw2_account_id,
+                            accountName: response.gw2_account_name,
+                            guilds: guilds,
+                            created: response.gw2_account_created
+                        });
+                    } else {
+                        res.render('account', {
+                            title: 'Ts3Bot',
+                            name: response.client_nickname,
+                            time: time
+                        });
+                    }
+                }
+                res.render('account', {title: 'Ts3Bot', name: undefined});
+            });
         }
     });
 });
