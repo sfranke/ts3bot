@@ -5,7 +5,7 @@ block content
     .jumbotron
       .container
         h1= title
-        div#status
+        div#status(style='height: 35px')
           - if (status[0].pm2_env.status === 'online')
             .row
               .col-sm-2.text-left-xs.text-right-md
@@ -14,35 +14,37 @@ block content
             span.label.label-danger Offline
         div
           - for i in status
+            hr
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p PID:
-              .col-sm-10
+              .col-sm-9
                 p #{i.pid}
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p Name:
-              .col-sm-10
+              .col-sm-9
                 p #{i.name}
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p Env:
-              .col-sm-10
+              .col-sm-9
                 p #{i.pm2_env.APPLICATION_ENV}
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p Memory:
-              .col-sm-10
+              .col-sm-9
                 p=(i.monit.memory /1024)/1024 + ' MB'
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p Restarts:
-              .col-sm-10
+              .col-sm-9
                 p #{i.pm2_env.restart_time}
             .row
-              .col-sm-2.text-left-xs.text-right-md
+              .col-sm-3.text-left-xs.text-right-md
                 p Started:
-              .col-sm-10
+              .col-sm-9
                 p=moment(i.pm2_env.pm_uptime).format("MMM Do YYYY, HH:mm:ss")
+        div#status(style="height: 35px")
 
   include footer

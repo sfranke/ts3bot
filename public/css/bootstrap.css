@@ -6800,3 +6800,35 @@ button.close {
   }
 }
 /*# sourceMappingURL=bootstrap.css.map */
+
+.custom-btn {
+  background-color: rgba(15,15,15, 0.4);
+  border-color:rgba(15,15,15, 0.4);
+  color: rgba(190,190,190, 0.8);
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 5px 5px 0 #787878;
+}
+
+.custom-btn:hover {
+  background-color: rgba(15,15,15, 0.4);
+  border-color:rgba(15,15,15, 0.4);
+  color: rgba(190,190,190, 0.8);
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 5px 5px 0 #787878;
+}
+
+.custom-btn:active {
+  background-color: rgba(15,15,15, 0.4);
+  border-color:rgba(15,15,15, 0.4);
+  color: rgba(190,190,190, 0.8);
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 5px 5px 0 #787878;
+}
+
+.custom-btn:focus {
+  background-color: rgba(15,15,15, 0.4);
+  border-color:rgba(15,15,15, 0.4);
+  color: rgba(190,190,190, 0.8);
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 5px 5px 0 #787878;
+}
