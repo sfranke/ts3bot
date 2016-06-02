@@ -22,7 +22,7 @@ block content
                 P #{name}
               div.col-xs-6.col-sm-6.col-md-6
                 h2 Time
-                P=moment(time).format("MMM Do YYYY, h:mm:ss a")
+                P=moment(time).format("MMM Do YYYY, HH:mm:ss")
             - if (accountName != undefined)
               div.row
                 div.col-xs-6.col-sm-6.col-md-6
@@ -35,7 +35,7 @@ block content
               div.row
                 div.col-xs-6.col-sm-6.col-md-6
                   h2 Created
-                  p=moment(created).format("MMM Do YYYY, h:mm:ss a")
+                  p=moment(created).format("MMM Do YYYY, HH:mm:ss")
                 - if (guilds != undefined)
                   div.col-xs-6.col-sm-6.col-md-6
                     h2 Guilds
