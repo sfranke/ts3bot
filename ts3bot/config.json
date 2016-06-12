@@ -5,7 +5,7 @@
 	"homeWorld": 2003,
 	"_homeWorld_comment": "Server id of the game server you want to check for.",
 
-    "worldsAllowed": [2003, 2204, 2005],
+    "worldsAllowed": [2003, 2009],
     "_worldsAllowed_comment": "Hardcoded world IDs that are also allowed during matchups.",
 
 	"host": "",

@@ -207,18 +207,13 @@ function unixTime() {
                                 } else {
                                     logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                                     logger.log('debug' , '[TEST GRANT PERMISSIONS]: ' + util.inspect(clientObject));
-                                    if (clientObject.world === "2204") {
+                                    if (clientObject.world === "2009") {
                                         serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid});
                                         serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
                                     }
 
-                                    if (clientObject.world === "2004") {
-                                        serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
-                                        serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
-                                    }
-
                                     if (clientObject.world === undefined || clientObject.world === "2003") {
-                                        serverQueryClient.send('servergroupaddclient', {sgid: config.verifiedClientServerGroupId, cldbid: response.cldbid});
+                                        serverQueryClient.send('servergroupaddclient', {sgid: 9, cldbid: response.cldbid});
                                         serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg});
                                     }
                                 }
@@ -273,16 +268,19 @@ function unixTime() {
                 serverGroups: function(callback){
                     var serverGroups = groups.split(',');
                     serverGroups.forEach(function(serverGroup) {
+                        logger.log('debug', 'servergroup: ' + serverGroup);
                         logger.log('debug', 'ServerGroup match: ' + config.verifiedClientServerGroupId.indexOf(serverGroup));
                         serverGroupsArray.push(config.verifiedClientServerGroupId.indexOf(serverGroup));
                     });
                     callback(null, serverGroupsArray);
+                    console.log('debug', 'CALLBACK serverGroupsArray: ' + serverGroupsArray);
                 },
             },
             function (error, result) {
                 logger.log('debug', 'error: ' + error);
-                logger.log('debug', 'result: ' + result);
-                if (result.serverGroups.indexOf(0) != -1) {
+                logger.log('debug', 'result: ' + util.inspect(result));
+                logger.log('debug', 'result.serverGroups.indexOf(0): ' + result.serverGroups.indexOf(0));
+                if (result.serverGroups.indexOf(0) != -1 || result.serverGroups.indexOf(1) != -1) {
                     logger.log('debug', 'Recognized a verified user.');
                     logger.log('info', 'Noticed verified client:\n' + '(' + clientObject.clid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid);
                     database.getApiKey(clientObject, function (error, response) {
@@ -355,7 +353,22 @@ function unixTime() {
                                                                             config.adminReport.forEach(function (client) {
                                                                                 serverQueryClient.send('messageadd', {cluid: client, subject: 'Deleted client because of invalid key', message: report});
                                                                             });
-                                                                            serverQueryClient.send('servergroupdelclient', {sgid: config.verifiedClientServerGroupId, cldbid: clientObject.invokerdbid});
+                                                                            logger.log('debug', 'Remove servergroups : ' + clientObject.client_servergroups);
+                                                                            async.series({
+                                                                                userState: function (callback) {
+                                                                                    var userState;
+                                                                                    var serverGroups = groups.split(',');
+                                                                                    serverGroups.forEach(function(serverGroup) {
+                                                                                        if (config.verifiedClientServerGroupId.indexOf(serverGroup) != -1) {
+                                                                                            serverQueryClient.send('servergroupdelclient', {sgid: serverGroup, cldbid: clientObject.invokerdbid});
+                                                                                        }
+                                                                                    });
+                                                                                    callback();
+                                                                                },
+                                                                            },
+                                                                            function (error, result) {
+                                                                                logger.log('info', 'Removed server groups.');
+                                                                            });
                                                                         }
                                                                     });
                                                                 }
