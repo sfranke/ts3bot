@@ -1,85 +1,66 @@
 {
-	"debuglevel": "debug",
-	"_debuglevel_comment": "level of debugging.",
-
-	"homeWorld": 2003,
-	"_homeWorld_comment": "Server id of the game server you want to check for.",
-
-    "worldsAllowed": [2003, 2009],
-    "_worldsAllowed_comment": "Hardcoded world IDs that are also allowed during matchups.",
-
-	"host": "",
-	"_host_comment": "Server adress you want to connect to, default: 'localhost'.",
-
-	"port": "",
-	"_port_comment": "Server query port, default: '10011'",
-
-	"loginName": "likasd9",
-	"_loginName_comment": "Server query login name.",
-
-	"clientPassword": "nfPse73Y",
-	"_clientPassword_comment": "Server query password",
-
-	"virtualServerId": "1",
-	"_virtualServerId_comment": "Virtual server id you want to issue your commands.",
-
-	"clientName": "Impulse_Bot",
-	"_clientName_comment": "Client name that is visible to other clients.",
-
-	"adminReport": ["rzi03/I6Z6MPnSMiRdy4pIlOxz8=","FkNLFAomYW4f88N9rXI2V3skqUI="],
-	"_adminReport_comment": "The admin client that gets informed about the database cleanup routine.",
-
-	"MoveAfkClientsFromLobby": false,
-	"_MoveAfkClientsFromLobby_comment": "To enable this feature set flag to 'true'.",
-
-	"cleanChannel" : 1,
-	"_cleanChannel_comment": "Channel that gets cleared from AFK-users.",
-
-	"afkChannel": 4,
-	"_afkChannel_comment": "Channel that AFK-users get moved to",
-
-	"idleTimeLimit": 10000,
-	"_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
-
-	"verifiedClientServerGroupId": ["9", "14"],
-	"_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
-
-	"welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
-	"_welcomePoke_comment": "",
-
-	"welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
-
-	"confirmAccessMsg": "Welcome to our community!",
-	"_confirmAccessMsg_comment": "Message that is send after successful registration.",
-
-	"denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
-	"_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
-
-	"keyNotValid": "This does not seem to be an API-key.",
-	"_keyNotValid_comment": "Error message for the user if a key does not match the relevant criteria.",
-
-	"keyNotValid400": "Your key is invalid, please generate a new one.",
-	"_keyNotValid400_comment": "Response from ANet if key is invalid for some reason.",
-
-	"apiErrorErrBadData": "There is a problem with the API response, please create a new key and try again. If this error persists please contact a moderator or an admin.",
-	"_apiErrorErrBadData_comment": "If while calling the API we get a response 'ErrBadData' we have to ask the user to take extreme measures, since we're uable to validate that key.",
-
-	"foreignWorld": "Your key is associated with",
-	"_foreignWorld_comment": "Chat message if key points to a foreign world.",
-
-	"idleMove": "You have been afk for an extended period of time. Moving you to AFK-channel.",
-	"_idleMove_comment": "Chat message for idle users.",
-
-	"serverNotResponding": "Servers are not responding, please resend me your key.",
-	"_serverNotResponding_comment": "If GW2 API servers are not responding.",
-
-	"api503": "Could not verify your key please send it again.",
-	"_api503_comment": "If server responds with 503 ask the user to re-post a key.",
-
-	"alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
-	"_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client.",
-
-	"checkingKey": "Checking your key via GW2-API, please wait a moment..",
-	"_checkingKey_comment": "Chat message when checking a key against the API."
-
+    "debuglevel": "debug",
+    "_debuglevel_comment": "level of debugging.",
+    "homeWorld": 2003,
+    "_homeWorld_comment": "Server id of the game server you want to check for.",
+    "worldsAllowed": [
+        2001,
+        2003
+    ],
+    "_worldsAllowed_comment": "World IDs that are allowed during matchups.",
+    "host": "",
+    "_host_comment": "Server adress you want to connect to, default: 'localhost'.",
+    "port": "",
+    "_port_comment": "Server query port, default: '10011'",
+    "loginName": "likasd9",
+    "_loginName_comment": "Server query login name.",
+    "clientPassword": "nfPse73Y",
+    "_clientPassword_comment": "Server query password",
+    "virtualServerId": "1",
+    "_virtualServerId_comment": "Virtual server id you want to issue your commands.",
+    "clientName": "Impulse_Bot",
+    "_clientName_comment": "Client name that is visible to other clients.",
+    "adminReport": [
+        "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
+        "FkNLFAomYW4f88N9rXI2V3skqUI="
+    ],
+    "_adminReport_comment": "The admin client that gets informed about the database cleanup routine.",
+    "MoveAfkClientsFromLobby": false,
+    "_MoveAfkClientsFromLobby_comment": "To enable this feature set flag to 'true'.",
+    "cleanChannel": 1,
+    "_cleanChannel_comment": "Channel that gets cleared from AFK-users.",
+    "afkChannel": 4,
+    "_afkChannel_comment": "Channel that AFK-users get moved to",
+    "idleTimeLimit": 10000,
+    "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
+    "verifiedClientServerGroupId": [
+        "9",
+        "14"
+    ],
+    "_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
+    "welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
+    "_welcomePoke_comment": "",
+    "welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
+    "confirmAccessMsg": "Welcome to our community!",
+    "_confirmAccessMsg_comment": "Message that is send after successful registration.",
+    "denyAccessMsg": "Sorry, but this key seems not to be registered for Gandara.",
+    "_denyAccessMsg_comment": "Message that is send if world != 2003 (Gandara).",
+    "keyNotValid": "This does not seem to be an API-key.",
+    "_keyNotValid_comment": "Error message for the user if a key does not match the relevant criteria.",
+    "keyNotValid400": "Your key is invalid, please generate a new one.",
+    "_keyNotValid400_comment": "Response from ANet if key is invalid for some reason.",
+    "apiErrorErrBadData": "There is a problem with the API response, please create a new key and try again. If this error persists please contact a moderator or an admin.",
+    "_apiErrorErrBadData_comment": "If while calling the API we get a response 'ErrBadData' we have to ask the user to take extreme measures, since we're uable to validate that key.",
+    "foreignWorld": "Your key is associated with",
+    "_foreignWorld_comment": "Chat message if key points to a foreign world.",
+    "idleMove": "You have been afk for an extended period of time. Moving you to AFK-channel.",
+    "_idleMove_comment": "Chat message for idle users.",
+    "serverNotResponding": "Servers are not responding, please resend me your key.",
+    "_serverNotResponding_comment": "If GW2 API servers are not responding.",
+    "api503": "Could not verify your key please send it again.",
+    "_api503_comment": "If server responds with 503 ask the user to re-post a key.",
+    "alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
+    "_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client.",
+    "checkingKey": "Checking your key via GW2-API, please wait a moment..",
+    "_checkingKey_comment": "Chat message when checking a key against the API."
 }

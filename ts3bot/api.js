@@ -174,7 +174,7 @@ api.world = function(clientObject, callback) {
             }
         });
         response.on('error', function (error) {
-            logger.log('error', 'While calling \'api.guildwars.com/v2/worlds?ids=' + clientObject.accountWorldId + '.');
+            logger.log('error', 'While calling \'api.guildwars.com/v2/worlds?ids=' + clientObject.accountWorldId + '\'.');
         });
     });
 };

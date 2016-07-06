@@ -2,6 +2,7 @@
 
 var TeamSpeakClient = require('node-teamspeak'),
     config          = JSON.parse(require('fs').readFileSync('config.json')),
+    fs              = require('fs'),
     util            = require('util'),
     https           = require('https'),
     logger          = require('./logger'),
@@ -11,7 +12,8 @@ var TeamSpeakClient = require('node-teamspeak'),
     databasePurge   = require('./databasePurge'),
     clientIdleMove  = require('./clientIdleMove'),
     async           = require('async'),
-    colors          = require('colors');
+    colors          = require('colors'),
+    matchup         = require('./matchup');
 
 // Function to create a unix timestamp.
 function unixTime() {
@@ -141,6 +143,23 @@ function unixTime() {
                 logger.log('info', 'Moving AFK-clients is active and running.');
                 clientIdleMove.moveClient(serverQueryClient);
             }
+            callback();
+        },
+
+        matchup: function (callback) {
+            matchup.getMatchups(function (error, response) {
+                logger.log('debug', 'getMatchup error object: ' + error);
+                logger.log('debug', 'getMatchup response object: ' + response);
+                logger.log('debug', 'Type of matchup: ' + typeof(response));
+
+                var currentConfig = config;
+                logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig));
+                currentConfig.worldsAllowed = response;
+                fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function(error) {
+                    if (error) logger.log('error','Error while saving config.' + error);
+                    logger.log('info', 'Configuration saved successfully');
+                });
+            });
             callback();
         }
     },
