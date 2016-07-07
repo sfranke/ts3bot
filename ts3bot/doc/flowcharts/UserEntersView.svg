@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Arial" font-size="12" width="677" height="786">
+	<desc>Flowchart diagram model</desc>
+	<g id="_9nyUEkQvEeavkcsFwndrbA">
+		<defs>
+			<linearGradient id="greyGradient" x1="0%" y1="0%" x2="0%" y2="100%" spreadMethod="pad">
+				<stop offset="0%" stop-color="#FFF" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#E5E5E5" stop-opacity="1"/>
+				
+			</linearGradient>
+			<linearGradient id="packageGradient" x1="0%" y1="0%" x2="0%" y2="100%" spreadMethod="pad">
+				<stop offset="0%" stop-color="#FFF" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#EFE9DE" stop-opacity="1"/>
+				
+			</linearGradient>
+			<linearGradient id="ActionShapeWidget" x1="0%" y1="0%" x2="0%" y2="100%" spreadMethod="pad">
+				<stop offset="0%" stop-color="#FFF" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#B3E0FF" stop-opacity="1"/>
+				
+			</linearGradient>
+			<linearGradient id="StartShapeWidget" x1="0%" y1="0%" x2="0%" y2="100%" spreadMethod="pad">
+				<stop offset="0%" stop-color="#c2e08f" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#7ec601" stop-opacity="1"/>
+				
+			</linearGradient>
+			<linearGradient id="DecisionShapeWidget" x1="0%" y1="0%" x2="0%" y2="100%" spreadMethod="pad">
+				<stop offset="0%" stop-color="#EBE9F9" stop-opacity="1"/>
+				<stop offset="100%" stop-color="#C1BFEA" stop-opacity="1"/>
+				
+			</linearGradient>
+			
+		</defs>
+		<g id="_7l0lkCZdEDSmAqifejc5fA" transform="translate(50 596)">
+			<rect x="0" y="0" width="100" height="40" rx="20" ry="20" fill="url(#StartShapeWidget)" stroke="#888888" stroke-width="1"/>
+			<path fill="url(#StartShapeWidget)" stroke-width="1" stroke="#888888"/>
+			<text y="7" text-anchor="middle" fill="#000000">
+				<tspan x="51" dy="12">User enters</tspan>
+				<tspan x="51" dy="12">server</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_D672YCZeEDSmAqifejc5fA" transform="translate(323 576)">
+			<path d="M40.0 1L79 40.0L40.0 79L1 40.0L40.0 1" fill="url(#DecisionShapeWidget)" stroke-width="1" stroke="#888888"/>
+			<text y="27" text-anchor="middle" fill="#000000">
+				<tspan x="41" dy="12">Using a</tspan>
+				<tspan x="41" dy="12">client?</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_XdugkCZeEDSmAqifejc5fA" transform="translate(313 706)">
+			<rect x="0" y="0" width="100" height="40" rx="0" ry="0" fill="url(#ActionShapeWidget)" stroke="#888888" stroke-width="1"/>
+			<text y="7" text-anchor="middle" fill="#000000">
+				<tspan x="51" dy="12">Ignore everyone</tspan>
+				<tspan x="51" dy="12">except clients.</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_hKjLMCZeEDSmAqifejc5fA" transform="translate(323 430)">
+			<path d="M40.0 1L79 40.0L40.0 79L1 40.0L40.0 1" fill="url(#DecisionShapeWidget)" stroke-width="1" stroke="#888888"/>
+			<text y="27" text-anchor="middle" fill="#000000">
+				<tspan x="41" dy="12">Known</tspan>
+				<tspan x="41" dy="12">user?</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_lk6dsCZeEDSmAqifejc5fA" transform="translate(313 339)">
+			<rect x="0" y="0" width="100" height="40" rx="0" ry="0" fill="url(#ActionShapeWidget)" stroke="#888888" stroke-width="1"/>
+			<text y="7" text-anchor="middle" fill="#000000">
+				<tspan x="51" dy="12">Check database</tspan>
+				<tspan x="51" dy="12">for user data.</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_84J6sCZeEDSmAqifejc5fA" transform="translate(323 210)">
+			<path d="M40.0 1L79 40.0L40.0 79L1 40.0L40.0 1" fill="url(#DecisionShapeWidget)" stroke-width="1" stroke="#888888"/>
+			<text y="21" text-anchor="middle" fill="#000000">
+				<tspan x="41" dy="12">API key</tspan>
+				<tspan x="41" dy="12">stored in</tspan>
+				<tspan x="41" dy="12">database?</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_A1t8cCZfEDSmAqifejc5fA" transform="translate(313 121)">
+			<rect x="0" y="0" width="100" height="40" rx="0" ry="0" fill="url(#ActionShapeWidget)" stroke="#888888" stroke-width="1"/>
+			<text y="1" text-anchor="middle" fill="#000000">
+				<tspan x="51" dy="12">Re-validate</tspan>
+				<tspan x="51" dy="12">existing API</tspan>
+				<tspan x="51" dy="12">key.</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_Nfd1wCZgEDSmAqifejc5fA" transform="translate(303 20)">
+			<path d="M1 1L119 1L119 59L1 59L1 1" fill="#FFF" stroke-width="1" stroke="#888888"/>
+			<path d="M12.5 1L12.5 59M107.5 1L107.5 59" fill="#FFF" stroke-width="1" stroke="#888888"/>
+			<text y="17" text-anchor="middle" fill="#000000">
+				<tspan x="61" dy="12">Grant server</tspan>
+				<tspan x="61" dy="12">group.</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_h8cQQCZgEDSmAqifejc5fA" transform="translate(517 329)">
+			<path d="M1 1L119 1L119 59L1 59L1 1" fill="#FFF" stroke-width="1" stroke="#888888"/>
+			<path d="M12.5 1L12.5 59M107.5 1L107.5 59" fill="#FFF" stroke-width="1" stroke="#888888"/>
+			<text y="17" text-anchor="middle" fill="#000000">
+				<tspan x="61" dy="12">Welcome new</tspan>
+				<tspan x="61" dy="12">user.</tspan>
+				
+			</text>
+			
+		</g>
+		<g id="_D69EgSZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="150.5,616.5 323.5,616.5"/>
+			<g transform="translate(323.5,616.5)">
+				<g transform="rotate(90)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_XdvusCZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,656.5 363.5,706.5"/>
+			<g transform="translate(363.5,706.5)">
+				<g transform="rotate(-180)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_iicLMCZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,576.5 363.5,510.5"/>
+			<g transform="translate(363.5,510.5)">
+				<g transform="rotate(0)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_lk7r0CZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,430.5 363.5,379.5"/>
+			<g transform="translate(363.5,379.5)">
+				<g transform="rotate(0)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_yZjN0CZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="403.5,449.5 519.5,389.5"/>
+			<g transform="translate(519.5,389.5)">
+				<g transform="rotate(63)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_84KhwCZeEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,339.5 363.5,290.5"/>
+			<g transform="translate(363.5,290.5)">
+				<g transform="rotate(0)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_A1t8ciZfEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,210.5 363.5,161.5"/>
+			<g transform="translate(363.5,161.5)">
+				<g transform="rotate(0)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_i4ooMSZfEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="403.5,270.5 518.5,329.5"/>
+			<g transform="translate(518.5,329.5)">
+				<g transform="rotate(117)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<g id="_UicJQCZgEDSmAqifejc5fA">
+			<polyline fill="none" stroke-width="1" stroke="#000" points="363.5,121.5 363.5,80.5"/>
+			<g transform="translate(363.5,80.5)">
+				<g transform="rotate(0)">
+					<polyline fill="none" stroke-width="1" stroke="#000" points="-5,10 0,0 5,10"/>
+					
+				</g>
+				
+			</g>
+			
+		</g>
+		<text x="164" y="611" font-size="13" fill="#000000">Triggers 'clientEnterView'</text>
+		<text x="370" y="676" font-size="13" fill="#000000">no</text>
+		<text x="371" y="550" font-size="13" fill="#000000">yes</text>
+		<text x="372" y="409" font-size="13" fill="#000000">yes</text>
+		<text x="450" y="414" font-size="13" fill="#000000">no</text>
+		<text x="370" y="310" font-size="13" fill="#000000"/>
+		<text x="369" y="194" font-size="13" fill="#000000">yes</text>
+		<text x="454" y="290" font-size="13" fill="#000000">no</text>
+		<text x="370" y="96" font-size="13" fill="#000000"/>
+		
+	</g>
+	
+</svg>
