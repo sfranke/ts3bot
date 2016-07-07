@@ -173,5 +173,7 @@
             "serverName": "Baruch Bay [SP]"
         }
     },
-    "_gameWorlds_comment": "A list of game worlds and their respective server group IDs."
+    "_gameWorlds_comment": "A list of game worlds and their respective server group IDs.",
+    "commanderServerGroupId": "41",
+    "_commanderServerGroupId_comment": "The commander server group needs to be revoked if all servergroups are revoked from a client."
 }

@@ -56,7 +56,7 @@ databasePurge.databaseCleanup = function (serverQueryClient) {
                         one: function (callback) {
                             if(clientList !== undefined){
                                 clientList.forEach(function (client) {
-                                    if (client.client_lastconnected < ninetyOneDays) {
+                                    if (client.client_lastconnected < ninetyOneDays && client.client_nickname !== config.clientName) {
                                         var clientToBeDeleted = client;
                                         oldClients.push(clientToBeDeleted);
                                         logger.log('debug', 'Old clients: ' + util.inspect(oldClients));

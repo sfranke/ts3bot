@@ -13,7 +13,8 @@ var TeamSpeakClient = require('node-teamspeak'),
     clientIdleMove  = require('./clientIdleMove'),
     async           = require('async'),
     colors          = require('colors'),
-    matchup         = require('./matchup');
+    matchup         = require('./matchup'),
+    serverGroups    = require('./serverGroups');
 
 // Function to create a unix timestamp.
 function unixTime() {
@@ -146,22 +147,22 @@ function unixTime() {
             callback();
         },
 
-        matchup: function (callback) {
-            matchup.getMatchups(function (error, response) {
-                logger.log('debug', 'getMatchup error object: ' + error);
-                logger.log('debug', 'getMatchup response object: ' + response);
-                logger.log('debug', 'Type of matchup: ' + typeof(response));
-
-                var currentConfig = config;
-                logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig));
-                currentConfig.worldsAllowed = response;
-                fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function(error) {
-                    if (error) logger.log('error','Error while saving config.' + error);
-                    logger.log('info', 'Configuration saved successfully');
-                });
-            });
-            callback();
-        }
+        // matchup: function (callback) {
+        //     matchup.getMatchups(function (error, response) {
+        //         logger.log('debug', 'getMatchup error object: ' + error);
+        //         logger.log('debug', 'getMatchup response object: ' + response);
+        //         logger.log('debug', 'Type of matchup: ' + typeof(response));
+        //
+        //         var currentConfig = config;
+        //         logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig));
+        //         currentConfig.worldsAllowed = response;
+        //         fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function(error) {
+        //             if (error) logger.log('error','Error while saving config.' + error);
+        //             logger.log('info', 'Configuration saved successfully');
+        //         });
+        //     });
+        //     callback();
+        // }
     },
     // End of the async series.
     function (error, result) {
@@ -284,6 +285,13 @@ function unixTime() {
             logger.log('debug', 'String of server groups: ' + config.verifiedClientServerGroupId.indexOf(clientObject.client_servergroups.toString()));
 
             async.series({
+                purgeServerGroups: function (callback) {
+                    serverGroups.purgeClient(serverQueryClient, clientObject, function (error, response) {
+                        if (error) logger.log('debug', 'serverGroups.purgeClient error' + error);
+                        logger.log('debug', 'serverGroups.purgeClient response: ' + response);
+                    });
+                    callback();
+                },
                 serverGroups: function(callback){
                     var serverGroups = groups.split(',');
                     serverGroups.forEach(function(serverGroup) {
@@ -293,7 +301,7 @@ function unixTime() {
                     });
                     callback(null, serverGroupsArray);
                     console.log('debug', 'CALLBACK serverGroupsArray: ' + serverGroupsArray);
-                },
+                }
             },
             function (error, result) {
                 logger.log('debug', 'error: ' + error);
@@ -387,6 +395,11 @@ function unixTime() {
                                                                             },
                                                                             function (error, result) {
                                                                                 logger.log('info', 'Removed server groups.');
+                                                                            });
+                                                                            database.setNewUser(clientObject, function(error, response) {
+                                                                                logger.log('debug', 'error: ' + error);
+                                                                                logger.log('debug', 'response: ' + response);
+                                                                                logger.log('debug', 'Set new user!');
                                                                             });
                                                                         }
                                                                     });
