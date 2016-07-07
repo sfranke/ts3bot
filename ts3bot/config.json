@@ -62,5 +62,116 @@
     "alreadyInUse": "This key is already in use thus it can not be associated with your account. Please create a new one and paste it into this chat.",
     "_alreadyInUse_comment": "Message send to a client if an API-key is already used by another client.",
     "checkingKey": "Checking your key via GW2-API, please wait a moment..",
-    "_checkingKey_comment": "Chat message when checking a key against the API."
+    "_checkingKey_comment": "Chat message when checking a key against the API.",
+    "gameWorlds": {
+        "2001": {
+            "serverGroupId": "15",
+            "serverName": "Fissure of Woe"
+        },
+        "2002": {
+            "serverGroupId": "16",
+            "serverName": "Desolation"
+        },
+        "2003": {
+            "serverGroupId": "9",
+            "serverName": "Gandara"
+        },
+        "2004": {
+            "serverGroupId": "17",
+            "serverName": "Blacktide"
+        },
+        "2005": {
+            "serverGroupId": "18",
+            "serverName": "Ring of Fire"
+        },
+        "2006": {
+            "serverGroupId": "19",
+            "serverName": "Underworld"
+        },
+        "2007": {
+            "serverGroupId": "20",
+            "serverName": "Far Shiverpeaks"
+        },
+        "2008": {
+            "serverGroupId": "21",
+            "serverName": "Whiteside Ridge"
+        },
+        "2009": {
+            "serverGroupId": "22",
+            "serverName": "Ruins of Surmia"
+        },
+        "2010": {
+            "serverGroupId": "23",
+            "serverName": "Seafarer's Rest"
+        },
+        "2011": {
+            "serverGroupId": "24",
+            "serverName": "Vabbi"
+        },
+        "2012": {
+            "serverGroupId": "25",
+            "serverName": "Piken Square"
+        },
+        "2013": {
+            "serverGroupId": "26",
+            "serverName": "Aurora Glade"
+        },
+        "2014": {
+            "serverGroupId": "27",
+            "serverName": "Gunnar's Hold"
+        },
+        "2101": {
+            "serverGroupId": "28",
+            "serverName": "Jade Sea [FR]"
+        },
+        "2102": {
+            "serverGroupId": "29",
+            "serverName": "Fort Ranik [FR]"
+        },
+        "2103": {
+            "serverGroupId": "30",
+            "serverName": "Augury Rock [FR]"
+        },
+        "2104": {
+            "serverGroupId": "31",
+            "serverName": "Vizunah Square [FR]"
+        },
+        "2105": {
+            "serverGroupId": "32",
+            "serverName": "Arborstone [FR]"
+        },
+        "2201": {
+            "serverGroupId": "33",
+            "serverName": "Kodash [DE]"
+        },
+        "2202": {
+            "serverGroupId": "34",
+            "serverName": "Riverside [DE]"
+        },
+        "2203": {
+            "serverGroupId": "35",
+            "serverName": "Elona Reach [DE]"
+        },
+        "2204": {
+            "serverGroupId": "36",
+            "serverName": "Abaddon's Mouth [DE]"
+        },
+        "2205": {
+            "serverGroupId": "37",
+            "serverName": "Drakkar Lake [DE]"
+        },
+        "2206": {
+            "serverGroupId": "38",
+            "serverName": "Miller's Sound [DE]"
+        },
+        "2207": {
+            "serverGroupId": "39",
+            "serverName": "Dzagonur [DE]"
+        },
+        "2301": {
+            "serverGroupId": "40",
+            "serverName": "Baruch Bay [SP]"
+        }
+    },
+    "_gameWorlds_comment": "A list of game worlds and their respective server group IDs."
 }
