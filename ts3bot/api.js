@@ -51,15 +51,15 @@ api.account = function(userObject, callback) {
                     }
                     break;
                 case 400:
-                    var httpsRequest = JSON.parse(data);
-                    switch(httpsRequest.text) {
+                    var httpsRequest400 = JSON.parse(data);
+                    switch(httpsRequest400.text) {
                         case 'invalid key':
                             logger.log('info', 'Server responding with "Invalid key" -> ' + response.statusCode);
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
                             }
                             clientObject.apiServerStatus = response.statusCode;
-                            clientObject.apiServerStatusReason = httpsRequest.text;
+                            clientObject.apiServerStatusReason = httpsRequest400.text;
                             callback(clientObject, null);
                             break;
                         case 'ErrBadData':
@@ -68,11 +68,11 @@ api.account = function(userObject, callback) {
                                 clientObject.apiKey = clientObject.msg;
                             }
                             clientObject.apiServerStatus = response.statusCode;
-                            clientObject.apiServerStatusReason = httpsRequest.text;
+                            clientObject.apiServerStatusReason = httpsRequest400.text;
                             callback(clientObject, null);
                             break;
                         default:
-                            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
+                            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest400));
                             if (clientObject.apiKey === undefined) {
                                 clientObject.apiKey = clientObject.msg;
                             }
@@ -82,8 +82,8 @@ api.account = function(userObject, callback) {
                     }
                     break;
                 case 403:
-                    var httpsRequest = JSON.parse(data);
-                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest));
+                    var httpsRequest403 = JSON.parse(data);
+                    logger.log('info', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest403));
                     if (clientObject.apiKey === undefined) {
                         clientObject.apiKey = clientObject.msg;
                     }
