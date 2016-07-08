@@ -32,18 +32,24 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           client_login_password: config.clientPassword
         },
           function (error, response, rawResponse) {
-            if (error !== undefined) logger.log('error', error)
-            logger.log('info', 'Login successful.')
-            callback()
+            if (error !== undefined) {
+              logger.log('error', error)
+            } else {
+              logger.log('info', 'Login successful.')
+              callback()
+            }
           })
     },
 
     // Server selection. Server ID is provided via config file.
     selectServer: function (callback) {
       serverQueryClient.send('use', {sid: config.virtualServerId}, function (error, response, rawResponse) {
-        if (error !== undefined) logger.log('error', error)
-        logger.log('info', 'Virtual server selected successfully.')
-        callback()
+        if (error !== undefined) {
+          logger.log('error', error)
+        } else {
+          logger.log('info', 'Virtual server selected successfully.')
+          callback()
+        }
       })
     },
 
@@ -55,9 +61,12 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           client_nickname: config.clientName
         },
         function (error, response, rawResponse) {
-          if (error !== undefined) logger.log('error', error)
-          logger.log('info', 'Client name changed successfully.')
-          callback()
+          if (error !== undefined) {
+            logger.log('error', error)
+          } else {
+            logger.log('info', 'Client name changed successfully.')
+            callback()
+          }
         })
     },
 
@@ -70,9 +79,12 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           event: 'textprivate'
         },
         function (error, response, rawResponse) {
-          if (error !== undefined) logger.log('error', error)
-          logger.log('info', 'Registered for private textmessages successfully.')
-          callback()
+          if (error !== undefined) {
+            logger.log('error', error)
+          } else {
+            logger.log('info', 'Registered for private textmessages successfully.')
+            callback()
+          }
         })
     },
 
@@ -85,9 +97,12 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           event: 'server'
         },
         function (error, response, rawResponse) {
-          if (error !== undefined) logger.log('error', error)
-          logger.log('info', 'Registered for server events successfully.')
-          callback()
+          if (error !== undefined) {
+            logger.log('error', error)
+          } else {
+            logger.log('info', 'Registered for server events successfully.')
+            callback()
+          }
         })
     },
 
@@ -99,9 +114,12 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           event: 'textchannel', id: '3'
         },
         function (error, response, rawResponse) {
-          if (error !== undefined) logger.log('error', error)
-          logger.log('info', 'Registered for textchannel events successfully.')
-          callback()
+          if (error !== undefined) {
+            logger.log('error', error)
+          } else {
+            logger.log('info', 'Registered for textchannel events successfully.')
+            callback()
+          }
         })
     },
 
