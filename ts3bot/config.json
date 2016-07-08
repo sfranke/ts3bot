@@ -1,5 +1,5 @@
 {
-    "debuglevel": "debug",
+    "debuglevel": "info",
     "_debuglevel_comment": "level of debugging.",
     "homeWorld": 2003,
     "_homeWorld_comment": "Server id of the game server you want to check for.",
