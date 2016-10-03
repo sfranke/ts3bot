@@ -1,10 +1,10 @@
 {
-    "debuglevel": "info",
+    "debuglevel": "debug",
     "_debuglevel_comment": "level of debugging.",
     "homeWorld": 2003,
-    "_homeWorld_comment": "Server id of the game server you want to check for.",
+    "_homeWorld_comment": "Server id of the game server you want to check for. Used to find Match-up",
     "worldsAllowed": [
-        2001,
+        2006,
         2003
     ],
     "_worldsAllowed_comment": "World IDs that are allowed during matchups.",

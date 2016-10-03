@@ -12,6 +12,7 @@ var databasePurge = require('./databasePurge')
 var clientIdleMove = require('./clientIdleMove')
 var matchup = require('./matchup')
 var serverGroups = require('./serverGroups')
+var os = require('os')
 var config = JSON.parse(require('fs').readFileSync('config.json'));
 
 // Main function to create an instance of the ts3bot itself.
@@ -167,7 +168,10 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
         currentConfig.worldsAllowed = response
         fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
           if (error) logger.log('error', 'Error while saving config.' + error)
-          logger.log('info', 'Configuration saved successfully')
+          fs.appendFile('./config.json', os.EOL, function (error) {
+            if (error) logger.log('error', 'Error while adding EOL to config.' + error)
+            logger.log('info', 'Configuration saved successfully')
+          })
         })
       })
       callback()
