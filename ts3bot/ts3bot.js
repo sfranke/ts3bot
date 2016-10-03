@@ -241,14 +241,20 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                 } else {
                   logger.log('info', 'SUCCESS, member permissions granted for: ' + '\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid)
                   logger.log('debug', '[TEST GRANT PERMISSIONS]: ' + util.inspect(clientObject))
-                  if (clientObject.world === '2009') {
-                    serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid})
+                  logger.log('debug', 'Current game world: ' + clientObject.world)
+                  logger.log('debug', 'Related server group id: ' + config.gameWorlds[clientObject.world].serverGroupId)
+                  if (clientObject.world !== undefined) {
+                    serverQueryClient.send('servergroupaddclient', {sgid: config.gameWorlds[clientObject.world].serverGroupId, cldbid: response.cldbid})
                     serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
                   }
-                  if (clientObject.world === undefined || clientObject.world === '2003') {
-                    serverQueryClient.send('servergroupaddclient', {sgid: 9, cldbid: response.cldbid})
-                    serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
-                  }
+                  // if (clientObject.world === '2009') {
+                  //   serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid})
+                  //   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
+                  // }
+                  // if (clientObject.world === undefined || clientObject.world === '2003') {
+                  //   serverQueryClient.send('servergroupaddclient', {sgid: 9, cldbid: response.cldbid})
+                  //   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
+                  // }
                 }
               })
             }
