@@ -62,16 +62,18 @@ serverGroups.purgeClient = function (serverQueryClient, clientObject) {
 }
 
 function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, clientObject) {
-  logger.log('debug', 'My server group ID: ' + config.gameWorlds[clientObject.world].serverGroupId)
-  var myServerGroup = config.gameWorlds[clientObject.world].serverGroupId
-  // Remove all server groups except the one that this account is affiliated with.
-  serverGroups.forEach(function (serverGroupId) {
-    logger.log('debug', 'Clean-up servergroups: ' + serverGroupId)
-    if (allServerGroups.indexOf(serverGroupId) !== -1 && serverGroupId !== myServerGroup) {
-      logger.log('debug', 'Found server group that needs to be removed: ' + serverGroupId)
-      serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
-    }
-  })
+  if (config.gameWorlds[clientObject.world] !== undefined) {
+    logger.log('debug', 'My server group ID: ' + config.gameWorlds[clientObject.world].serverGroupId)
+    var myServerGroup = config.gameWorlds[clientObject.world].serverGroupId
+    // Remove all server groups except the one that this account is affiliated with.
+    serverGroups.forEach(function (serverGroupId) {
+      logger.log('debug', 'Clean-up servergroups: ' + serverGroupId)
+      if (allServerGroups.indexOf(serverGroupId) !== -1 && serverGroupId !== myServerGroup) {
+        logger.log('debug', 'Found server group that needs to be removed: ' + serverGroupId)
+        serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
+      }
+    })
+  }
 }
 
 function stripAllServerGroups (serverQueryClient, serverGroups, allServerGroups, clientObject) {
