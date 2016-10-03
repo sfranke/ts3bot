@@ -4,6 +4,7 @@ var matchupDetails = exports
 var util = require('util')
 var https = require('https')
 var logger = require('./logger')
+var config = JSON.parse(require('fs').readFileSync('config.json'))
 
 // Function to receive the current matchup from the GW2 API.
 matchupDetails.getCurrentMatchupDetails = function (matchupId, callback) {
@@ -21,15 +22,15 @@ matchupDetails.getCurrentMatchupDetails = function (matchupId, callback) {
         case 200:
           // currentMatchupDetails.
           var currentMatchupDetails = JSON.parse(data)
-          if (currentMatchupDetails.all_worlds.red.indexOf(2003) !== -1) {
+          if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
             callback(null, currentMatchupDetails.all_worlds.red)
           }
-          if (currentMatchupDetails.all_worlds.blue.indexOf(2003) !== -1) {
+          if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
             callback(null, currentMatchupDetails.all_worlds.blue)
           }
-          if (currentMatchupDetails.all_worlds.green.indexOf(2003) !== -1) {
+          if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
             callback(null, currentMatchupDetails.all_worlds.green)
           }
