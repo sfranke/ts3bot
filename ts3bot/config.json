@@ -34,7 +34,9 @@
     "idleTimeLimit": 10000,
     "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
     "PurgeClientsFromTS3Database": false,
-    "_PurgeClientsFromTS3Database_comment": "Set to 'true' to enable this feature. If set to false, clients older than 90 days are NOT going to be removed from the Teamspeak3 database",
+    "_PurgeClientsFromTS3Database_comment": "Set to 'true' to enable this feature. If set to 'false', clients older than 90 days are NOT going to be removed from the Teamspeak3 database",
+    "FindMatchupPartner": false,
+    "_comment_FindMatchupPartner": "Set to 'true' to enable this feature. If set to 'false' match-up partners won't be searched for.",
     "verifiedClientServerGroupId": [
         "9",
         "14"

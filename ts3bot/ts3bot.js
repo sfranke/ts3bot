@@ -145,10 +145,10 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     databasePurge: function (callback) {
       if (config.PurgeClientsFromTS3Database === true) {
         databasePurge.databaseCleanup(serverQueryClient)
-        callback()
       } else {
         logger.log('info', 'Purge old clients from TS3 database disabled.')
       }
+      callback()
     },
 
     // Routine to move idle clients from the lobby to a designated AFK channel. Timer for this routine
@@ -162,22 +162,23 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     },
 
     matchup: function (callback) {
-      matchup.getMatchups(function (error, response) {
-        logger.log('debug', 'getMatchup error object: ' + error)
-        logger.log('debug', 'getMatchup response object: ' + response)
-        logger.log('debug', 'Type of matchup: ' + typeof (response))
-
-        var currentConfig = config
-        logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
-        currentConfig.worldsAllowed = response
-        fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
-          if (error) logger.log('error', 'Error while saving config.' + error)
-          fs.appendFile('./config.json', os.EOL, function (error) {
-            if (error) logger.log('error', 'Error while adding EOL to config.' + error)
-            logger.log('info', 'Configuration saved successfully')
+      if (config.FindMatchupPartner === true) {
+        matchup.getMatchups(function (error, response) {
+          logger.log('debug', 'getMatchup error object: ' + error)
+          logger.log('debug', 'getMatchup response object: ' + response)
+          logger.log('debug', 'Type of matchup: ' + typeof (response))
+          var currentConfig = config
+          logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
+          currentConfig.worldsAllowed = response
+          fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
+            if (error) logger.log('error', 'Error while saving config.' + error)
+            fs.appendFile('./config.json', os.EOL, function (error) {
+              if (error) logger.log('error', 'Error while adding EOL to config.' + error)
+              logger.log('info', 'Configuration saved successfully')
+            })
           })
         })
-      })
+      }
       callback()
     }
   },
