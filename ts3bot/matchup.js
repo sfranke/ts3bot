@@ -14,7 +14,7 @@ matchup.getMatchups = function (callback) {
     method: 'GET'
   }
   https.get(options, function (response) {
-    logger.log('info', 'GW2 Matches-API status code: ' + response.statusCode)
+    logger.log('debug', 'GW2 Matches-API status code: ' + response.statusCode)
     var statusCode = response.statusCode
     response.on('data', function (data) {
       switch (statusCode) {
@@ -49,6 +49,10 @@ matchup.getMatchups = function (callback) {
           break
         case 503:
           logger.log('error', 'Server busy -> ' + statusCode)
+          callback(statusCode, null)
+          break
+        default:
+          logger.log('error', 'Unknown error occured while searching match-up partner.')
           callback(statusCode, null)
           break
       }

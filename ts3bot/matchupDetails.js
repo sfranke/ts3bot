@@ -15,7 +15,7 @@ matchupDetails.getCurrentMatchupDetails = function (matchupId, callback) {
     method: 'GET'
   }
   https.get(options, function (response) {
-    logger.log('info', 'GW2 Match-details-API status code: ' + response.statusCode)
+    logger.log('debug', 'GW2 Match-details-API status code: ' + response.statusCode)
     var statusCode = response.statusCode
     response.on('data', function (data) {
       switch (statusCode) {
