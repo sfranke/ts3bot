@@ -303,7 +303,36 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     clientObject.invokerdbid = clientObject.client_database_id
     clientObject.invokerid = clientObject.clid
     var serverGroupsArray = []
-    logger.log('debug', 'Array of server groups: ' + serverGroupsArray)
+    if (clientObject.client_type === 0) {
+      // Check for known or unknown client.
+      database.getApiKey(clientObject, function (error, response) {
+        // Error during database request. Data can not be validated also we might not be able to create a new
+        // document. Make sure Database is up and running.
+        if (error !== null) {
+          logger.log('error', 'Error while retrieving API-key from database. ' + error)
+        }
+        // Existing user. Check for API-key and revalidate then assign server groups accordingly.
+        if (response !== null) {
+          logger.log('info', 'Found existing user. ' + util.inspect(response))
+        }
+        // Completely new user. Create new document in clients collection and start registration process.
+        if (response === null) {
+          logger.log('info', 'New user entered the server!')
+          database.setNewUser(clientObject, function (error, response) {
+            logger.log('debug', 'error: ' + util.inspect(error))
+            logger.log('debug', 'response: ' + util.inspect(response))
+            if (error !== null) {
+              logger.log('error', 'error: ' + util.inspect(error))
+            } else {
+              logger.log('debug', 'ClientObject: ' + util.inspect(clientObject))
+              logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
+              var welcomeMessage = new chatMessage()
+              serverQueryClient.send('sendtextmessage', welcomeMessage.chatSend('welcome', clientObject))
+            }
+          })
+        }
+      })
+    }
 
     // // If a user is connecting via the teamspeak client, ignore server query clients.
     // if (clientObject.client_type === 0) {
