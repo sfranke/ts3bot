@@ -4,6 +4,9 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 var util = require('util')
 var logger = require('./logger')
 var events = require('events')
+var matchup = require('./matchup')
+var fs = require('fs')
+var os = require('os')
 
 function chatMessage (user) {
   chatMessage.prototype.chatSend = function (option, user) {
@@ -83,11 +86,43 @@ function chatMessage (user) {
               msg: 'At your service oh mighty Admin! *bow'
             }
             break
+          case '!matchup':
+            matchup.getMatchups(function (error, response) {
+              logger.log('debug', 'getMatchup error object: ' + error)
+              logger.log('debug', 'getMatchup response object: ' + response)
+              logger.log('debug', 'Type of matchup: ' + typeof (response))
+              var currentConfig = config
+              logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
+              currentConfig.worldsAllowed = response
+              fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
+                if (error) logger.log('error', 'Error while saving config.' + error)
+                fs.appendFile('./config.json', os.EOL, function (error) {
+                  if (error) logger.log('error', 'Error while adding EOL to config.' + error)
+                  logger.log('info', 'Configuration saved successfully')
+                })
+              })
+            })
+            message = {
+              targetmode: '1',
+              target: user.invokerid,
+              msg: 'Match-up is updating!'
+            }
+            break
+          case '!showMatchup':
+            logger.log('debug', 'Current worlds allowed: ' + config.worldsAllowed)
+            message = {
+              targetmode: '1',
+              target: user.invokerid,
+              msg: 'Currently allowed world IDs: ' + config.worldsAllowed
+            }
+            break
           case '!help':
             message = {
               targetmode: '1',
               target: user.invokerid,
-              msg: 'Admin commands:\n\n!move <clid>\t\tMove <clid> to AFK-channel.'
+              msg: '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
+                                    '\n!matchup' + '\t\t\t\t' + '   Get current match-up partner.' +
+                                    '\n!showMatchup' + '\t\t' + '   Show current match-up partner.'
             }
             break
           case '!commands':
