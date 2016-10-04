@@ -86,12 +86,18 @@ database.setNewUser = function (clientObject, callback) {
         gw2_account_world: null,
         gw2_account_name: null,
         gw2_guilds: null,
-        gw2_account_created: null
+        gw2_account_created: null,
+        gw2_access: null,
+        gw2_commander: null
       },
       {
         upsert: true
+      },
+      function (err, doc) {
+        if (err) callback(err, null)
+        callback(null, doc)
+        db.close()
       })
-    db.close()
   })
 }
 
