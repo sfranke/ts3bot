@@ -53,7 +53,9 @@ database.updateAccountInformation = function (clientObject, callback) {
             gw2_account_world: clientObject.world,
             gw2_account_name: clientObject.accountName,
             gw2_guilds: clientObject.accountGuilds,
-            gw2_account_created: clientObject.accountCreated
+            gw2_account_created: clientObject.accountCreated,
+            gw2_access: clientObject.access,
+            gw2_commander: clientObject.commander
           },
           {
             upsert: true
