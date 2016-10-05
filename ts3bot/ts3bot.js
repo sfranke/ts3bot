@@ -189,7 +189,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
   })
 
   // This is all the behavior regarding text messages. This behavior has been tested and has proven to be working as
-  // expected. All error handling neccessary is included and can be refined to avoid code duplication.
+  // expected. All error handling necessary is included and can be refined to avoid code duplication.
   // One thing that should be improved:
   // Since we have a comprehensive database of API-keys, we might consider checking for any API-key first in the
   // local storage (mongodB) and secondly validate against the official API.
@@ -232,7 +232,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           // No error process valid data.
           // Account and world checked, verified member.
           database.updateAccountInformation(response, function (error, response) {
-            logger.log('debug', '[TEST RESPONSE] : ' + response)
+            logger.log('debug', '[TEST RESPONSE] : ' + util.inspect(response))
             logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration ' + util.inspect(error))
             logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration ' + util.inspect(response))
             if (error !== null) {
@@ -302,7 +302,6 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     clientObject.invokeruid = clientObject.client_unique_identifier
     clientObject.invokerdbid = clientObject.client_database_id
     clientObject.invokerid = clientObject.clid
-    var serverGroupsArray = []
     if (clientObject.client_type === 0) {
       // Check for known or unknown client.
       database.getApiKey(clientObject, function (error, response) {
@@ -314,6 +313,15 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
         // Existing user. Check for API-key and revalidate then assign server groups accordingly.
         if (response !== null) {
           logger.log('info', 'Found existing user. ' + util.inspect(response))
+          clientObject.apiKey = response.gw2_api_key
+          clientObject.accountId = response.gw2_account_id
+          clientObject.world = response.gw2_account_world
+          clientObject.accountName = response.gw2_account_name
+          clientObject.guilds = response.gw2_guilds
+          clientObject.accountCreated = response.gw2_account_created
+          clientObject.access = response.gw2_access
+          clientObject.commander = response.gw2_commander
+          logger.log('debug', 'ClientObject for debugging only. ' + util.inspect(clientObject))
           database.updateLastSeen(clientObject, function (error, response) {
             if (error) logger.log('error', 'Error while updating updateLastSeen: ' + util.inspect(error))
             logger.log('info', 'Updated updateLastSeen for existing user ' + clientObject.clid + ' - ' + clientObject.invokername)
@@ -321,11 +329,21 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (error) logger.log('error', 'Error while retrieving API-key from database. ' + util.inspect(error))
               logger.log('debug', 'API-key only for debugging. ' + util.inspect(response))
               if (response.gw2_api_key !== null) {
+                // Existing client with API-key. Revalidate data and update if necessary.
                 logger.log('info', 'Found API-key for existing user.')
 
               } else {
+                // Existing client withou API-key. Ask client to register.
                 logger.log('debug', 'API-key value: ' + response.gw2_api_key)
                 logger.log('info', 'No API-key for this user in database.')
+                logger.log('debug', 'ClientObject for debugging purpose: ' + util.inspect(clientObject))
+                database.updateLastSeen(clientObject, function (error, response) {
+                  if (error) logger.log('error', 'Error while updating updateLastSeen: ' + util.inspect(error))
+                  logger.log('info', 'Updated updateLastSeen for existing user without API-key. ' + clientObject.clid + ' - ' + clientObject.invokername)
+                })
+                var existingClientWelcomeMessage = new chatMessage()
+                serverQueryClient.send('sendtextmessage', existingClientWelcomeMessage.chatSend('welcome', clientObject))
+                logger.log('info', 'Sent welcome message to existing user without API-key.')
               }
             })
           })
@@ -341,8 +359,9 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
             } else {
               logger.log('debug', 'ClientObject: ' + util.inspect(clientObject))
               logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
-              var newUserWelcomeMessage = new chatMessage()
-              serverQueryClient.send('sendtextmessage', newUserWelcomeMessage.chatSend('welcome', clientObject))
+              var newClientWelcomeMessage = new chatMessage()
+              serverQueryClient.send('sendtextmessage', newClientWelcomeMessage.chatSend('welcome', clientObject))
+              logger.log('info', 'Sent welcome message to new user for the first time.')
             }
           })
         }
