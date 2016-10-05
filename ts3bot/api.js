@@ -33,6 +33,8 @@ api.account = function (userObject, callback) {
             clientObject.accountGuilds = guilds
             clientObject.accountCreated = httpsRequest.created
             clientObject.world = httpsRequest.world.toString()
+            clientObject.access = httpsRequest.access
+            clientObject.commander = httpsRequest.commander
             callback(null, clientObject)
           } else {
             clientObject.accountWorldId = httpsRequest.world
