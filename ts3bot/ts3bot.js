@@ -314,6 +314,21 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
         // Existing user. Check for API-key and revalidate then assign server groups accordingly.
         if (response !== null) {
           logger.log('info', 'Found existing user. ' + util.inspect(response))
+          database.updateLastSeen(clientObject, function (error, response) {
+            if (error) logger.log('error', 'Error while updating updateLastSeen: ' + util.inspect(error))
+            logger.log('info', 'Updated updateLastSeen for existing user ' + clientObject.clid + ' - ' + clientObject.invokername)
+            database.getApiKey(clientObject, function (error, response) {
+              if (error) logger.log('error', 'Error while retrieving API-key from database. ' + util.inspect(error))
+              logger.log('debug', 'API-key only for debugging. ' + util.inspect(response))
+              if (response.gw2_api_key !== null) {
+                logger.log('info', 'Found API-key for existing user.')
+
+              } else {
+                logger.log('debug', 'API-key value: ' + response.gw2_api_key)
+                logger.log('info', 'No API-key for this user in database.')
+              }
+            })
+          })
         }
         // Completely new user. Create new document in clients collection and start registration process.
         if (response === null) {
@@ -326,8 +341,8 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
             } else {
               logger.log('debug', 'ClientObject: ' + util.inspect(clientObject))
               logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
-              var welcomeMessage = new chatMessage()
-              serverQueryClient.send('sendtextmessage', welcomeMessage.chatSend('welcome', clientObject))
+              var newUserWelcomeMessage = new chatMessage()
+              serverQueryClient.send('sendtextmessage', newUserWelcomeMessage.chatSend('welcome', clientObject))
             }
           })
         }
