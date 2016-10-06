@@ -66,6 +66,10 @@ function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, 
     logger.log('debug', 'My server group ID: ' + config.gameWorlds[clientObject.world].serverGroupId)
     var myServerGroup = config.gameWorlds[clientObject.world].serverGroupId
     serverQueryClient.send('servergroupaddclient', {sgid: myServerGroup, cldbid: clientObject.invokerdbid})
+    database.updateExistingAccountInformationByInvokeruid(clientObject, function (err, res) {
+      if (err) logger.log('error', 'Error while updating account information. ' + util.inspect(err))
+      logger.log('debug', 'Updated account information. ' + util.inspect(res))
+    })
     // Remove all server groups except the one that this account is affiliated with.
     serverGroups.forEach(function (serverGroupId) {
       logger.log('debug', 'Clean-up servergroups: ' + serverGroupId)
