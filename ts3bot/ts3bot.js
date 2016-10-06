@@ -331,7 +331,12 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (response.gw2_api_key !== null) {
                 // Existing client with API-key. Revalidate data and update if necessary.
                 logger.log('info', 'Found API-key for existing user.')
-
+                logger.log('debug', 'Response for existing user. ' + util.inspect(response))
+                logger.log('debug', 'ClientObject for existing user. ' + util.inspect(clientObject))
+                serverGroups.purgeClient(serverQueryClient, clientObject, function (err, res) {
+                  if (err) logger.log('error', 'Error while puring server groups. ' + util.inspect(err))
+                  logger.log('debug', 'Response while purging server groups. ' + util.inspect(res))
+                })
               } else {
                 // Existing client withou API-key. Ask client to register.
                 logger.log('debug', 'API-key value: ' + response.gw2_api_key)
