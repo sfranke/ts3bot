@@ -179,9 +179,23 @@
             "serverName": "Baruch Bay [SP]"
         }
     },
+    "_gameWorlds_comment": "A list of game worlds and their respective server group IDs.",
     "commanderServerGroup": true,
     "_commaderServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' commander server group won't be assigned automatically.",
-    "_gameWorlds_comment": "A list of game worlds and their respective server group IDs.",
     "commanderServerGroupId": 41,
-    "_commanderServerGroupId_comment": "The commander server group needs to be revoked if all servergroups are revoked from a client."
+    "_commanderServerGroupId_comment": "The commander server group needs to be revoked if all servergroups are revoked from a client.",
+    "accessServerGroup": true,
+    "_accessServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' access levels won't get assigned a server group automatically.",
+    "access": {
+      "PlayForFree": {
+        "serverGroupId": 42
+      },
+      "GuildWars2": {
+        "serverGroupId": 43
+      },
+      "HeartOfThorns": {
+        "serverGroupId": 44
+      }
+    },
+    "_access_comment": "The access level of a user's game account and its respective server group."
 }

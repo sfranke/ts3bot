@@ -345,7 +345,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
         }
         // Existing user. Check for API-key and revalidate then assign server groups accordingly.
         if (response !== null) {
-          logger.log('info', 'Found existing user. ' + util.inspect(response))
+          logger.log('debug', 'Found existing user. ' + util.inspect(response))
           clientObject.apiKey = response.gw2_api_key
           clientObject.accountId = response.gw2_account_id
           clientObject.world = response.gw2_account_world

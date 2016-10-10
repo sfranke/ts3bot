@@ -6,6 +6,7 @@ var util = require('util')
 var logger = require('./logger')
 var api = require('./api')
 var database = require('./database')
+var async = require('async')
 
 // This function accepts the serverQueryClient and the clientObject to revalidate the client's currently
 // assigned server groups. This function is supposed to be executed everytime a client connects to the server to
@@ -40,6 +41,8 @@ serverGroups.purgeClient = function (serverQueryClient, clientObject) {
           logger.log('debug', 'API error !== null')
           if (error.apiServerStatus === 400) {
             logger.log('debug', 'Invalid API, confirmed by API. Removing all server groups!')
+            clientObject.commander = null
+            clientObject.access = null
             stripAllServerGroups(serverQueryClient, serverGroups, allServerGroups, clientObject)
           }
           if (error.apiServerStatus === 403) {
@@ -75,15 +78,35 @@ function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, 
     if (config.commanderServerGroup === true) {
       logger.log('debug', 'Assigning commander server group enabled.')
       if (clientObject.commander === true) {
-        serverQueryClient.send('servergroupaddclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid})
-        logger.log('info', 'Found commander status. Assigned server group.')
+        serverQueryClient.send('servergroupaddclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid}, function (err, res) {
+          if (err) logger.log('debug', 'Error while assigning commander server group. ' + util.inspect(err))
+          logger.log('debug', 'Found commander status. Assigned server group.')
+        })
+      }
+    }
+    if (config.accessServerGroup === true) {
+      logger.log('debug', 'Access server group enabled.')
+      if (clientObject.access === 'PlayForFree') {
+        logger.log('debug', 'Detected "PlayForFree" access.')
+        logger.log('debug', 'Server group is: ' + config.access['PlayForFree'].serverGroupId)
+        serverQueryClient.send('servergroupaddclient', {sgid: config.access['PlayForFree'].serverGroupId, cldbid: clientObject.invokerdbid})
+      }
+      if (clientObject.access === 'GuildWars2') {
+        logger.log('debug', 'Detected "GuildWars2" access.')
+        logger.log('debug', 'Server group is: ' + config.access['GuildWars2'].serverGroupId)
+        serverQueryClient.send('servergroupaddclient', {sgid: config.access['GuildWars2'].serverGroupId, cldbid: clientObject.invokerdbid})
+      }
+      if (clientObject.access === 'HeartOfThorns') {
+        logger.log('debug', 'Detected "HeartOfThorns" access.')
+        logger.log('debug', 'Server group is: ' + config.access['HeartOfThorns'].serverGroupId)
+        serverQueryClient.send('servergroupaddclient', {sgid: config.access['HeartOfThorns'].serverGroupId, cldbid: clientObject.invokerdbid})
       }
     }
     // Remove all server groups except the one that this account is affiliated with.
     serverGroups.forEach(function (serverGroupId) {
       logger.log('debug', 'Clean-up servergroups: ' + serverGroupId)
       if (allServerGroups.indexOf(serverGroupId) !== -1 && serverGroupId !== myServerGroup) {
-        logger.log('debug', 'Found server group that needs to be removed: ' + serverGroupId)
+        logger.log('debug', '(cleanUpServerGroups) Found server group that needs to be removed: ' + serverGroupId)
         serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
       }
     })
@@ -91,25 +114,53 @@ function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, 
 }
 
 function stripAllServerGroups (serverQueryClient, serverGroups, allServerGroups, clientObject) {
-  allServerGroups.push(config.commanderServerGroupId)
   // Remove all server groups!
-  serverGroups.forEach(function (serverGroupId) {
-    logger.log('debug', 'Stripping all servergroups: ' + serverGroupId)
-    if (allServerGroups.indexOf(serverGroupId) !== -1) {
-      logger.log('debug', 'Found server group that needs to be removed: ' + serverGroupId)
-      serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
+  async.series({
+    strippingGameWorlds: function (callback) {
+      serverGroups.forEach(function (serverGroupId) {
+        logger.log('debug', 'Stripping all servergroups: ' + serverGroupId)
+        if (allServerGroups.indexOf(serverGroupId) !== -1) {
+          logger.log('debug', 'Found server group that needs to be removed: ' + serverGroupId)
+          serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
+        }
+      })
+      callback()
+    },
+    strippingCommanderServerGroup: function (callback) {
+      if (config.commanderServerGroup === true) {
+        logger.log('debug', 'Assigning commander server group enabled.')
+        logger.log('debug', 'clientObject.commander: ' + clientObject.commander)
+        if (clientObject.commander !== true) {
+          serverQueryClient.send('servergroupdelclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid}, function (err, res) {
+            if (err) logger.log('debug', 'Error while deleting server group. ' + util.inspect(err))
+            logger.log('debug', 'Revoking commander status.')
+          })
+        }
+      }
+      callback()
+    },
+    strippingAccessServerGroup: function (callback) {
+      if (config.accessServerGroup === true) {
+        if (clientObject.access !== 'PlayForFree') {
+          serverQueryClient.send('servergroupdelclient', {sgid: config.access['PlayForFree'].serverGroupId, cldbid: clientObject.invokerdbid})
+        }
+        if (clientObject.access !== 'GuildWars2') {
+          serverQueryClient.send('servergroupdelclient', {sgid: config.access['GuildWars2'].serverGroupId, cldbid: clientObject.invokerdbid})
+        }
+        if (clientObject.access !== 'HeartOfThorns') {
+          serverQueryClient.send('servergroupdelclient', {sgid: config.access['HeartOfThorns'].serverGroupId, cldbid: clientObject.invokerdbid})
+        }
+      }
+      callback()
     }
-  })
-  if (config.commanderServerGroup === true) {
-    logger.log('debug', 'Assigning commander server group enabled.')
-    if (clientObject.commander !== true) {
-      logger.log('info', 'Revoking commander status.')
-      serverQueryClient.send('servergroupdelclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid})
-    }
-  }
-  database.setNewUser(clientObject, function (error, response) {
-    logger.log('debug', 'error: ' + error)
-    logger.log('debug', 'response: ' + response)
-    logger.log('debug', 'Set new user!')
+  },
+  function (err, results) {
+    if (err) logger.log('error', 'Error while stripping all server groups. ' + util.inspect(err))
+    logger.log('debug', 'Finished stripping all server groups.')
+    database.setNewUser(clientObject, function (error, response) {
+      logger.log('debug', 'error: ' + error)
+      logger.log('debug', 'response: ' + response)
+      logger.log('debug', 'Set new user!')
+    })
   })
 }
