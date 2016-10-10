@@ -175,6 +175,34 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
             fs.appendFile('./config.json', os.EOL, function (error) {
               if (error) logger.log('error', 'Error while adding EOL to config.' + error)
               logger.log('info', 'Configuration saved successfully')
+              if (config.setServerGroupPermissions === true) {
+                async.series({
+                  resettingPermissions: function (callback) {
+                    for (var gameWorldId in config.gameWorlds) {
+                      logger.log('debug', 'List of game world server IDs: ' + config.gameWorlds[gameWorldId].serverGroupId)
+                      serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[gameWorldId].serverGroupId, permsid: 'i_channel_join_power', permvalue: config.defaultJoinPower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
+                        if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
+                        logger.log('debug', 'Response while changing default join power: ' + util.inspect(response))
+                        logger.log('debug', 'rawResponse while changing default join power: ' + util.inspect(rawResponse))
+                      })
+                    }
+                    callback()
+                  },
+                  elevatingPermissions: function (callback) {
+                    config.worldsAllowed.forEach(function (allowedGameWorld) {
+                      logger.log('debug', 'Game worlds with elevated join power: ' + allowedGameWorld)
+                      serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[allowedGameWorld].serverGroupId, permsid: 'i_channel_join_power', permvalue: config.elevatedJoinPower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
+                        if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
+                        logger.log('debug', 'Response while changing default join power: ' + util.inspect(response))
+                        logger.log('debug', 'rawResponse while changing default join power: ' + util.inspect(rawResponse))
+                      })
+                    })
+                    callback()
+                  }
+                }, function (err, results) {
+                  if (err) logger.log('error', 'Error while changin server group permissions. ' + util.inspect(err))
+                })
+              }
             })
           })
         })
