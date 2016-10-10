@@ -382,6 +382,10 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                 var existingClientWelcomeMessage = new chatMessage()
                 serverQueryClient.send('sendtextmessage', existingClientWelcomeMessage.chatSend('welcome', clientObject))
                 logger.log('info', 'Sent welcome message to existing user without API-key.')
+                serverGroups.purgeClient(serverQueryClient, clientObject, function (error, response) {
+                  if (error) logger.log('error', 'Error while purging client. ' + util.inspect(error))
+                  logger.log('debug', 'Purging client. ' + util.inspect(response))
+                })
               }
             })
           })

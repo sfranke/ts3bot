@@ -102,7 +102,7 @@ function stripAllServerGroups (serverQueryClient, serverGroups, allServerGroups,
   })
   if (config.commanderServerGroup === true) {
     logger.log('debug', 'Assigning commander server group enabled.')
-    if (clientObject.commander === true) {
+    if (clientObject.commander !== true) {
       logger.log('info', 'Revoking commander status.')
       serverQueryClient.send('servergroupdelclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid})
     }
