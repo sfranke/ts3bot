@@ -16,8 +16,10 @@ serverGroups.purgeClient = function (serverQueryClient, clientObject) {
     // logger.log('debug', 'clientObject:\n' + util.inspect(clientObject));
     // Fetch all related servergroup IDs.
   var allServerGroups = []
-  var groups = clientObject.client_servergroups.toString()
-  var serverGroups = groups.split(',')
+  if (clientObject.client_servergroups !== undefined) {
+    var groups = clientObject.client_servergroups.toString()
+    var serverGroups = groups.split(',')
+  }
 
   for (var gameWorldId in config.gameWorlds) {
     logger.log('debug', 'gameWorlds: ' + config.gameWorlds[gameWorldId].serverGroupId)
@@ -70,6 +72,13 @@ function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, 
       if (err) logger.log('error', 'Error while updating account information. ' + util.inspect(err))
       logger.log('debug', 'Updated account information. ' + util.inspect(res))
     })
+    if (config.commanderServerGroup === true) {
+      logger.log('debug', 'Assigning commander server group enabled.')
+      if (clientObject.commander === true) {
+        serverQueryClient.send('servergroupaddclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid})
+        logger.log('info', 'Found commander status. Assigned server group.')
+      }
+    }
     // Remove all server groups except the one that this account is affiliated with.
     serverGroups.forEach(function (serverGroupId) {
       logger.log('debug', 'Clean-up servergroups: ' + serverGroupId)
@@ -91,6 +100,13 @@ function stripAllServerGroups (serverQueryClient, serverGroups, allServerGroups,
       serverQueryClient.send('servergroupdelclient', {sgid: serverGroupId, cldbid: clientObject.invokerdbid})
     }
   })
+  if (config.commanderServerGroup === true) {
+    logger.log('debug', 'Assigning commander server group enabled.')
+    if (clientObject.commander === true) {
+      logger.log('info', 'Revoking commander status.')
+      serverQueryClient.send('servergroupdelclient', {sgid: config.commanderServerGroupId, cldbid: clientObject.invokerdbid})
+    }
+  }
   database.setNewUser(clientObject, function (error, response) {
     logger.log('debug', 'error: ' + error)
     logger.log('debug', 'response: ' + response)

@@ -277,17 +277,22 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                   logger.log('debug', 'Current game world: ' + clientObject.world)
                   logger.log('debug', 'Related server group id: ' + config.gameWorlds[clientObject.world].serverGroupId)
                   if (clientObject.world !== undefined) {
-                    serverQueryClient.send('servergroupaddclient', {sgid: config.gameWorlds[clientObject.world].serverGroupId, cldbid: response.cldbid})
                     serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
+                    serverQueryClient.send('servergroupaddclient', {sgid: config.gameWorlds[clientObject.world].serverGroupId, cldbid: response.cldbid}, function (error, response) {
+                      if (error) logger.log('error', 'Error while adding server group. ' + util.inspect(error))
+                      logger.log('debug', '#############====>>>> ' + util.inspect(clientObject))
+                      serverQueryClient.send('clientinfo', {clid: clientObject.invokerid}, function (error, response) {
+                        if (error) logger.log('error', 'Error while retrieving clientinfo. ' + util.inspect(error))
+                        logger.log('debug', 'Response from clientinfo: ' + util.inspect(response))
+                        clientObject.client_servergroups = response.client_servergroups
+                        clientObject.invokerdbid = response.client_database_id
+                        serverGroups.purgeClient(serverQueryClient, clientObject, function (error, response) {
+                          if (error) logger.log('error', 'Error while purging client. ' + util.inspect(error))
+                          logger.log('debug', 'Purging client. ' + util.inspect(response))
+                        })
+                      })
+                    })
                   }
-                  // if (clientObject.world === '2009') {
-                  //   serverQueryClient.send('servergroupaddclient', {sgid: 14, cldbid: response.cldbid})
-                  //   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
-                  // }
-                  // if (clientObject.world === undefined || clientObject.world === '2003') {
-                  //   serverQueryClient.send('servergroupaddclient', {sgid: 9, cldbid: response.cldbid})
-                  //   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clientObject.invokerid, msg: config.confirmAccessMsg})
-                  // }
                 }
               })
             }

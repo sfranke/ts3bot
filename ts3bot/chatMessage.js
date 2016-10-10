@@ -109,7 +109,7 @@ function chatMessage (user) {
               targetmode: '1',
               target: user.invokerid,
               msg: '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
-                                    '\n!matchup' + '\t\t\t\t' + '   Get current match-up partner.' +
+                                    '\n!restart' + '\t\t\t\t\t' + '  Restart the application.' +
                                     '\n!showMatchup' + '\t\t' + '   Show current match-up partner.'
             }
             break

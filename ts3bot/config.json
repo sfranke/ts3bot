@@ -35,9 +35,9 @@
     "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
     "PurgeClientsFromTS3Database": false,
     "_PurgeClientsFromTS3Database_comment": "Set to 'true' to enable this feature. If set to 'false', clients older than 90 days are NOT going to be removed from the Teamspeak3 database",
-    "FindMatchupPartner": true,
+    "FindMatchupPartner": false,
     "_comment_FindMatchupPartner": "Set to 'true' to enable this feature. If set to 'false' match-up partners won't be searched for.",
-    "setServerGroupPermissions": true,
+    "setServerGroupPermissions": false,
     "_setServerGroupPermissions_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
     "defaultJoinPower": 25,
     "_defaultJoinPower_comment": "Default 'i_channel_join_power' for server groups that are NOT match-up partner.",
@@ -179,7 +179,9 @@
             "serverName": "Baruch Bay [SP]"
         }
     },
+    "commanderServerGroup": true,
+    "_commaderServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' commander server group won't be assigned automatically.",
     "_gameWorlds_comment": "A list of game worlds and their respective server group IDs.",
-    "commanderServerGroupId": "41",
+    "commanderServerGroupId": 41,
     "_commanderServerGroupId_comment": "The commander server group needs to be revoked if all servergroups are revoked from a client."
 }
