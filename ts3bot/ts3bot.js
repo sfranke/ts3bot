@@ -25,7 +25,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
   // All routines that should be run on start-up should be implemented here.
   async.series({
 
-    // Configuration options and falgs shoul be listed here.
+    // Configuration options and falgs should be listed here.
     configurationFlags: function (callback) {
       var tick = '[✔] '
       var xMark = '[✘] '

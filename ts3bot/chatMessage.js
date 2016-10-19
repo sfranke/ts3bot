@@ -86,7 +86,7 @@ function chatMessage (user) {
               msg: 'At your service oh mighty Admin! *bow'
             }
             break
-          case '!restart':
+          case '!kill':
             message = {
               targetmode: '1',
               target: user.invokerid,
@@ -109,7 +109,7 @@ function chatMessage (user) {
               targetmode: '1',
               target: user.invokerid,
               msg: '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
-                                    '\n!restart' + '\t\t\t\t\t' + '  Restart the application.' +
+                                    '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
                                     '\n!showMatchup' + '\t\t' + '   Show current match-up partner.'
             }
             break
