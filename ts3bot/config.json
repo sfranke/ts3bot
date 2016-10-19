@@ -35,15 +35,28 @@
     "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
     "PurgeClientsFromTS3Database": false,
     "_PurgeClientsFromTS3Database_comment": "Set to 'true' to enable this feature. If set to 'false', clients older than 90 days are NOT going to be removed from the Teamspeak3 database",
-    "FindMatchupPartner": false,
+    "FindMatchupPartner": true,
     "_comment_FindMatchupPartner": "Set to 'true' to enable this feature. If set to 'false' match-up partners won't be searched for.",
-    "setServerGroupPermissions": false,
+    "setServerGroupPermissions": true,
     "_setServerGroupPermissions_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
+    "adjustJoinPower": true,
+    "_adjustJoinPower_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
     "defaultJoinPower": 25,
     "_defaultJoinPower_comment": "Default 'i_channel_join_power' for server groups that are NOT match-up partner.",
     "elevatedJoinPower": 50,
     "_elevatedJoinPower_comment": "Elevated 'i_channel_join_power' for server groups that are match-up partner.",
-    "_verifiedClientServerGroupId_comment": "Servergroup for verified clients.",
+    "adjustChannelSubscriptions": false,
+    "_adjustChannelSubscriptions_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
+    "defaultChannelSubscriptions": 0,
+    "_defaultChannelSubscriptions_comment": "Default 'i_client_max_channel_subscriptions' for server groups that are NOT match-up partner.",
+    "elevatedChannelSubscriptions": -1,
+    "_elevatedChannelSubscriptions_comment": "Elevated 'i_client_max_channel_subscriptions' for server groups that are match-up partner.",
+    "adjustSubscribePower": true,
+    "_adjustSubscribePower_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
+    "defaultSubscribePower": 25,
+    "_defaultSubscribePower_comment": "Default 'i_channel_subscribe_power' for server groups that are NOT match-up partner.",
+    "elevatedSubscribePower": 50,
+    "_elevatedSubscribePower_comment": "Elevated 'i_channel_subscribe_power' for server groups that are match-up partner.",
     "welcomePoke": "You just got a private message! Please check the chat area on the bottom right.",
     "_welcomePoke_comment": "",
     "welcomeMessage": "To register, please create a new API-key here: [URL]https://account.arena.net/applications[/URL]. Then paste that API-key into this private chat.\n\nFor further information about this automated registration system please visit our Forum at [URL]http://gandara.info/[/URL].",
@@ -187,15 +200,15 @@
     "accessServerGroup": true,
     "_accessServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' access levels won't get assigned a server group automatically.",
     "access": {
-      "PlayForFree": {
-        "serverGroupId": 42
-      },
-      "GuildWars2": {
-        "serverGroupId": 43
-      },
-      "HeartOfThorns": {
-        "serverGroupId": 44
-      }
+        "PlayForFree": {
+            "serverGroupId": 42
+        },
+        "GuildWars2": {
+            "serverGroupId": 43
+        },
+        "HeartOfThorns": {
+            "serverGroupId": 44
+        }
     },
     "_access_comment": "The access level of a user's game account and its respective server group."
 }
