@@ -1,6 +1,7 @@
 #!/usr/bin/node
 
 var fs = require('fs')
+var path = require('path')
 var util = require('util')
 var TeamSpeakClient = require('node-teamspeak')
 var async = require('async')
@@ -23,6 +24,22 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
   // Start-up routine of the the bot. Connecting  to all services to run properly.
   // All routines that should be run on start-up should be implemented here.
   async.series({
+
+    backupLog: function (callback) {
+      fs.stat(path.join(__dirname, '/log'), function (error, response) {
+        if (error) logger.log('debug', 'Error while accessing file: ' + util.inspect(error))
+        if (response.size === 0) {
+          logger.log('debug', 'No log file found.')
+        } else {
+          var date = new Date().toJSON()
+          fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + date + '.log'), function (err, res) {
+            if (err) logger.log('debug', 'Error while renaming log file: ' + util.inspect(err))
+            logger.log('debug', 'Renaming log file: ' + util.inspect(res))
+          })
+        }
+      })
+      callback()
+    },
 
     // Login routine. login name and password are provided via config file.
     login: function (callback) {
@@ -178,6 +195,21 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (config.setServerGroupPermissions === true) {
                 async.series({
                   resettingPermissions: function (callback) {
+                    if (config.adjustJoinPower === true) {
+                      logger.log('info', 'Adjusting \'i_channel_join_power\' enabled.')
+                    } else {
+                      logger.log('info', 'Adjusting \'i_channel_join_power\' disabled.')
+                    }
+                    if (config.adjustChannelSubscriptions === true) {
+                      logger.log('info', 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
+                    } else {
+                      logger.log('info', 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
+                    }
+                    if (config.adjustSubscribePower === true) {
+                      logger.log('info', 'Adjusting \'i_channel_subscribe_power\' enabled.')
+                    } else {
+                      logger.log('info', 'Adjusting \'i_channel_subscribe_power\' disabled.')
+                    }
                     for (var gameWorldId in config.gameWorlds) {
                       if (config.adjustJoinPower === true) {
                         logger.log('debug', 'Adjusting \'i_channel_join_power\' enabled.')
@@ -216,7 +248,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                   elevatingPermissions: function (callback) {
                     config.worldsAllowed.forEach(function (allowedGameWorld) {
                       if (config.adjustJoinPower === true) {
-                        logger.log('info', 'Adjusting \'i_channel_join_power\' enabled.')
+                        logger.log('debug', 'Adjusting \'i_channel_join_power\' enabled.')
                         logger.log('debug', 'Game worlds with elevated join power: ' + allowedGameWorld)
                         serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[allowedGameWorld].serverGroupId, permsid: 'i_channel_join_power', permvalue: config.elevatedJoinPower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
                           if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))

@@ -1,6 +1,6 @@
 {
     "debuglevel": "debug",
-    "_debuglevel_comment": "level of debugging.",
+    "_debuglevel_comment": "Level of server logging. Should be 'info' per default and can be set to 'debug' for development.",
     "homeWorld": 2003,
     "_homeWorld_comment": "Server id of the game server you want to check for. Used to find Match-up",
     "worldsAllowed": [
@@ -74,7 +74,7 @@
     "_foreignWorld_comment": "Chat message if key points to a foreign world.",
     "idleMove": "You have been afk for an extended period of time. Moving you to AFK-channel.",
     "_idleMove_comment": "Chat message for idle users.",
-    "serverNotResponding": "Servers are not responding, please resend me your key.",
+    "serverNotResponding": "Servers are not responding, please retry.",
     "_serverNotResponding_comment": "If GW2 API servers are not responding.",
     "api503": "Could not verify your key please send it again.",
     "_api503_comment": "If server responds with 503 ask the user to re-post a key.",
@@ -196,7 +196,7 @@
     "commanderServerGroup": true,
     "_commaderServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' commander server group won't be assigned automatically.",
     "commanderServerGroupId": 41,
-    "_commanderServerGroupId_comment": "The commander server group needs to be revoked if all servergroups are revoked from a client.",
+    "_commanderServerGroupId_comment": "The commander server group ID.",
     "accessServerGroup": true,
     "_accessServerGroup_comment": "Set to 'true' to enable this feature. If set to 'false' access levels won't get assigned a server group automatically.",
     "access": {

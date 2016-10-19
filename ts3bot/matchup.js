@@ -26,7 +26,7 @@ matchup.getMatchups = function (callback) {
           currentMatches.forEach(function (matchUp) {
             logger.log('debug', 'Show each matchUp: ' + matchUp)
             matchupDetails.getCurrentMatchupDetails(matchUp, function (error, response) {
-              logger.log('error', 'Callback of matchupDetails error: ' + error)
+              logger.log('debug', 'Callback of matchupDetails error: ' + error)
               logger.log('debug', 'Callback of matchupDetails response: ' + response)
               if (error) logger.log('error', 'Error while seraching for matchup: ' + error)
               callback(null, response)
