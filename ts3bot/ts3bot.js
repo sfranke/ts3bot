@@ -25,12 +25,18 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
   // All routines that should be run on start-up should be implemented here.
   async.series({
 
+    // Creating a backup of the log file if it exists.
     backupLog: function (callback) {
+      fs.mkdir(path.join(__dirname, '/logBackup/'), function (err, cb) {
+        if (err) logger.log('debug', 'Error while creating direktory: ' + util.inspect(err))
+        logger.log('debug', 'Response while creating directory: ' + util.inspect(cb))
+      })
       fs.stat(path.join(__dirname, '/log'), function (error, response) {
         if (error) logger.log('debug', 'Error while accessing file: ' + util.inspect(error))
         if (response.size === 0) {
           logger.log('debug', 'No log file found.')
         } else {
+          logger.log('info', 'Creating backup of log file.')
           var date = new Date().toJSON()
           fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + date + '.log'), function (err, res) {
             if (err) logger.log('debug', 'Error while renaming log file: ' + util.inspect(err))
