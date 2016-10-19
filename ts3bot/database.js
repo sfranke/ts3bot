@@ -6,8 +6,8 @@ var util = require('util')
 var logger = require('./logger')
 var uri = 'mongodb://localhost:27017/ts3bot'
 
-function unixTime () {
-  var unixStamp = Math.round((new Date()).getTime() / 1000)
+function currentTime () {
+  var unixStamp = new Date().toJSON()
   return unixStamp
 }
 
@@ -47,7 +47,7 @@ database.updateAccountInformation = function (clientObject, callback) {
           {
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
-            last_seen: unixTime(),
+            last_seen: currentTime(),
             gw2_api_key: clientObject.apiKey,
             gw2_account_id: clientObject.accountId,
             gw2_account_world: clientObject.world,
@@ -85,7 +85,7 @@ database.updateExistingAccountInformationByInvokeruid = function (clientObject, 
           {
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
-            last_seen: unixTime(),
+            last_seen: currentTime(),
             gw2_api_key: clientObject.apiKey,
             gw2_account_id: clientObject.accountId,
             gw2_account_world: clientObject.world,
@@ -120,7 +120,7 @@ database.setNewUser = function (clientObject, callback) {
       {
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: unixTime(),
+        last_seen: currentTime(),
         gw2_api_key: null,
         gw2_account_id: null,
         gw2_account_world: null,
@@ -153,7 +153,7 @@ database.updateLastSeen = function (clientObject, callback) {
       {
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: unixTime(),
+        last_seen: currentTime(),
         gw2_api_key: clientObject.apiKey,
         gw2_account_id: clientObject.accountId,
         gw2_account_world: clientObject.world,
@@ -187,7 +187,7 @@ database.updateLastSeenVerified = function (clientObject, callback) {
       {
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: unixTime(),
+        last_seen: currentTime(),
         gw2_api_key: clientObject.apiKey,
         gw2_account_id: clientObject.accountId,
         gw2_account_world: clientObject.world,
@@ -219,7 +219,7 @@ database.delApiKey = function (clientObject, callback) {
       {
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: unixTime(),
+        last_seen: currentTime(),
         gw2_api_key: clientObject.apiKey,
         gw2_account_id: clientObject.accountId,
         gw2_account_world: clientObject.world,
