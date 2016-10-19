@@ -25,6 +25,60 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
   // All routines that should be run on start-up should be implemented here.
   async.series({
 
+    // Configuration options and falgs shoul be listed here.
+    configurationFlags: function (callback) {
+      var tick = '[✔] '
+      var xMark = '[✘] '
+      logger.log('info', 'Logging level is set to: ' + config.debuglevel)
+      logger.log('info', 'Home world is set to: ' + config.homeWorld)
+      if (config.MoveAfkClientsFromLobby === true) {
+        logger.log('info', tick + 'Moving AFK clients from lobby enabled.')
+      } else {
+        logger.log('info', xMark + 'Moving AFK clients from lobby disabled.')
+      }
+      if (config.PurgeClientsFromTS3Database === true) {
+        logger.log('info', tick + 'Purge old clients from TS3 database enabled.')
+      } else {
+        logger.log('info', xMark + 'Purge old clients from TS3 database disabled.')
+      }
+      if (config.FindMatchupPartner === true) {
+        logger.log('info', tick + 'Looking for match-up partner enabled.')
+      } else {
+        logger.log('info', xMark + 'Looking for match-up partner disabled.')
+      }
+      if (config.setServerGroupPermissions === true) {
+        logger.log('info', tick + 'Resetting server group permissions automatically enabled.')
+      } else {
+        logger.log('info', xMark + 'Resetting server group permissions automatically disabled.')
+      }
+      if (config.adjustJoinPower === true) {
+        logger.log('info', tick + 'Adjusting \'i_channel_join_power\' enabled.')
+      } else {
+        logger.log('info', xMark + 'Adjusting \'i_channel_join_power\' disabled.')
+      }
+      if (config.adjustChannelSubscriptions === true) {
+        logger.log('info', tick + 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
+      } else {
+        logger.log('info', xMark + 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
+      }
+      if (config.adjustSubscribePower === true) {
+        logger.log('info', tick + 'Adjusting \'i_channel_subscribe_power\' enabled.')
+      } else {
+        logger.log('info', xMark + 'Adjusting \'i_channel_subscribe_power\' disabled.')
+      }
+      if (config.commanderServerGroup === true) {
+        logger.log('info', tick + 'Assign commander server group enabled.')
+      } else {
+        logger.log('info', xMark + 'Assign commander server group disabled.')
+      }
+      if (config.accessServerGroup === true) {
+        logger.log('info', tick + 'Assign access server group enabled.')
+      } else {
+        logger.log('info', xMark + 'Assign access server group disabled.')
+      }
+      callback()
+    },
+
     // Creating a backup of the log file if it exists.
     backupLog: function (callback) {
       fs.mkdir(path.join(__dirname, '/logBackup/'), function (err, cb) {
@@ -169,7 +223,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
       if (config.PurgeClientsFromTS3Database === true) {
         databasePurge.databaseCleanup(serverQueryClient)
       } else {
-        logger.log('info', 'Purge old clients from TS3 database disabled.')
+        logger.log('debug', 'Purge old clients from TS3 database disabled.')
       }
       callback()
     },
@@ -201,21 +255,6 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (config.setServerGroupPermissions === true) {
                 async.series({
                   resettingPermissions: function (callback) {
-                    if (config.adjustJoinPower === true) {
-                      logger.log('info', 'Adjusting \'i_channel_join_power\' enabled.')
-                    } else {
-                      logger.log('info', 'Adjusting \'i_channel_join_power\' disabled.')
-                    }
-                    if (config.adjustChannelSubscriptions === true) {
-                      logger.log('info', 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
-                    } else {
-                      logger.log('info', 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
-                    }
-                    if (config.adjustSubscribePower === true) {
-                      logger.log('info', 'Adjusting \'i_channel_subscribe_power\' enabled.')
-                    } else {
-                      logger.log('info', 'Adjusting \'i_channel_subscribe_power\' disabled.')
-                    }
                     for (var gameWorldId in config.gameWorlds) {
                       if (config.adjustJoinPower === true) {
                         logger.log('debug', 'Adjusting \'i_channel_join_power\' enabled.')
