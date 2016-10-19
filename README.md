@@ -6,7 +6,7 @@ Ts3Bot is a stand alone nodejs application that observes clients connecting to y
 
 ## How does it work?
 
-Once the system is running and connected to your Teamspeak 3 server it registers to the server notify event. Everytime a client connects to your Teamspeak 3 server an event is emitted and captured by the system. New clients will be greeted and ask to register. registered users will be re-validated in the background and only get asked to register again once their API-key is invalid. If valid client data changes it gets automatically updated on reconnect to your Teamspeak 3 server.
+Once the system is running and connected to your Teamspeak 3 server it registers to the server notify event. Every time a client connects to your Teamspeak 3 server an event is emitted by your server and captured by the system. New clients will be greeted and ask to register. Registered users will be re-validated in the background and only get asked to register again once their API-key is invalid. If valid client data changes it gets automatically updated on reconnect to your Teamspeak 3 server.
 
 ## User object stored in mongodb
 ```javascript
