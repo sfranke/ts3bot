@@ -25,7 +25,11 @@ block content
                   P=u.client_nickname
                 div.col-xs-6.col-sm-6.col-md-6
                   h2 Time
-                  P=moment(u.last_seen * 1000).format("MMM Do YYYY, HH:mm:ss")
+                  - var regex = /[0-9]{10}/g
+                    - if (regex.test(u.last_seen) === true)
+                      P=moment(u.last_seen * 1000).format("MMM Do YYYY, HH:mm:ss")
+                    - else
+                      p=u.last_seen
               div.row
                 div.col-xs-6.col-sm-6.col-md-6
                   h2 Unique ID
@@ -52,8 +56,8 @@ block content
                 div.row
                   div.col-xs-6.col-sm-6.col-md-6
                     h2 Created
-                    p=moment(u.gw2_account_created).format("MMM Do YYYY, HH:mm:ss")
-                  - if (guilds != undefined)
+                      p=u.gw2_account_created
+                  - if (guilds !== undefined)
                     div.col-xs-6.col-sm-6.col-md-6
                       h2 Guilds
                       p#guilds
