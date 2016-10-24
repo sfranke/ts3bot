@@ -4,9 +4,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 var util = require('util')
 var logger = require('./logger')
 var events = require('events')
-var matchup = require('./matchup')
-var fs = require('fs')
-var os = require('os')
+var exec = require('child_process').exec
 
 function chatMessage (user) {
   chatMessage.prototype.chatSend = function (option, user) {
@@ -103,6 +101,19 @@ function chatMessage (user) {
               target: user.invokerid,
               msg: 'Currently allowed world IDs: ' + config.worldsAllowed
             }
+            break
+          case '!DatabaseBackup':
+            logger.log('debug', 'Backing up database.')
+            message = {
+              targetmode: '1',
+              target: user.invokerid,
+              msg: 'Backing up database..'
+            }
+            exec('mongoexport -d ts3bot -c clients -o clients_backup.json', function (error, stdout, stderr) {
+              if (error) logger.log('debug', 'Error while creating database dump. ' + util.inspect(error))
+              logger.log('debug', 'Creating database dump, stderr: ' + util.inspect(stderr))
+              logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
+            })
             break
           case '!help':
             message = {
