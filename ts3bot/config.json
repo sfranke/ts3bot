@@ -1,5 +1,5 @@
 {
-    "debuglevel": "info",
+    "debuglevel": "debug",
     "_debuglevel_comment": "Level of server logging. Should be 'info' per default and can be set to 'debug' for development.",
     "homeWorld": 2003,
     "_homeWorld_comment": "Server id of the game server you want to check for. Used to find Match-up",
