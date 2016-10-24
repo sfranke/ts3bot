@@ -47,7 +47,7 @@
     "_elevatedJoinPower_comment": "Elevated 'i_channel_join_power' for server groups that are match-up partner.",
     "adjustChannelSubscriptions": false,
     "_adjustChannelSubscriptions_comment": "Set to 'true' to enable this feature. If set to 'false' server group permissions won't be handled automatically.",
-    "defaultChannelSubscriptions": 0,
+    "defaultChannelSubscriptions": -1,
     "_defaultChannelSubscriptions_comment": "Default 'i_client_max_channel_subscriptions' for server groups that are NOT match-up partner.",
     "elevatedChannelSubscriptions": -1,
     "_elevatedChannelSubscriptions_comment": "Elevated 'i_client_max_channel_subscriptions' for server groups that are match-up partner.",
