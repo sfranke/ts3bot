@@ -97,7 +97,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           var minutes = new Date().getMinutes()
           var seconds = new Date().getSeconds()
           var milliseconds = new Date().getMilliseconds()
-          var date = year + (month + 1) + day + '_' + hours + '-' + minutes + '-' + seconds + '-' + milliseconds
+          var date = year + '' + (month + 1) + '' + day + '_' + hours + '-' + minutes + '-' + seconds + '-' + milliseconds
           logger.log('info', 'Creating backup of log file.')
           fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + date + '.log'), function (err, res) {
             if (err) logger.log('debug', 'Error while renaming log file: ' + util.inspect(err))
