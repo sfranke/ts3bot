@@ -95,6 +95,7 @@ function chatMessage (user) {
             }, 3000)
             break
           case '!showMatchup':
+            config = JSON.parse(require('fs').readFileSync('config.json'))
             logger.log('debug', 'Current worlds allowed: ' + config.worldsAllowed)
             message = {
               targetmode: '1',
