@@ -528,6 +528,11 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                   if (error) logger.log('error', 'Error while updating updateLastSeen: ' + util.inspect(error))
                   logger.log('info', 'Updated updateLastSeen for existing user without API-key. ' + clientObject.clid + ' - ' + clientObject.invokername)
                 })
+                if (config.welcomePoke === true) {
+                  logger.log('debug', 'Sending welcome poke.')
+                  var existingWelcomePoke = new chatMessage()
+                  serverQueryClient.send('clientpoke', existingWelcomePoke.chatSend('welcomePokeMsg', clientObject))
+                }
                 var existingClientWelcomeMessage = new chatMessage()
                 serverQueryClient.send('sendtextmessage', existingClientWelcomeMessage.chatSend('welcome', clientObject))
                 logger.log('info', 'Sent welcome message to existing user without API-key.')
@@ -550,6 +555,11 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
             } else {
               logger.log('debug', 'ClientObject: ' + util.inspect(clientObject))
               logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
+              if (config.welcomePoke === true) {
+                logger.log('debug', 'Sending welcome poke.')
+                var newUserWelcomePoke = new chatMessage()
+                serverQueryClient.send('clientpoke', newUserWelcomePoke.chatSend('welcomePokeMsg', clientObject))
+              }
               var newClientWelcomeMessage = new chatMessage()
               serverQueryClient.send('sendtextmessage', newClientWelcomeMessage.chatSend('welcome', clientObject))
               logger.log('info', 'Sent welcome message to new user for the first time.')

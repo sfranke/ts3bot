@@ -15,8 +15,9 @@ function chatMessage (user) {
         message = {targetmode: '1', target: user.clid, msg: config.welcomeMessage}
         logger.log('info', 'Sending ' + user.client_nickname + ' welcomeMessage')
         break
-      case 'welcomePoke':
-        message = {clid: user.clid, msg: config.welcomePoke}
+      case 'welcomePokeMsg':
+        logger.log('debug', 'userObject: ' + util.inspect(user))
+        message = {clid: user.clid, msg: config.welcomePokeMsg}
         logger.log('info', 'Sending ' + user.client_nickname + ' welcomePoke')
         break
       case 'checkingKey':
