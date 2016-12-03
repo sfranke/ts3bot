@@ -50,13 +50,27 @@ adminChatCommands.execute = function (response, serverQueryClient) {
                 commander = 'Yes'
               }
               var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Commander[/B]: ' + commander
-              serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID,
-              msg: msg})
+              serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
             }
           })
         }
       })
     }
+    // Show current matchup utilizing an array config.worldsAllowed from the config file.
+    // The config file is read each time when the command is executed to ensure it it reflects the
+    // current state. Keep in mind the config file is loaded globally on start of the program.
+    if (AdminMessageArray[0] === '!showMatchup') {
+      config = JSON.parse(require('fs').readFileSync('config.json'))
+      var msg = 'Currently allowed world IDs: ' + config.worldsAllowed
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
+    }
+    // Kill switch for the program via chat command. If issued the program is exiting.
+    if (AdminMessageArray[0] === '!kill') {
+      var msgKill = 'Shutting down now..'
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgKill})
+      setTimeout(function () {
+        process.exit()
+      }, 1000)
+    }
   }
-
 }
