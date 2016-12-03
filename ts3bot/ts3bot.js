@@ -98,7 +98,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     // Creating a backup of the log file if it exists.
     backupLog: function (callback) {
       fs.mkdir(path.join(__dirname, '/logBackup/'), function (err, cb) {
-        if (err) logger.log('debug', 'Error while creating direktory: ' + util.inspect(err))
+        if (err) logger.log('debug', 'Error while creating directory: ' + util.inspect(err))
         logger.log('debug', 'Response while creating directory: ' + util.inspect(cb))
       })
       fs.stat(path.join(__dirname, '/log'), function (error, response) {
