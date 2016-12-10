@@ -83,28 +83,19 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
       })
     }
-
-    // case '!DatabaseBackup':
-    //   logger.log('debug', 'Backing up database.')
-    //   message = {
-    //     targetmode: '1',
-    //     target: user.invokerid,
-    //     msg: 'Backing up database..'
-    //   }
-    //   exec('mongoexport -d ts3bot -c clients -o clients_backup.json', function (error, stdout, stderr) {
-    //     if (error) logger.log('debug', 'Error while creating database dump. ' + util.inspect(error))
-    //     logger.log('debug', 'Creating database dump, stderr: ' + util.inspect(stderr))
-    //     logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
-    //   })
-    //   break
-    // case '!help':
-    //   message = {
-    //     targetmode: '1',
-    //     target: user.invokerid,
-    //     msg: '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
-    //                           '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
-    //                           '\n!showMatchup' + '\t\t' + '   Show current match-up partner.'
-    //   }
-    //   break
+    if (AdminMessageArray[0] === '!help') {
+      logger.log('debug', 'Help command')
+      var msgHelpCommand = '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
+                                '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
+                                '\n!showMatchup' + '\t\t' + '   Show current match-up partner.' +
+                                '\n!DatabaseBackup' + ' ' + '     Create a bcakup of the database.' +
+                                '\n!userInfo <uid>' + '\t\t' + ' Get user info.'
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgHelpCommand})
+    }
+    if (AdminMessageArray[0] === '!1337') {
+      logger.log('deubg', 'Hi leet commadn')
+      var msg1337Command = 'What a great day!'
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg1337Command})
+    }
   }
 }
