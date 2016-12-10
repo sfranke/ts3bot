@@ -3,6 +3,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 var chatMessage = require('./chatMessage')
 var logger = require('./logger')
 var util = require('util')
+var exec = require('child_process').exec
 
 adminChatCommands.execute = function (response, serverQueryClient) {
   console.log('client:', response)
@@ -72,5 +73,38 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         process.exit()
       }, 1000)
     }
+    if (AdminMessageArray[0] === '!DatabaseBackup') {
+      logger.log('debug', 'Backing up database.')
+      var msgDbBackup = 'Backing up database..'
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgDbBackup})
+      exec('mongoexport -d ts3bot -c clients -o clients_backup.json', function (error, stdout, stderr) {
+        if (error) logger.log('debug', 'Error while creating database dump. ' + util.inspect(error))
+        logger.log('debug', 'Creating database dump, stderr: ' + util.inspect(stderr))
+        logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
+      })
+    }
+
+    // case '!DatabaseBackup':
+    //   logger.log('debug', 'Backing up database.')
+    //   message = {
+    //     targetmode: '1',
+    //     target: user.invokerid,
+    //     msg: 'Backing up database..'
+    //   }
+    //   exec('mongoexport -d ts3bot -c clients -o clients_backup.json', function (error, stdout, stderr) {
+    //     if (error) logger.log('debug', 'Error while creating database dump. ' + util.inspect(error))
+    //     logger.log('debug', 'Creating database dump, stderr: ' + util.inspect(stderr))
+    //     logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
+    //   })
+    //   break
+    // case '!help':
+    //   message = {
+    //     targetmode: '1',
+    //     target: user.invokerid,
+    //     msg: '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
+    //                           '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
+    //                           '\n!showMatchup' + '\t\t' + '   Show current match-up partner.'
+    //   }
+    //   break
   }
 }
