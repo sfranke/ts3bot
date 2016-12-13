@@ -4,34 +4,25 @@ var matchup = exports
 var util = require('util')
 var https = require('https')
 var logger = require('./logger')
-var matchupDetails = require('./matchupDetails')
+var config = JSON.parse(require('fs').readFileSync('config.json'))
+// var matchupDetails = require('./matchupDetails')
 
 // Function to receive the current matchup from the GW2 API.
 matchup.getMatchups = function (callback) {
   var options = {
     hostname: 'api.guildwars2.com',
-    path: '/v2/wvw/matches',
+    path: '/v2/wvw/matches?world=' + config.homeWorld,
     method: 'GET'
   }
   https.get(options, function (response) {
+    var body = ''
     logger.log('debug', 'GW2 Matches-API status code: ' + response.statusCode)
     var statusCode = response.statusCode
     response.on('data', function (data) {
+      body += data
       switch (statusCode) {
         case 200:
-          // currentMatches is a list matchup IDs(buffer) that needs to be parsed.
-          var currentMatches = JSON.parse(data)
-          logger.log('debug', 'Response data: ' + currentMatches)
-          logger.log('debug', 'Inspect respnse data: ' + util.inspect(currentMatches))
-          currentMatches.forEach(function (matchUp) {
-            logger.log('debug', 'Show each matchUp: ' + matchUp)
-            matchupDetails.getCurrentMatchupDetails(matchUp, function (error, response) {
-              logger.log('debug', 'Callback of matchupDetails error: ' + error)
-              logger.log('debug', 'Callback of matchupDetails response: ' + response)
-              if (error) logger.log('error', 'Error while seraching for matchup: ' + error)
-              callback(null, response)
-            })
-          })
+          logger.log('debug', 'Server responding -> ' + response.statusCode)
           break
         case 400:
           var httpsRequest400 = JSON.parse(data)
@@ -55,6 +46,24 @@ matchup.getMatchups = function (callback) {
           logger.log('error', 'Unknown error occured while searching match-up partner.')
           callback(statusCode, null)
           break
+      }
+    })
+    response.on('end', function () {
+      // var currentMatch = JSON.parse(body)
+      var currentMatchupDetails = JSON.parse(body)
+      logger.log('debug', 'Response data: ' + currentMatchupDetails)
+      logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
+      if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
+        logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
+        callback(null, currentMatchupDetails.all_worlds.red)
+      }
+      if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
+        logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
+        callback(null, currentMatchupDetails.all_worlds.blue)
+      }
+      if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
+        logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
+        callback(null, currentMatchupDetails.all_worlds.green)
       }
     })
     response.on('error', function (error) {
