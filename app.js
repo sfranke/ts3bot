@@ -8,7 +8,7 @@ var routes = require('./routes/index')
 var about = require('./routes/about')
 var account = require('./routes/account')
 var guild = require('./routes/guild')
-var log = require('./routes/log')
+// var log = require('./routes/log')
 
 var app = express()
 
@@ -28,7 +28,7 @@ app.use('/', routes)
 app.use('/about', about)
 app.use('/account', account)
 app.use('/guild', guild)
-app.use('/log', log)
+// app.use('/log', log)
 
 app.locals.moment = require('moment')
 
