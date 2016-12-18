@@ -32,6 +32,19 @@ database.getApiKey = function (clientObject, callback) {
   })
 }
 
+// Get client by client unique identifier.
+database.getClientByUid = function (uid, callback) {
+  mongoClient.connect(uri, function (err, db) {
+    if (err) logger.log('error', 'While connecting to DB during getApiKey.')
+    var collection = db.collection('clients')
+    collection.find({client_unique_id: uid}).limit(1).next(function (err, doc) {
+      if (err) callback(err, null)
+      callback(null, doc)
+      db.close()
+    })
+  })
+}
+
 // Update an existing dataset with the data you can fetch from the API.
 database.updateAccountInformation = function (clientObject, callback) {
   mongoClient.connect(uri, function (err, db) {
@@ -45,6 +58,7 @@ database.updateAccountInformation = function (clientObject, callback) {
             client_unique_id: clientObject.invokeruid
           },
           {
+            client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
             last_seen: currentTime(),
@@ -83,6 +97,7 @@ database.updateExistingAccountInformationByInvokeruid = function (clientObject, 
             client_unique_id: clientObject.invokeruid
           },
           {
+            client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
             last_seen: currentTime(),
@@ -113,11 +128,13 @@ database.setNewUser = function (clientObject, callback) {
   mongoClient.connect(uri, function (err, db) {
     if (err) logger.log('error', 'While connecting to DB during setNewUser.')
     var collection = db.collection('clients')
+    logger.log('debug', 'Heeeeyyyaa!' + util.inspect(clientObject))
     collection.update(
       {
         client_unique_id: clientObject.invokeruid
       },
       {
+        client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
         last_seen: currentTime(),
@@ -151,6 +168,7 @@ database.updateLastSeen = function (clientObject, callback) {
         client_unique_id: clientObject.invokeruid
       },
       {
+        client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
         last_seen: currentTime(),

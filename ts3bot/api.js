@@ -22,7 +22,6 @@ api.account = function (userObject, callback) {
         case 200:
           var httpsRequest = JSON.parse(data)
           var guilds = JSON.stringify(httpsRequest.guilds)
-          logger.log('debug', '[API WORLD TEST] - ' + httpsRequest.world)
           // Add information gathered with api call to clientObject.
           clientObject.apiKey = token
           clientObject.accountId = httpsRequest.id

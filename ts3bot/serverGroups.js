@@ -32,10 +32,8 @@ serverGroups.purgeClient = function (serverQueryClient, clientObject) {
     logger.log('debug', 'GET API RESPONSE' + util.inspect(response))
     if (response.gw2_api_key !== null) {
       api.account(clientObject, function (error, response) {
-        // if (error) logger.log('debug', 'getApiKey error: ' + util.inspect(error));
-        // logger.log('debug', 'getApiKey response: ' + util.inspect(response));
-        logger.log('debug', '### API RESPONSE ###\n' + util.inspect(response))
-        logger.log('debug', '### API ERROR ###\n' + util.inspect(error))
+        if (error) logger.log('debug', 'getApiKey error: ' + util.inspect(error))
+        logger.log('debug', 'getApiKey response: ' + util.inspect(response))
         if (error !== null) {
           // Handle API errors here!
           logger.log('debug', 'API error !== null')
