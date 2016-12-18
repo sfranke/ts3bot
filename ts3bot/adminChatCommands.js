@@ -34,6 +34,7 @@ adminChatCommands.execute = function (response, serverQueryClient) {
     if (AdminMessageArray[0] === '!userInfo') {
       logger.log('debug', 'arg: ' + AdminMessageArray[1])
       var uid = AdminMessageArray[1].toString()
+      logger.log('debug', 'UID: #### >>>> ' + '\'' + uid + '\'')
       serverQueryClient.send('clientgetids', {cluid: uid}, function (error, response) {
         logger.log('debug', 'ClientDBFind error:\n' + util.inspect(error))
         logger.log('debug', 'ClientDBFind response:\n' + util.inspect(response))
@@ -46,7 +47,8 @@ adminChatCommands.execute = function (response, serverQueryClient) {
               var userName = response.client_nickname
               var lastSeen = new Date(response.client_lastconnected * 1000)
               var commander = 'No'
-              if (response.client_servergroups.indexOf(config.commanderServerGroupId) !== -1) {
+              logger.log('debug', 'TEST ===> ' + typeof response.client_servergroups)
+              if (response.client_servergroups.toString().indexOf(config.commanderServerGroupId) !== -1) {
                 logger.log('debug', 'Found commander: ' + response.client_servergroups.indexOf(config.commanderServerGroupId))
                 commander = 'Yes'
               }
