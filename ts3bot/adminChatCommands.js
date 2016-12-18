@@ -12,7 +12,7 @@ adminChatCommands.execute = function (response, serverQueryClient) {
   var message = new chatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', response))
   logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'')
-  logger.log('debug', 'ResponseOnject on AdminMessage: ' + util.inspect(response))
+  logger.log('debug', 'ResponseObject on AdminMessage: ' + util.inspect(response))
   var adminID = response.invokerid
   if (response.msg.length > 1) {
     var AdminMessageArray = response.msg.split(' ')
@@ -34,7 +34,6 @@ adminChatCommands.execute = function (response, serverQueryClient) {
     if (AdminMessageArray[0] === '!userInfo') {
       logger.log('debug', 'arg: ' + AdminMessageArray[1])
       var uid = AdminMessageArray[1].toString()
-      logger.log('debug', 'UID: #### >>>> ' + '\'' + uid + '\'')
       serverQueryClient.send('clientgetids', {cluid: uid}, function (error, response) {
         logger.log('debug', 'clientgetids error:\n' + util.inspect(error))
         logger.log('debug', 'clientgetids response:\n' + util.inspect(response))
@@ -101,7 +100,7 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         process.exit()
       }, 1000)
     }
-    if (AdminMessageArray[0] === '!DatabaseBackup') {
+    if (AdminMessageArray[0] === '!databaseBackup') {
       logger.log('debug', 'Backing up database.')
       var msgDbBackup = 'Backing up database..'
       serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgDbBackup})
@@ -113,11 +112,11 @@ adminChatCommands.execute = function (response, serverQueryClient) {
     }
     if (AdminMessageArray[0] === '!help') {
       logger.log('debug', 'Help command')
-      var msgHelpCommand = '\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
+      var msgHelpCommand = '\n\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
                                 '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
                                 '\n!showMatchup' + '\t\t' + '   Show current match-up partner.' +
-                                '\n!DatabaseBackup' + ' ' + '     Create a bcakup of the database.' +
-                                '\n!userInfo <uid>' + '\t\t' + ' Get user info.'
+                                '\n!databaseBackup' + ' ' + '     Create a bcakup of the database.' +
+                                '\n!userInfo <uid>' + '\t\t' + 'Get user info.'
       serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgHelpCommand})
     }
     if (AdminMessageArray[0] === '!1337') {
