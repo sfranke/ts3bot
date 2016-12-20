@@ -75,22 +75,24 @@ database.getUser = function (user, callback) {
   })
 }
 
-// /* Get all users. */
-// database.getAllUsers = function (callback) {
-//     mongoClient.connect(uri, function (err, db) {
-//         var collection = db.collection('users');
-//         collection.find({}).toArray(function (error, users) {
-//             if (users != null) {
-//                 callback(null, users);
-//                 db.close();
-//             } else {
-//                 callback({'error': 'No users found'}, null);
-//                 db.close();
-//             }
-//         });
-//     });
-// };
-//
+/* Get all users. */
+database.getAllUsers = function (callback) {
+  mongoClient.connect(uri, function (err, db) {
+    if (err) console.log('error', 'While connecting to DB during getAllUsers.')
+    var collection = db.collection('users')
+    collection.find({}).toArray(function (error, users) {
+      if (error) callback(err, null)
+      if (users != null) {
+        callback(null, users)
+        db.close()
+      } else {
+        callback({'error': 'No users found'}, null)
+        db.close()
+      }
+    })
+  })
+}
+
 // database.getTicketCount = function (callback) {
 //     mongoClient.connect(uri, function (err, db) {
 //         var collection = db.collection('tickets');

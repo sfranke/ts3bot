@@ -1,0 +1,50 @@
+extends layout
+
+block content
+  .container
+    .jumbotron
+      .container
+        h1= title
+
+    - each user in users
+      .panel.panel-default(id='userPanel-#{user._id}')
+        .panel-heading
+          h3.panel-title
+          |     
+          .panel-body(id='panel-#{user._id}')
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                strong User Id
+              |             
+              .col-sm-10 #{user._id}
+            |         
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                strong Name
+              |             
+              .col-sm-10 #{user.name}
+            |         
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                strong Email
+              |             
+              .col-sm-10 #{user.email}
+            |         
+            .row
+              .col-sm-2.text-left-xs.text-right-md
+                strong Password
+              |             
+              .col-sm-10 #{user.password}
+            .row
+              .col-sm-2.pull-right
+                button.btn.btn-danger(id='#{user._id}') Delete
+                script
+                  |$('##{user._id}').on('click', function () {
+                  |  $.post('/users/delete/#{user._id}', function (d) {
+                  |    if(d.message == 'success') {
+                  |      $('#userPanel-#{user._id}').fadeOut('slow');
+                  |    }
+                  |  });
+                  |});
+  include footer
+  
