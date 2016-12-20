@@ -2,7 +2,7 @@ var express = require('express')
 var router = express.Router()
 
 router.get('/', function (req, res, next) {
-  res.render('logout', {title: 'Express', session: req.session})
+  res.send('logout', {title: 'Express', session: req.session})
 })
 
 router.post('/', function (req, res, next) {
