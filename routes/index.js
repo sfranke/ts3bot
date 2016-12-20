@@ -5,13 +5,14 @@ var moment = require('moment')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
+  console.log('Session:', req.session)
   exec('pm2 jlist', function (error, stdout, stderr) {
     if (error !== null) {
       console.log('exec error: ' + error)
     } else {
       var status = JSON.parse(stdout)
       serverTime()
-      res.render('index', { title: 'Status', status: status })
+      res.render('index', {title: 'Status', status: status, session: req.session})
     }
   })
 })

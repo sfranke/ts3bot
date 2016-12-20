@@ -4,7 +4,10 @@ var router = express.Router()
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
-  res.render('account', {title: 'Ts3Bot', name: undefined})
+  if (!req.session.user) {
+    return res.redirect('/register')
+  }
+  res.render('account', {title: 'Ts3Bot', name: undefined, session: req.session})
 })
 
 var uri = 'mongodb://localhost:27017/ts3bot'
@@ -52,14 +55,16 @@ router.post('/', function (req, res, next) {
           accountName: response.gw2_account_name,
           guilds: guilds,
           created: response.gw2_account_created,
-          user: user
+          user: user,
+          session: req.session
         })
       } else {
         res.render('account', {
           title: 'Ts3Bot',
           name: response.client_nickname,
           time: time,
-          user: user
+          user: user,
+          session: req.session
         })
       }
     } else {
@@ -90,7 +95,7 @@ router.post('/', function (req, res, next) {
             })
           }
         } else {
-          res.render('account', {title: 'Ts3Bot', name: undefined})
+          res.render('account', {title: 'Ts3Bot', name: undefined, session: req.session})
         }
       })
     }
