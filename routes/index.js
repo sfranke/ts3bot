@@ -5,7 +5,7 @@ var moment = require('moment')
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  console.log('Session:', req.session)
+  // console.log('Session:', req.session)
   exec('pm2 jlist', function (error, stdout, stderr) {
     if (error !== null) {
       console.log('exec error: ' + error)

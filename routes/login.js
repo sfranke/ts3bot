@@ -3,7 +3,7 @@ var router = express.Router()
 var database = require('./database')
 var bcrypt = require('bcrypt')
 var util = require('util')
-var colors = require('colors')
+// var colors = require('colors')
 
 router.get('/', function (req, res, next) {
   // console.log('Session:', req.session);
@@ -20,13 +20,12 @@ router.post('/', function (req, res, next) {
     // console.log('user', user)
 
     if (user != null) {
-      console.log('Password check: ', bcrypt.compareSync(req.body.password, user.password))
       if (bcrypt.compareSync(req.body.password, user.password) === true) {
-        console.log('Password correct!'.green.bold)
+        // console.log('Password correct!'.green.bold)
         req.session.user = user
         res.redirect('/account')
       } else {
-        console.log('Wrong password!'.bold.red)
+        // console.log('Wrong password!'.bold.red)
         return res.redirect('/register')
       }
     } else {

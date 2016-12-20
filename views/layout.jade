@@ -55,17 +55,17 @@ html(lang='en')
                   input.form-control(type='password', name='password', placeholder='Password')
                 |         
                 button.btn.btn-success(type='submit') Sign in
-                
-            - if (session != undefined && session.user != undefined)
-              a#username.navbar-brand.navbar-right #{session.user.name}
-              form.navbar-form.navbar-right(method='post', action='/logout')
-                button.btn.btn-danger(type='submit')#logOut Logout
                 |         
                 button.btn.btn-warning(type='button')#registerbtn Register
                 script
                   |$('#registerbtn').click(function(){
                   |  window.location='register'
                   |});
+                
+            - if (session != undefined && session.user != undefined)
+              a#username.navbar-brand.navbar-right #{session.user.name}
+              form.navbar-form.navbar-right(method='post', action='/logout')
+                button.btn.btn-danger(type='submit')#logOut Logout
             - if (session != undefined && session.user != undefined)
               li
                 a(href='/account') Account

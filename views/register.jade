@@ -4,8 +4,8 @@ block content
   .container
     .jumbotron
       .container#register
-        //- - if (message.length >= 1)
-          //- div.alert.alert-danger= message
+        - if (message.length >= 1)
+          div.alert.alert-danger= message
         form.form-register#registerform(method='post')
           h2.form-register-heading Please register
           |     

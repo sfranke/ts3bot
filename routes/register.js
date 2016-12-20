@@ -5,10 +5,10 @@ var bcrypt = require('bcrypt')
 
 router.get('/', function (req, res, next) {
   // console.log(req.session)
-  if (!req.session.user) {
-    return res.redirect('/')
-  }
-  res.render('register', {title: 'Register', session: req.session})
+  // if (!req.session.user) {
+  //   return res.redirect('/')
+  // }
+  res.render('register', {title: 'Register', session: req.session, message: req.flash('signupMessage')})
 })
 
 // , message: req.flash('signupMessage')
