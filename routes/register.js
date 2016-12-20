@@ -4,7 +4,10 @@ var database = require('./database')
 var bcrypt = require('bcrypt')
 
 router.get('/', function (req, res, next) {
-  // console.log(req.session);
+  // console.log(req.session)
+  if (!req.session.user) {
+    return res.redirect('/')
+  }
   res.render('register', {title: 'Register', session: req.session})
 })
 
@@ -31,7 +34,7 @@ router.post('/', function (req, res, next) {
 
 function generateHashedPassword (password, callback) {
   var hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
-  // console.log('Hashed password:', hashedPassword);
+  // console.log('Hashed password:', hashedPassword)
   callback(null, hashedPassword)
 };
 

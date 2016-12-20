@@ -5,7 +5,7 @@ var router = express.Router()
 /* GET users listing. */
 router.get('/', function (req, res, next) {
   if (!req.session.user) {
-    return res.redirect('/register')
+    return res.redirect('/')
   }
   res.render('account', {title: 'Ts3Bot', name: undefined, session: req.session})
 })
