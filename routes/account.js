@@ -1,9 +1,16 @@
 var express = require('express')
 var mongoClient = require('mongodb').MongoClient
 var router = express.Router()
+// var util = require('util')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
+  // console.log('USERDATA: ' + util.inspect(req.session.user))
+  if (req.session.user.permission === 'admin') {
+    console.log('Found.. ' + req.session.user.permission)
+  } else {
+    console.log('Found.. ' + req.session.user.permission)
+  }
   if (!req.session.user) {
     return res.redirect('/')
   }

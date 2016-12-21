@@ -70,9 +70,10 @@ html(lang='en')
               li
                 a(href='/account') Account
             | 
-            //- li
-            //-   a(href='/log') Log
-            //- | 
+            - if (session != undefined && session.user != undefined && session.user.permission === 'admin')
+              li
+                a(href='/users') Users
+            | 
             li
               a(href='/about') About
 
