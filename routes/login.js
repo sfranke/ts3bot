@@ -12,13 +12,8 @@ router.get('/', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
   var user = {'email': req.body.email, 'password': req.body.password}
-  console.log('email' + req.body.email)
-  console.log('email' + req.body.password)
   database.getUser(user, function (error, user) {
     if (error) console.log('Error while getting user: ' + util.inspect(error))
-    // console.log('error', error)
-    // console.log('user', user)
-
     if (user != null) {
       if (bcrypt.compareSync(req.body.password, user.password) === true) {
         // console.log('Password correct!'.green.bold)
