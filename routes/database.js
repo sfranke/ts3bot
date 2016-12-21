@@ -1,7 +1,7 @@
 var database = exports
 var mongoClient = require('mongodb').MongoClient
 var ObjectID = require('mongodb').ObjectID
-// var util = require('util')
+var util = require('util')
 // var colors = require('colors')
 // var logger = require('../ts3bot/logger')
 
@@ -60,6 +60,41 @@ database.deleteUser = function (userId, callback) {
         db.close()
       } else {
         callback({'error': 'Error while deleting user.'}, null)
+        db.close()
+      }
+    })
+  })
+}
+
+database.updateUserPermission = function (user, permission, callback) {
+  console.log('UpdateUserPermission database: ' + util.inspect(user) + ' --> ' + permission)
+  var _id = ObjectID(user._id)
+  var permission = permission
+  console.log('TEST PERMISSION: ' + permission)
+  mongoClient.connect(uri, function (err, db) {
+    if (err) console.log('error', 'While connecting to DB during updateUser.')
+    var collection = db.collection('users')
+    collection.find({'_id': _id}).limit(1).next(function (err, doc) {
+      if (err) console.log('Error fetching user during updateUser.')
+      console.log('Found DOC: ' + util.inspect(doc))
+      if (doc !== null) {
+        collection.update(
+          {
+            '_id': doc._id
+          },
+          {
+            'name': doc.name,
+            'password': doc.password,
+            'permission': permission,
+            'email': doc.email
+          },
+          {
+            upsert: true
+          })
+        callback(null, user)
+        db.close()
+      } else {
+        callback({error: 'Some random error during updateUser -> collection updateUser.'}, null)
         db.close()
       }
     })

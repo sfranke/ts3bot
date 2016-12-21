@@ -34,7 +34,7 @@ block content
               .col-sm-2.text-left-xs.text-right-md
                 strong Permission
               |             
-              .col-sm-10 #{user.permission}
+              .col-sm-10(id='#{user._id}-permission') #{user.permission}
             |         
             .row
               .col-sm-2.text-left-xs.text-right-md
@@ -49,6 +49,21 @@ block content
                   |  $.post('/users/delete/#{user._id}', function (d) {
                   |    if(d.message == 'success') {
                   |      $('#userPanel-#{user._id}').fadeOut('slow');
+                  |    }
+                  |  });
+                  |});
+              |             
+              .col-sm-2.pull-right
+                button.btn.btn-primary(id='#{user._id}' + '-admin') Admin
+                script
+                  |$('##{user._id}' + '-admin').on('click', function () {
+                  |  $.post('/users/updateUser/#{user._id}/admin', function (d) {
+                  |    if(d.message == 'admin') {
+                  |      console.log('Done!');
+                  |      $('##{user._id}-permission').fadeOut('slow');
+                  |    }
+                  |    if(d.message == 'fail') {
+                  |      console.log('OMG!');
                   |    }
                   |  });
                   |});
