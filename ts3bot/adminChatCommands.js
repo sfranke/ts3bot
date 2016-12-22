@@ -4,6 +4,7 @@ var chatMessage = require('./chatMessage')
 var logger = require('./logger')
 var util = require('util')
 var exec = require('child_process').exec
+var database = require('./database')
 
 adminChatCommands.execute = function (response, serverQueryClient) {
   console.log('client:', response)
@@ -39,29 +40,33 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         logger.log('debug', 'clientgetids response:\n' + util.inspect(response))
         if (error !== undefined) {
           serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (error, response) {
+            if (error) logger.log('debug', 'Unknown UID: ' + util.inspect(error))
             logger.log('debug', 'clientgetdbidfromuid error:\n' + util.inspect(error))
             logger.log('debug', 'clientgetdbidfromuid response:\n' + util.inspect(response))
-            serverQueryClient.send('clientdbinfo', {cldbid: response.cldbid}, function (error, response) {
-              logger.log('debug', 'clientdbinfo error:\n' + util.inspect(error))
-              logger.log('debug', 'clientdbinfo response:\n' + util.inspect(response))
-              var userName = response.client_nickname
-              var lastSeen = new Date(response.client_lastconnected * 1000)
-              var commander = 'No'
-              serverQueryClient.send('servergroupsbyclientid', {cldbid: response.client_database_id}, function (error, response) {
-                if (error) logger.log('debug', 'servergroupsbyclientid error:\n' + util.inspect(error))
-                logger.log('debug', 'servergroupsbyclientid response:\n' + util.inspect(response))
-                response.forEach(function (servergroup) {
-                  if (parseInt(servergroup.sgid) === config.commanderServerGroupId) {
-                    logger.log('debug', 'Found commander!')
-                    commander = 'Yes'
-                  } else {
-                    logger.log('debug', 'Commander not found!')
-                  }
+            if (!error) {
+              serverQueryClient.send('clientdbinfo', {cldbid: response.cldbid}, function (error, response) {
+                if (error) logger.log('debug', 'Unknown UID: ' + util.inspect(error))
+                logger.log('debug', 'clientdbinfo error:\n' + util.inspect(error))
+                logger.log('debug', 'clientdbinfo response:\n' + util.inspect(response))
+                var userName = response.client_nickname
+                var lastSeen = new Date(response.client_lastconnected * 1000)
+                var commander = 'No'
+                serverQueryClient.send('servergroupsbyclientid', {cldbid: response.client_database_id}, function (error, response) {
+                  if (error) logger.log('debug', 'servergroupsbyclientid error:\n' + util.inspect(error))
+                  logger.log('debug', 'servergroupsbyclientid response:\n' + util.inspect(response))
+                  response.forEach(function (servergroup) {
+                    if (parseInt(servergroup.sgid) === config.commanderServerGroupId) {
+                      logger.log('debug', 'Found commander!')
+                      commander = 'Yes'
+                    } else {
+                      logger.log('debug', 'Commander not found!')
+                    }
+                  })
+                  var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Commander[/B]: ' + commander
+                  serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
                 })
-                var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Commander[/B]: ' + commander
-                serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
               })
-            })
+            }
           })
         }
         if (response !== undefined) {
