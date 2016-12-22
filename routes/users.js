@@ -6,7 +6,7 @@ var util = require('util')
 router.get('/', function (req, res, next) {
   // console.log(req.session)
   if (!req.session.user) {
-      return res.redirect('/register')
+      res.redirect('/register')
   }
   if (req.session.user.permission === 'admin') {
     console.log('Found.. ' + req.session.user.permission)
@@ -16,6 +16,7 @@ router.get('/', function (req, res, next) {
     })
   } else {
     console.log('Found.. ' + req.session.user.permission)
+    res.redirect('/register')
   }
 })
 
