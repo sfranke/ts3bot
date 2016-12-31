@@ -53,19 +53,24 @@ block content
                   |  });
                   |});
               |             
-              .col-sm-2.pull-right
-                button.btn.btn-primary(id='#{user._id}' + '-admin') Admin
-                script
-                  |$('##{user._id}' + '-admin').on('click', function () {
-                  |  $.post('/users/updateUser/#{user._id}/admin', function (d) {
-                  |    if(d.message == 'admin') {
-                  |      console.log('Done!');
-                  |      $('##{user._id}-permission').fadeOut('slow');
-                  |    }
-                  |    if(d.message == 'fail') {
-                  |      console.log('OMG!');
-                  |    }
-                  |  });
-                  |});
+              - if (user.permission !== 'admin')
+                .col-sm-2.pull-right
+                  button.btn.btn-primary(id='#{user._id}' + '-admin') Admin
+                  script
+                    |$('##{user._id}' + '-admin').on('click', function () {
+                    |  $.post('/users/updateUser/#{user._id}/admin', function (d) {
+                    |    if(d.message == 'admin') {
+                    |      console.log('Done!');
+                    |      $('##{user._id}-permission').fadeOut('slow', function () {
+                    |        $('##{user._id}-permission').replaceWith("<div id=#{user._id}-permission class='col-sm-10'>admin</div>")
+                    |      });
+                    |      $('##{user._id}-permission').fadeIn('slow');
+                    |      $('##{user._id}-admin').fadeOut('slow');
+                    |    }
+                    |    if(d.message == 'fail') {
+                    |      console.log('OMG!');
+                    |    }
+                    |  });
+                    |});
   include footer
   
