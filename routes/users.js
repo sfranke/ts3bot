@@ -4,14 +4,16 @@ var database = require('./database')
 
 router.get('/', function (req, res, next) {
   // console.log(req.session)
+  if (!req.session.user) {
+    return res.redirect('/register')
+  }
   if (req.session.user.permission === 'admin') {
-    if (!req.session.user) {
-      return res.redirect('/register')
-    }
     database.getAllUsers(function (error, users) {
       if (error) console.log('Error while getAllUsers.')
       res.render('users', {title: 'Users', session: req.session, users: users})
     })
+  } else {
+    return res.redirect('/')
   }
 })
 

@@ -5,28 +5,36 @@ var fs = require('fs')
 var tempLogArray = []
 
 router.get('/', function (req, res, next) {
-  fs.access('./ts3bot/log', function (error, response) {
-    if (error) {
-      console.log(error)
-      res.render('log', {title: 'Log', log: ['No log file found!']})
-    } else {
-      (function getLog () {
-        var logArray = []
-        var rl = require('readline').createInterface({
-          input: require('fs').createReadStream('./ts3bot/log'),
-          terminal: false
-        })
-        rl.on('line', function (line) {
-          logArray.push(line)
-        })
-        rl.on('close', function () {
-          res.render('log', {title: 'Log', log: logArray})
-          tempLogArray = logArray
-          updateLog()
-        })
-      })()
-    }
-  })
+  if (!req.session.user) {
+    return res.redirect('/')
+  }
+  if (req.session.user.permission === 'admin') {
+    return res.redirect('/')
+  } else {
+    return res.redirect('/')
+  }
+  // fs.access('./ts3bot/log', function (error, response) {
+  //   if (error) {
+  //     console.log(error)
+  //     res.render('log', {title: 'Log', log: ['No log file found!']})
+  //   } else {
+  //     (function getLog () {
+  //       var logArray = []
+  //       var rl = require('readline').createInterface({
+  //         input: require('fs').createReadStream('./ts3bot/log'),
+  //         terminal: false
+  //       })
+  //       rl.on('line', function (line) {
+  //         logArray.push(line)
+  //       })
+  //       rl.on('close', function () {
+  //         res.render('log', {title: 'Log', log: logArray})
+  //         tempLogArray = logArray
+  //         updateLog()
+  //       })
+  //     })()
+  //   }
+  // })
 })
 
 function updateLog () {

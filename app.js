@@ -14,7 +14,7 @@ var register = require('./routes/register')
 var login = require('./routes/login')
 var logout = require('./routes/logout')
 var users = require('./routes/users')
-// var log = require('./routes/log')
+var log = require('./routes/log')
 
 var app = express()
 
@@ -40,7 +40,7 @@ app.use('/register', register)
 app.use('/login', login)
 app.use('/logout', logout)
 app.use('/users', users)
-// app.use('/log', log)
+app.use('/log', log)
 
 app.locals.moment = require('moment')
 
