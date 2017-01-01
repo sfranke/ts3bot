@@ -2,22 +2,14 @@ var express = require('express')
 var router = express.Router()
 var database = require('./database')
 var bcrypt = require('bcrypt')
-var util = require('util')
 
 router.get('/', function (req, res, next) {
-  // console.log(req.session)
-  // if (!req.session.user) {
-  //   return res.redirect('/')
-  // }
-  console.log('TEST: ' + util.inspect(req.app.locals.registerState))
   if (req.app.locals.registerState === false) {
     res.redirect('/')
   } else {
     res.render('register', {title: 'Register', session: req.session, message: req.flash('signupMessage')})
   }
 })
-
-// , message: req.flash('signupMessage')
 
 router.post('/', function (req, res, next) {
   if (req.body.email !== '' && req.body.name !== '' && req.body.password !== '') {
@@ -39,7 +31,6 @@ router.post('/', function (req, res, next) {
 })
 
 router.post('/toggle', function (req, res, next) {
-  console.log('req.app.locals.registerState ', req.app.locals.registerState)
   if (!req.session.user) {
     return res.status(401).send({error: 'Unauthorized', response: null})
   }
@@ -50,7 +41,6 @@ router.post('/toggle', function (req, res, next) {
       req.app.locals.registerState = false
     }
     return res.status(200).send({error: null, response: 'success'})
-    // return res.json({error: null, response: 'success'})
   } else {
     return res.status(403).send({error: 'Forbidden', response: null})
   }
@@ -58,7 +48,6 @@ router.post('/toggle', function (req, res, next) {
 
 function generateHashedPassword (password, callback) {
   var hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
-  // console.log('Hashed password:', hashedPassword)
   callback(null, hashedPassword)
 };
 
