@@ -1,10 +1,21 @@
 var express = require('express')
 var mongoClient = require('mongodb').MongoClient
 var router = express.Router()
+// var util = require('util')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
-  res.render('account', {title: 'Ts3Bot', name: undefined})
+  // console.log('USERDATA: ' + util.inspect(req.session.user))
+  if (!req.session.user) {
+    return res.redirect('/')
+  }
+  if (req.session.user.permission === 'admin' || req.session.user.permission === 'user') {
+    console.log('Found.. ' + req.session.user.permission)
+    res.render('account', {title: 'Account Information', name: undefined, session: req.session})
+  } else {
+    console.log('Found.. ' + req.session.user.permission)
+    return res.redirect('/')
+  }
 })
 
 var uri = 'mongodb://localhost:27017/ts3bot'
@@ -44,7 +55,7 @@ router.post('/', function (req, res, next) {
       if (response.gw2_guilds !== '' && response.gw2_guilds !== undefined) {
         var guilds = JSON.parse(response.gw2_guilds)
         res.render('account', {
-          title: 'Ts3Bot',
+          title: 'Account Information',
           name: response.client_nickname,
           time: time,
           apiKey: response.gw2_api_key,
@@ -52,14 +63,16 @@ router.post('/', function (req, res, next) {
           accountName: response.gw2_account_name,
           guilds: guilds,
           created: response.gw2_account_created,
-          user: user
+          user: user,
+          session: req.session
         })
       } else {
         res.render('account', {
-          title: 'Ts3Bot',
+          title: 'Account Information',
           name: response.client_nickname,
           time: time,
-          user: user
+          user: user,
+          session: req.session
         })
       }
     } else {
@@ -71,7 +84,7 @@ router.post('/', function (req, res, next) {
           if (user.gw2_guilds !== '' && user.gw2_guilds !== undefined) {
             var guilds = JSON.parse(response.gw2_guilds)
             res.render('account', {
-              title: 'Ts3Bot',
+              title: 'Account Information',
               name: response.client_nickname,
               time: time,
               apiKey: response.gw2_api_key,
@@ -83,14 +96,14 @@ router.post('/', function (req, res, next) {
             })
           } else {
             res.render('account', {
-              title: 'Ts3Bot',
+              title: 'Account Information',
               name: user[0].client_nickname,
               time: time,
               user: user
             })
           }
         } else {
-          res.render('account', {title: 'Ts3Bot', name: undefined})
+          res.render('account', {title: 'Account Information', name: undefined, session: req.session})
         }
       })
     }

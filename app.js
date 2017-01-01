@@ -3,12 +3,18 @@ var path = require('path')
 var logger = require('morgan')
 var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser')
+var session = require('express-session')
+var flash = require('connect-flash')
 
 var routes = require('./routes/index')
 var about = require('./routes/about')
 var account = require('./routes/account')
 var guild = require('./routes/guild')
-// var log = require('./routes/log')
+var register = require('./routes/register')
+var login = require('./routes/login')
+var logout = require('./routes/logout')
+var users = require('./routes/users')
+var log = require('./routes/log')
 
 var app = express()
 
@@ -22,15 +28,22 @@ app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser())
+app.use(session({resave: true, saveUninitialized: true, secret: 'ljR4sdf076asdGEewXxklv'}))
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(flash())
 
 app.use('/', routes)
 app.use('/about', about)
 app.use('/account', account)
 app.use('/guild', guild)
-// app.use('/log', log)
+app.use('/register', register)
+app.use('/login', login)
+app.use('/logout', logout)
+app.use('/users', users)
+app.use('/log', log)
 
 app.locals.moment = require('moment')
+app.locals.registerState = false
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
