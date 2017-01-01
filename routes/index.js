@@ -1,6 +1,5 @@
 var express = require('express')
 var router = express.Router()
-var exec = require('child_process').exec
 var moment = require('moment')
 var database = require('./database')
 var util = require('util')
@@ -36,8 +35,6 @@ router.get('/', function (req, res, next) {
       console.log('Admin user already exists.')
     }
   })
-
-  console.log('This is PM@ working already!! ')
 
   pm2.describe('www', function (error, response) {
     if (error) console.log('Error while fetching pm2 status.')

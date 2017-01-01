@@ -56,16 +56,50 @@ html(lang='en')
                 |         
                 button.btn.btn-success(type='submit') Sign in
                 |         
-                button.btn.btn-warning(type='button')#registerbtn Register
-                script
-                  |$('#registerbtn').click(function(){
-                  |  window.location='register'
-                  |});
+                - if (locals.registerState === true)
+                  button.btn.btn-warning(type='button')#registerbtn Register
+                  script
+                    |$('#registerbtn').click(function(){
+                    |  window.location='register'
+                    |});
                 
             - if (session != undefined && session.user != undefined)
               a#username.navbar-brand.navbar-right #{session.user.name}
               form.navbar-form.navbar-right(method='post', action='/logout')
                 button.btn.btn-danger(type='submit')#logOut Logout
+                |         
+                button.btn.btn-success(type='button' style='display: none;')#enableregisterbtn Enable Registration
+                script
+                  |$('#enableregisterbtn').click(function(){
+                  |  $.post('/register/toggle', function(data) {
+                  |    if (data.error == null) {
+                  |      $('#enableregisterbtn').hide('slow', function () {
+                  |        $('#disableregisterbtn').show('slow');
+                  |      });
+                  |    }
+                  |  })
+                  |});
+                - if (session != undefined && session.user != undefined && session.user.permission === 'admin' && locals.registerState === false)
+                  script
+                    |$( document ).ready(function() {
+                    |  $('#enableregisterbtn').show()
+                    |});
+                button.btn.btn-danger(type='button' style='display: none;')#disableregisterbtn Disable Registration
+                script
+                  |$('#disableregisterbtn').click(function(){
+                  |  $.post('/register/toggle', function(data) {
+                  |    if (data.error == null) {
+                  |      $('#disableregisterbtn').hide('slow', function () {
+                  |        $('#enableregisterbtn').show('slow');
+                  |      });
+                  |    }
+                  |  })
+                  |});
+                - if (session != undefined && session.user != undefined && session.user.permission === 'admin' && locals.registerState === true)
+                  script
+                    |$( document ).ready(function() {
+                    |  $('#disableregisterbtn').show()
+                    |});
             - if (session != undefined && session.user != undefined)
               li
                 a(href='/account') Account

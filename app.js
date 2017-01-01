@@ -43,6 +43,7 @@ app.use('/users', users)
 app.use('/log', log)
 
 app.locals.moment = require('moment')
+app.locals.registerState = false
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

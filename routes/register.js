@@ -2,13 +2,19 @@ var express = require('express')
 var router = express.Router()
 var database = require('./database')
 var bcrypt = require('bcrypt')
+var util = require('util')
 
 router.get('/', function (req, res, next) {
   // console.log(req.session)
   // if (!req.session.user) {
   //   return res.redirect('/')
   // }
-  res.render('register', {title: 'Register', session: req.session, message: req.flash('signupMessage')})
+  console.log('TEST: ' + util.inspect(req.app.locals.registerState))
+  if (req.app.locals.registerState === false) {
+    res.redirect('/')
+  } else {
+    res.render('register', {title: 'Register', session: req.session, message: req.flash('signupMessage')})
+  }
 })
 
 // , message: req.flash('signupMessage')
@@ -29,6 +35,24 @@ router.post('/', function (req, res, next) {
         }
       })
     })
+  }
+})
+
+router.post('/toggle', function (req, res, next) {
+  console.log('req.app.locals.registerState ', req.app.locals.registerState)
+  if (!req.session.user) {
+    return res.status(401).send({error: 'Unauthorized', response: null})
+  }
+  if (req.session.user.permission === 'admin') {
+    if (req.app.locals.registerState === false) {
+      req.app.locals.registerState = true
+    } else {
+      req.app.locals.registerState = false
+    }
+    return res.status(200).send({error: null, response: 'success'})
+    // return res.json({error: null, response: 'success'})
+  } else {
+    return res.status(403).send({error: 'Forbidden', response: null})
   }
 })
 
