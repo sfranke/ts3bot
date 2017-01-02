@@ -21,6 +21,18 @@ html(lang='en')
 
   body
 
+    script
+      |$(function () {
+      |  var socket = io.connect();
+      |  socket.on('register-hide', function (data) {
+      |    console.log('ws event: register-hide');
+      |    $('#registerbtn').hide('slow');
+      |  });
+      |  socket.on('register-show', function (data) {
+      |    console.log('ws event: register-show');
+      |    $('#registerbtn').show('slow');
+      |  });
+      |});
     nav.navbar.navbar-inverse.navbar-fixed-top
       .container
         .navbar-header
@@ -56,8 +68,8 @@ html(lang='en')
                 |         
                 button.btn.btn-success(type='submit') Sign in
                 |         
-                - if (locals.registerState === true)
-                  button.btn.btn-warning(type='button')#registerbtn Register
+                - if (locals.registerState === false)
+                  button.btn.btn-warning(type='button' style='display: none;')#registerbtn Register
                   script
                     |$('#registerbtn').click(function(){
                     |  window.location='register'

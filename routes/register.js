@@ -37,8 +37,10 @@ router.post('/toggle', function (req, res, next) {
   if (req.session.user.permission === 'admin') {
     if (req.app.locals.registerState === false) {
       req.app.locals.registerState = true
+      io.emit('register-show')
     } else {
       req.app.locals.registerState = false
+      io.emit('register-hide')
     }
     return res.status(200).send({error: null, response: 'success'})
   } else {
