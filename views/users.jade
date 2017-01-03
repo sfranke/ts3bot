@@ -42,7 +42,7 @@ block content
               |             
               .col-sm-10 #{user.password}
             .row
-              .col-sm-2.pull-right
+              .col-sm-3.pull-right
                 button.btn.btn-danger(id='#{user._id}') Delete
                 script
                   |$('##{user._id}').on('click', function () {
@@ -52,10 +52,9 @@ block content
                   |    }
                   |  });
                   |});
-              |             
-              - if (user.permission !== 'admin')
-                .col-sm-2.pull-right
-                  button.btn.btn-primary(id='#{user._id}' + '-admin') Admin
+                |             
+                - if (user.permission !== 'admin')
+                  button.btn.btn-success(id='#{user._id}' + '-admin') Admin
                   script
                     |$('##{user._id}' + '-admin').on('click', function () {
                     |  $.post('/users/updateUser/#{user._id}/admin', function (d) {
