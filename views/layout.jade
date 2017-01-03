@@ -74,6 +74,12 @@ html(lang='en')
                     |$('#registerbtn').click(function(){
                     |  window.location='register'
                     |});
+                - if (locals.registerState === true)
+                  button.btn.btn-warning(type='button')#registerbtn Register
+                  script
+                    |$('#registerbtn').click(function(){
+                    |  window.location='register'
+                    |});
                 
             - if (session != undefined && session.user != undefined)
               a#username.navbar-brand.navbar-right #{session.user.name}
