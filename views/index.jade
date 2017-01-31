@@ -6,7 +6,7 @@ block content
       .container
         h1= title
         div#status(style='height: 35px')
-          - if (status !== undefined)
+          - if (status !== undefined && status[0].pm2_env !== undefined)
             - if (status[0].pm2_env.status === 'online')
               .row
                 .col-sm-2.text-left-xs.text-right-md

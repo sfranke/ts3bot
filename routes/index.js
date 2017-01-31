@@ -5,6 +5,9 @@ var database = require('./database')
 var util = require('util')
 var bcrypt = require('bcrypt')
 var pm2 = require('pm2')
+var async = require('async')
+
+var status = []
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -36,17 +39,44 @@ router.get('/', function (req, res, next) {
     }
   })
 
-  pm2.describe('www', function (error, response) {
-    if (error) console.log('Error while fetching pm2 status.')
-    var status
-    if (Object.keys(response).length === 0) {
-      status = undefined
-    } else {
-      status = response
+  async.series([
+    function (callback) {
+      pm2.describe('www', function (error, response) {
+        if (error) {
+          console.log('Error while fetching pm2 status.')
+          status[0] = error
+          callback(error, null)
+        }
+        if (Object.keys(response).length === 0) {
+          status = undefined
+          callback(null, status)
+        } else {
+          status[0] = response
+          callback(null, status)
+        }
+      })
+    },
+    function (callback) {
+      pm2.describe('ts3bot', function (error, response) {
+        if (error) {
+          console.log('Error while fetching pm2 status.')
+          status[1] = error
+          callback(error, null)
+        }
+        if (Object.keys(response).length === 0) {
+          status = undefined
+          callback(null, status)
+        } else {
+          status[0] = response
+          callback(null, status)
+        }
+      })
+    },
+    function (callback) {
+      serverTime()
+      res.render('index', {title: 'Status', status: status, session: req.session})
     }
-    serverTime()
-    res.render('index', {title: 'Status', status: status, session: req.session})
-  })
+  ])
 })
 
 function serverTime () {
