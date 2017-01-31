@@ -96,15 +96,32 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     },
 
     // Creating a backup of the log file if it exists.
+    // TODO: Need to encapsulate this!
     backupLog: function (callback) {
-      fs.mkdir(path.join(__dirname, '/logBackup/'), function (err, cb) {
-        if (err) logger.log('debug', 'Error while creating directory: ' + util.inspect(err))
-        logger.log('debug', 'Response while creating directory: ' + util.inspect(cb))
+      // Checking if a file called 'logBackup' exists.
+      fs.stat('logBackup', function (err, stat) {
+        logger.log('debug', 'fs.stat error:\n' + util.inspect(err))
+        // If the file exists this function will return the stats of that file.
+        logger.log('debug', 'fs.stat stat:\n' + util.inspect(stat))
+        // If this file does not exist..
+        if (err !== null) {
+          // we create it.
+          fs.mkdir(path.join(__dirname, '/logBackup/'), function (err, cb) {
+            if (err) logger.log('debug', 'Error while creating directory: ' + util.inspect(err))
+            logger.log('debug', 'Response while creating directory: ' + util.inspect(cb))
+          })
+        // Else it is already there and we don't need to create it.
+        } else {
+          logger.log('debug', '/logBackup/ folder already exists.')
+        }
       })
+      // Checking if a file called 'log' exists.
       fs.stat(path.join(__dirname, '/log'), function (error, response) {
         if (error) logger.log('debug', 'Error while accessing file: ' + util.inspect(error))
+        // The file could be there but empty.
         if (response.size === 0) {
           logger.log('debug', 'No log file found.')
+        // If this file exists and its size is NOT 0, then prepare for rename.
         } else {
           var year = new Date().getFullYear()
           var month = new Date().getMonth()
@@ -115,13 +132,14 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           var milliseconds = new Date().getMilliseconds()
           var date = year + '' + (month + 1) + '' + day + '_' + hours + '-' + minutes + '-' + seconds + '-' + milliseconds
           logger.log('info', 'Creating backup of log file.')
+          // Renames a file, moving it between directories if required.
           fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + date + '.log'), function (err, res) {
             if (err) logger.log('debug', 'Error while renaming log file: ' + util.inspect(err))
             logger.log('debug', 'Renaming log file: ' + util.inspect(res))
+            callback()
           })
         }
       })
-      callback()
     },
 
     // Login routine. login name and password are provided via config file.
@@ -261,6 +279,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
       callback()
     },
 
+    // TODO: Need to encapsulate this!
     matchup: function (callback) {
       if (config.FindMatchupPartner === true) {
         matchup.getMatchups(function (error, response) {
@@ -276,6 +295,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (error) logger.log('error', 'Error while adding EOL to config.' + error)
               logger.log('info', 'Configuration saved successfully')
               if (config.setServerGroupPermissions === true) {
+                // TODO: Need to encapsulate this!
                 async.series({
                   resettingPermissions: function (callback) {
                     for (var gameWorldId in config.gameWorlds) {
@@ -313,6 +333,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
                     }
                     callback()
                   },
+                  // TODO: Need to encapsulate this!
                   elevatingPermissions: function (callback) {
                     config.worldsAllowed.forEach(function (allowedGameWorld) {
                       if (config.adjustJoinPower === true) {
@@ -381,7 +402,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
         if (error !== null) {
           logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error))
           var message = new chatMessage()
-          // Check error cases here.
+          // TODO: Check error cases here!
           // If error object contains 'accountWorldName' and 'accountWorldId' which only is set if account is associated with foreign world.
           if (error.accountWorldName !== undefined && error.accountWorldId !== config.homeWorld) {
             logger.log('debug', 'Foreign world on registration.\n' + util.inspect(error))
@@ -407,6 +428,7 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
             serverQueryClient.send('sendtextmessage', message.chatSend('api503', error))
           }
         } else {
+          // TODO: Need to clean this up!
           // No error process valid data.
           // Account and world checked, verified member.
           database.updateAccountInformation(response, function (error, response) {

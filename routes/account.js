@@ -92,14 +92,16 @@ router.post('/', function (req, res, next) {
               accountName: response.gw2_account_name,
               guilds: guilds,
               created: response.gw2_account_created,
-              user: user
+              user: user,
+              session: req.session
             })
           } else {
             res.render('account', {
               title: 'Account Information',
               name: user[0].client_nickname,
               time: time,
-              user: user
+              user: user,
+              session: req.session
             })
           }
         } else {

@@ -5,6 +5,7 @@ var logger = require('./logger')
 var util = require('util')
 var exec = require('child_process').exec
 var database = require('./database')
+var help = require('./adminChatCommands/help.js')
 
 adminChatCommands.execute = function (response, serverQueryClient) {
   console.log('client:', response)
@@ -135,17 +136,12 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
       })
     }
+    // Calling help command.
     if (AdminMessageArray[0] === '!help') {
-      logger.log('debug', 'Help command')
-      var msgHelpCommand = '\n\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
-                                '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
-                                '\n!showMatchup' + '\t\t' + '   Show current match-up partner.' +
-                                '\n!databaseBackup' + ' ' + '     Create a bcakup of the database.' +
-                                '\n!userInfo <uid>' + '\t\t' + 'Get user info.'
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgHelpCommand})
+      help.command(response, serverQueryClient)
     }
     if (AdminMessageArray[0] === '!1337') {
-      logger.log('deubg', 'Hi leet commadn')
+      logger.log('deubg', 'Hi leet command')
       var msg1337Command = 'What a great day!'
       serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg1337Command})
     }
