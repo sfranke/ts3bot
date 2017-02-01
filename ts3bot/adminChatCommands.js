@@ -7,6 +7,10 @@ var exec = require('child_process').exec
 var database = require('./database')
 var help = require('./adminChatCommands/help.js')
 var leet = require('./adminChatCommands/leet.js')
+var databaseBackup = require('./adminChatCommands/databaseBackup.js')
+var kill = require('./adminChatCommands/kill.js')
+var showMatchup = require('./adminChatCommands/showMatchup.js')
+var userInfo = require('./adminChatCommands/userInfo.js')
 
 adminChatCommands.execute = function (response, serverQueryClient) {
   console.log('client:', response)
@@ -35,107 +39,19 @@ adminChatCommands.execute = function (response, serverQueryClient) {
     // Chat command to find general information a client and whether or not she belongs to
     // the commander server group.
     if (AdminMessageArray[0] === '!userInfo') {
-      logger.log('debug', 'arg: ' + AdminMessageArray[1])
-      var uid = AdminMessageArray[1].toString()
-      var gw2Commander = 'No'
-      database.getClientByUid(uid, function (error, response) {
-        if (error) logger.log('debug', 'Error during !userInfo database.getClientByUid: ' + util.inspect(error))
-        logger.log('debug', 'Client found during !userInfo database.getClientByUid: ' + util.inspect(response))
-        if (response.gw2_commander === null) {
-          gw2Commander = 'Unknown'
-        }
-        if (response.gw2_commander === false) {
-          gw2Commander = 'No'
-        }
-        if (response.gw2_commander === true) {
-          gw2Commander = 'Yes'
-        }
-      })
-      serverQueryClient.send('clientgetids', {cluid: uid}, function (error, response) {
-        logger.log('debug', 'clientgetids error:\n' + util.inspect(error))
-        logger.log('debug', 'clientgetids response:\n' + util.inspect(response))
-        if (error !== undefined) {
-          serverQueryClient.send('clientgetdbidfromuid', {cluid: uid}, function (error, response) {
-            if (error) logger.log('debug', 'Unknown UID: ' + util.inspect(error))
-            logger.log('debug', 'clientgetdbidfromuid error:\n' + util.inspect(error))
-            logger.log('debug', 'clientgetdbidfromuid response:\n' + util.inspect(response))
-            if (!error) {
-              serverQueryClient.send('clientdbinfo', {cldbid: response.cldbid}, function (error, response) {
-                if (error) logger.log('debug', 'Unknown UID: ' + util.inspect(error))
-                logger.log('debug', 'clientdbinfo error:\n' + util.inspect(error))
-                logger.log('debug', 'clientdbinfo response:\n' + util.inspect(response))
-                var userName = response.client_nickname
-                var lastSeen = new Date(response.client_lastconnected * 1000)
-                var commander = 'No'
-                serverQueryClient.send('servergroupsbyclientid', {cldbid: response.client_database_id}, function (error, response) {
-                  if (error) logger.log('debug', 'servergroupsbyclientid error:\n' + util.inspect(error))
-                  logger.log('debug', 'servergroupsbyclientid response:\n' + util.inspect(response))
-                  logger.log('debug', '====================>>> response object: ' + util.inspect(response))
-                  logger.log('debug', '====================>>> response object: ' + response.length)
-                  if (response.length === undefined) {
-                    console.log('debug', 'Offline client with only one servergroup')
-                  } else {
-                    response.forEach(function (servergroup) {
-                      if (parseInt(servergroup.sgid) === config.commanderServerGroupId) {
-                        logger.log('debug', 'Found commander!')
-                        commander = 'Yes'
-                      } else {
-                        logger.log('debug', 'Commander not found!')
-                      }
-                    })
-                  }
-                  var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Member of commander server group[/B]: ' + commander + '\n[B]Ingame commander tag[/B]: ' + gw2Commander
-                  serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
-                })
-              })
-            }
-          })
-        }
-        if (response !== undefined) {
-          serverQueryClient.send('clientinfo', {clid: response.clid}, function (error, response) {
-            logger.log('debug', 'clientinfo error:\n' + util.inspect(error))
-            logger.log('debug', 'clientinfo response:\n' + util.inspect(response))
-            if (response !== undefined) {
-              var userName = response.client_nickname
-              var lastSeen = new Date(response.client_lastconnected * 1000)
-              var commander = 'No'
-              logger.log('debug', 'TEST ===> ' + typeof response.client_servergroups)
-              if (response.client_servergroups.toString().indexOf(config.commanderServerGroupId) !== -1) {
-                logger.log('debug', 'Found commander: ' + response.client_servergroups.indexOf(config.commanderServerGroupId))
-                commander = 'Yes'
-              }
-              var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Member of commander server group[/B]: ' + commander + '\n[B]Ingame commander tag[/B]: ' + gw2Commander
-              serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
-            }
-          })
-        }
-      })
+      userInfo.command(response, serverQueryClient, AdminMessageArray)
     }
     // Show current matchup utilizing an array config.worldsAllowed from the config file.
     // The config file is read each time when the command is executed to ensure it it reflects the
     // current state. Keep in mind the config file is loaded globally on start of the program.
     if (AdminMessageArray[0] === '!showMatchup') {
-      config = JSON.parse(require('fs').readFileSync('config.json'))
-      var msg = 'Currently allowed world IDs: ' + config.worldsAllowed
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg})
+      showMatchup.command(response, serverQueryClient)
     }
-    // Kill switch for the program via chat command. If issued the program is exiting.
     if (AdminMessageArray[0] === '!kill') {
-      var msgKill = 'Shutting down now..'
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgKill})
-      setTimeout(function () {
-        process.exit()
-      }, 1000)
+      kill.command(response, serverQueryClient)
     }
     if (AdminMessageArray[0] === '!databaseBackup') {
-      logger.log('debug', 'Backing up database.')
-      var msgDbBackup = 'Backing up database..'
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msgDbBackup})
-      exec('mongoexport -d ts3bot -c clients -o clients_backup.json', function (error, stdout, stderr) {
-        if (error) logger.log('debug', 'Error while creating database dump. ' + util.inspect(error))
-        logger.log('debug', 'Creating database dump, stderr: ' + util.inspect(stderr))
-        logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
-      })
+      databaseBackup.command(response, serverQueryClient)
     }
     if (AdminMessageArray[0] === '!help') {
       help.command(response, serverQueryClient)
