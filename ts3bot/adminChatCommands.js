@@ -11,53 +11,49 @@ var databaseBackup = require('./adminChatCommands/databaseBackup.js')
 var kill = require('./adminChatCommands/kill.js')
 var showMatchup = require('./adminChatCommands/showMatchup.js')
 var userInfo = require('./adminChatCommands/userInfo.js')
+var move = require('./adminChatCommands/move.js')
 
-adminChatCommands.execute = function (response, serverQueryClient) {
-  console.log('client:', response)
+adminChatCommands.execute = function (client, serverQueryClient) {
+  console.log('client:', client)
   console.log('serverquery:', serverQueryClient)
-  console.log('command:', response.msg)
+  console.log('command:', client.msg)
   var message = new chatMessage()
-  serverQueryClient.send('sendtextmessage', message.chatSend('admin', response))
-  logger.log('info', 'Received message from admin: ' + '\n' + '\'' + response.msg + '\'')
-  logger.log('debug', 'ResponseObject on AdminMessage: ' + util.inspect(response))
-  var adminID = response.invokerid
-  if (response.msg.length > 1) {
-    var AdminMessageArray = response.msg.split(' ')
+  serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
+  logger.log('info', 'Received message from admin: ' + '\n' + '\'' + client.msg + '\'')
+  logger.log('debug', 'ResponseObject on AdminMessage: ' + util.inspect(client))
+  if (client.msg.length > 1) {
+    var AdminMessageArray = client.msg.split(' ')
     logger.log('debug', 'AdminMessageArray after split() ' + AdminMessageArray)
+    // Move any client to predefined AFK channel. AFK channel can be found in config file.
     if (AdminMessageArray[0] === '!move') {
-      var clid = AdminMessageArray[1]
-      serverQueryClient.send('clientmove', {clid: clid, cid: config.afkChannel}, function (error, response) {
-        if (error !== undefined) {
-          logger.log('error', 'While \'clientmove\': ' + error.msg)
-          logger.log('debug', 'While \'clientmove\'\n' + util.inspect(error))
-        } else {
-          logger.log('info', 'Sending idle poke.')
-          serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clid, msg: config.idleMove})
-        }
-      })
+      move.command(client, serverQueryClient, AdminMessageArray)
     }
-    // Chat command to find general information a client and whether or not she belongs to
-    // the commander server group.
+    // Chat command to find general information about a client and whether or not (s)he
+    // belongs to the commander server group. Also show the ingame commander status.
     if (AdminMessageArray[0] === '!userInfo') {
-      userInfo.command(response, serverQueryClient, AdminMessageArray)
+      userInfo.command(client, serverQueryClient, AdminMessageArray)
     }
     // Show current matchup utilizing an array config.worldsAllowed from the config file.
     // The config file is read each time when the command is executed to ensure it it reflects the
     // current state. Keep in mind the config file is loaded globally on start of the program.
     if (AdminMessageArray[0] === '!showMatchup') {
-      showMatchup.command(response, serverQueryClient)
+      showMatchup.command(client, serverQueryClient)
     }
+    // Kill the current running process.
     if (AdminMessageArray[0] === '!kill') {
-      kill.command(response, serverQueryClient)
+      kill.command(client, serverQueryClient)
     }
+    // Creates a backup of the clients collection in form of a json formatted file.
     if (AdminMessageArray[0] === '!databaseBackup') {
-      databaseBackup.command(response, serverQueryClient)
+      databaseBackup.command(client, serverQueryClient)
     }
+    // Displays a chat response provding an overview of all available chat commands.
     if (AdminMessageArray[0] === '!help') {
-      help.command(response, serverQueryClient)
+      help.command(client, serverQueryClient)
     }
+    // Chat command responding with a simple text message.
     if (AdminMessageArray[0] === '!1337') {
-      leet.command(response, serverQueryClient)
+      leet.command(client, serverQueryClient)
     }
   }
 }
