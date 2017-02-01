@@ -137,10 +137,8 @@ adminChatCommands.execute = function (response, serverQueryClient) {
         logger.log('debug', 'Creating database dump, stdout: ' + util.inspect(stdout))
       })
     }
-    // Calling help command.
     if (AdminMessageArray[0] === '!help') {
       help.command(response, serverQueryClient)
-      logger.log('debug', 'leet.info: ' + leet.info())
     }
     if (AdminMessageArray[0] === '!1337') {
       leet.command(response, serverQueryClient)
