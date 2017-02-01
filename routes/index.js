@@ -34,8 +34,6 @@ router.get('/', function (req, res, next) {
           }
         })
       })
-    } else {
-      console.log('Admin user already exists.')
     }
   })
 

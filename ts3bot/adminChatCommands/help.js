@@ -1,16 +1,16 @@
 var help = exports
-var config = JSON.parse(require('fs').readFileSync('config.json'))
-var chatMessage = require('../chatMessage')
 var logger = require('../logger')
-var util = require('util')
-var exec = require('child_process').exec
-var database = require('../database')
 
+help.info = function () {
+  help.issued = '!help'
+  help.description = 'Provides help on every available command.'
+  help.message = 'Enter function to gather all information here..'
+  return help
+}
 
 help.command = function (client, serverQueryClient) {
-  console.log('TEST')
-  console.log('client:', client)
   logger.log('debug', 'Help command')
+  // Find a way to gather this info from the commands.
   var msgHelpCommand = '\n\nAdmin commands:\n\n!move <clid>' + '\t\t\t' + 'Move <clid> to AFK-channel.' +
                             '\n!kill' + '\t\t\t\t\t\t' + '    Kill the application.' +
                             '\n!showMatchup' + '\t\t' + '   Show current match-up partner.' +

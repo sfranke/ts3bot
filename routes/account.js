@@ -9,12 +9,9 @@ router.get('/', function (req, res, next) {
   if (!req.session.user) {
     return res.redirect('/')
   }
+  // Only render this route if user has valid session and proper permission.
   if (req.session.user.permission === 'admin' || req.session.user.permission === 'user') {
-    console.log('Found.. ' + req.session.user.permission)
     res.render('account', {title: 'Account Information', name: undefined, session: req.session})
-  } else {
-    console.log('Found.. ' + req.session.user.permission)
-    return res.redirect('/')
   }
 })
 

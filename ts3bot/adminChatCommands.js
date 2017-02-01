@@ -6,6 +6,7 @@ var util = require('util')
 var exec = require('child_process').exec
 var database = require('./database')
 var help = require('./adminChatCommands/help.js')
+var leet = require('./adminChatCommands/leet.js')
 
 adminChatCommands.execute = function (response, serverQueryClient) {
   console.log('client:', response)
@@ -139,11 +140,10 @@ adminChatCommands.execute = function (response, serverQueryClient) {
     // Calling help command.
     if (AdminMessageArray[0] === '!help') {
       help.command(response, serverQueryClient)
+      logger.log('debug', 'leet.info: ' + leet.info())
     }
     if (AdminMessageArray[0] === '!1337') {
-      logger.log('deubg', 'Hi leet command')
-      var msg1337Command = 'What a great day!'
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: adminID, msg: msg1337Command})
+      leet.command(response, serverQueryClient)
     }
   }
 }
