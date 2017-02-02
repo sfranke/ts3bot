@@ -6,8 +6,8 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 
 showMatchup.info = function () {
   config = JSON.parse(require('fs').readFileSync('config.json'))
-  showMatchup.issued = '!kill'
-  showMatchup.description = 'Shutting down the system via chat command.'
+  showMatchup.issued = '!showMatchup'
+  showMatchup.description = 'Show current matchup partner(s).'
   showMatchup.message = 'Currently allowed world IDs: ' + config.worldsAllowed
   return showMatchup
 }

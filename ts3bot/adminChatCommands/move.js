@@ -5,9 +5,9 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 var database = require('../database')
 
 move.info = function () {
-  move.issued = '!kill'
-  move.description = 'Shutting down the system via chat command.'
-  move.message = 'Currently allowed world IDs: '
+  move.issued = '!move <ClientID>'
+  move.description = 'Moves a client to the AFK channel.'
+  move.message = 'You have been afk for an extended period of time. Moving you to AFK-channel.'
   return move
 }
 
@@ -20,7 +20,7 @@ move.command = function (client, serverQueryClient, AdminMessageArray) {
       logger.log('debug', 'While \'clientmove\'\n' + util.inspect(error))
     } else {
       logger.log('info', 'Sending idle poke.')
-      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clid, msg: config.idleMove})
+      serverQueryClient.send('sendtextmessage', {targetmode: '1', target: clid, msg: move.info().message})
     }
   })
 }

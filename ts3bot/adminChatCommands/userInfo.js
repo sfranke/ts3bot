@@ -5,8 +5,8 @@ var config = JSON.parse(require('fs').readFileSync('config.json'))
 var database = require('../database')
 
 userInfo.info = function () {
-  userInfo.issued = '!kill'
-  userInfo.description = 'Shutting down the system via chat command.'
+  userInfo.issued = '!userInfo <Uid>'
+  userInfo.description = 'Basic information about a client by its Uid.'
   userInfo.message = 'Currently allowed world IDs: '
   return userInfo
 }
@@ -81,7 +81,10 @@ userInfo.command = function (client, serverQueryClient, AdminMessageArray) {
             logger.log('debug', 'Found commander: ' + response.client_servergroups.indexOf(config.commanderServerGroupId))
             commander = 'Yes'
           }
-          var msg = '\n[B]Username[/B]: ' + userName + '\n[B]Last seen[/B]: ' + lastSeen + '\n[B]Member of commander server group[/B]: ' + commander + '\n[B]Ingame commander tag[/B]: ' + gw2Commander
+          var msg = '\n[B]Username[/B]: ' + userName + '\n'
+                  + '[B]Last seen[/B]: ' + lastSeen + '\n'
+                  + '[B]Member of commander server group[/B]: ' + commander + '\n'
+                  + '[B]Ingame commander tag[/B]: ' + gw2Commander
           serverQueryClient.send('sendtextmessage', {targetmode: '1', target: client.invokerid, msg: msg})
         }
       })
