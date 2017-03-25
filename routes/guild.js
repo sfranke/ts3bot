@@ -3,26 +3,35 @@ var router = express.Router()
 var https = require('https')
 
 router.get('/:id', function (req, res, next) {
-  var guildJson = {}
   var guildId = req.params.id
   var options = {
     hostname: 'api.guildwars2.com',
-    path: '/v1/guild_details.json?guild_id=' + guildId,
+    path: '/v2/guild/' + guildId,
     method: 'GET'
   }
+  // TODO: Chunked data maybe?
   https.get(options, function (response) {
-    response.on('data', function (data) {
-      switch (response.statusCode) {
-        case 200:
-          guildJson = JSON.parse(data)
-          res.json(guildJson)
-          break
-        default:
-          console.log('Error while fetching guilds from API.')
-          res.json({error: 'error'})
-          break
-      };
+    // console.log('Staus Code:', response.statusCode)
+    // console.log('Options:', options)
+    var test = ''
+    // console.log('http response:', response)
+    response.on('data', function (chunk) {
+      test += chunk
     })
+    response.on('end', function (data) {
+      // console.log('end event', test)
+      try {
+        let parsedData = JSON.parse(test)
+        res.json(parsedData)
+      } catch (e) {
+        console.log('Error while trying to parse guild data.\n', e.message)
+      }
+    })
+    response.on('error', function (error) {
+      console.log('error event', error)
+    })
+  }).on('error', function (error) {
+    if (error) console.log('Handling error now!' + error)
   })
 })
 

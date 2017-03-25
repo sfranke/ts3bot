@@ -70,7 +70,7 @@ block content
                           script
                             |$(document).ready(function(){
                             |  $.getJSON('/guild/#{i}', function(d) {
-                            |    $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.guild_name + '</p>');
+                            |    $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.name + '</p>');
                             |  });
                             |});
             - count++;

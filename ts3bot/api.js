@@ -95,5 +95,7 @@ api.account = function (userObject, callback) {
       if (error) logger.log('error', 'Error on HTTPS request to API. ' + error)
       logger.log('error', 'While calling \'api.guildwars.com/v2/account\'.' + ' token: \'' + token + '\'')
     })
+  }).on('error', function (res) {
+    logger.log('debug', 'HTTP request failed during API-key validation.' + res)
   })
 }
