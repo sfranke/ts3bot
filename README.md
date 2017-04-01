@@ -25,6 +25,29 @@ Once the system is running and connected to your Teamspeak 3 server it registers
 	"gw2_commander" : true
 }
 ```
+
+## Admin chat commands
+
+These commands can be issued via chat on your Teamspeak3 server. Either in a direct chat to the system or in the default channel of the system.
+>!help
+
+Provides help on every available command.
+>!databaseBackup
+
+Create a backup of your this system's database.
+>!kill
+
+Shutting down the system via chat command.
+>!showMatchup
+
+Show current matchup partner.
+>!userInfo <Uid>
+
+Basic information about a client by its Uid.
+>!move <ClientID>
+
+Moves a client to the AFK channel.
+
 ## Dependencies
 
 - node (https://nodejs.org/)
