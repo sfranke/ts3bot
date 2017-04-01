@@ -290,28 +290,32 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           var currentConfig = config
           logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
           currentConfig.worldsAllowed = response
-          fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
-            if (error) logger.log('error', 'Error while saving config.' + error)
-            fs.appendFile('./config.json', os.EOL, function (error) {
-              if (error) logger.log('error', 'Error while adding EOL to config.' + error)
-              logger.log('info', 'Configuration saved successfully')
-              if (config.setServerGroupPermissions === true) {
-                async.series({
-                  resettingPermissions: function (callback) {
-                    serverGroupPermissions.resettingPermissions(config, serverQueryClient, function (callback) {
-                    })
-                    callback()
-                  },
-                  // TODO: Need to encapsulate this!
-                  elevatingPermissions: function (callback) {
-                    serverGroupPermissions.elevatingPermissins(config, serverQueryClient, function (callback) {
-                    })
-                    callback()
-                  }
-                }, function (err, results) {
-                  if (err) logger.log('error', 'Error while changin server group permissions. ' + util.inspect(err))
-                })
-              }
+          fs.open(path.join(__dirname, './config.json'), 'w+', function (error, fd) {
+            logger.log('debug', 'File descriptor error: ' + error)
+            logger.log('debug', 'File descriptor: ' + fd)
+            if (error) logger.log('debug', 'Error while opening config file. ' + error)
+            fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
+              if (error) logger.log('error', 'Error while saving config.' + error)
+              fs.appendFile('./config.json', os.EOL, function (error) {
+                if (error) logger.log('error', 'Error while adding EOL to config.' + error)
+                logger.log('info', 'Configuration saved successfully')
+                if (config.setServerGroupPermissions === true) {
+                  async.series({
+                    resettingPermissions: function (callback) {
+                      serverGroupPermissions.resettingPermissions(config, serverQueryClient, function (callback) {
+                      })
+                      callback()
+                    },
+                    elevatingPermissions: function (callback) {
+                      serverGroupPermissions.elevatingPermissins(config, serverQueryClient, function (callback) {
+                      })
+                      callback()
+                    }
+                  }, function (err, results) {
+                    if (err) logger.log('error', 'Error while changin server group permissions. ' + util.inspect(err))
+                  })
+                }
+              })
             })
           })
         })
