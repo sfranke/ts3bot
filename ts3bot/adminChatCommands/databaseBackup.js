@@ -5,7 +5,7 @@ var util = require('util')
 
 databaseBackup.info = function () {
   databaseBackup.issued = '!databaseBackup'
-  databaseBackup.description = 'Create a backup of your clients collection.'
+  databaseBackup.description = 'Create a backup of your this system\'s database.'
   databaseBackup.message = 'Creating a database backup.'
   return databaseBackup
 }

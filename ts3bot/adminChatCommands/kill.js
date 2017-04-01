@@ -11,7 +11,6 @@ kill.info = function () {
 }
 
 kill.command = function (client, serverQueryClient) {
-  var msgKill = 'Shutting down now..'
   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: client.invokerid, msg: kill.info().message})
   setTimeout(function () {
     process.exit()

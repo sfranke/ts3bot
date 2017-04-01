@@ -21,13 +21,13 @@ help.info = function () {
 
 help.command = function (client, serverQueryClient) {
   logger.log('debug', 'Help command')
-  var messageText = '\n\nList of admin commands:\n\n'
-                     + '[b]' + help.info().issued + '[/b]' + '\n[i]' + help.info().description + '[/i]\n\n'
+  var messageText = '\n\nList of admin commands:\n\n' +
+                    '[b]' + help.info().issued + '[/b]' + '\n[i]' + help.info().description + '[/i]\n\n' +
                     //  + '[b]' + leet.info().issued + '[/b]' + '\n[i]' + leet.info().description + '[/i]\n\n'
-                     + '[b]' + databaseBackup.info().issued + '[/b]' + '\n[i]' + databaseBackup.info().description + '[/i]\n\n'
-                     + '[b]' + kill.info().issued + '[/b]' + '\n[i]' + kill.info().description + '[/i]\n\n'
-                     + '[b]' + showMatchup.info().issued + '[/b]' + '\n[i]' + showMatchup.info().description + '[/i]\n\n'
-                     + '[b]' + userInfo.info().issued + '[/b]' + '\n[i]' + userInfo.info().description + '[/i]\n\n'
-                     + '[b]' + move.info().issued + '[/b]' + '\n[i]' + move.info().description + '[/i]\n\n'
+                    '[b]' + databaseBackup.info().issued + '[/b]' + '\n[i]' + databaseBackup.info().description + '[/i]\n\n' +
+                    '[b]' + kill.info().issued + '[/b]' + '\n[i]' + kill.info().description + '[/i]\n\n' +
+                    '[b]' + showMatchup.info().issued + '[/b]' + '\n[i]' + showMatchup.info().description + '[/i]\n\n' +
+                    '[b]' + userInfo.info().issued + '[/b]' + '\n[i]' + userInfo.info().description + '[/i]\n\n' +
+                    '[b]' + move.info().issued + '[/b]' + '\n[i]' + move.info().description + '[/i]\n\n'
   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: client.invokerid, msg: messageText})
 }
