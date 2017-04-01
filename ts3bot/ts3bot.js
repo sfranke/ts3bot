@@ -29,6 +29,7 @@ var clientIdleMove = require('./clientIdleMove')
 var matchup = require('./matchup')
 var serverGroups = require('./serverGroups')
 var adminChatCommands = require('./adminChatCommands')
+var serverGroupPermissions = require('./serverGroupPermissions')
 var os = require('os')
 var config = JSON.parse(require('fs').readFileSync('config.json'));
 
@@ -295,78 +296,15 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               if (error) logger.log('error', 'Error while adding EOL to config.' + error)
               logger.log('info', 'Configuration saved successfully')
               if (config.setServerGroupPermissions === true) {
-                // TODO: Need to encapsulate this!
                 async.series({
                   resettingPermissions: function (callback) {
-                    for (var gameWorldId in config.gameWorlds) {
-                      if (config.adjustJoinPower === true) {
-                        logger.log('debug', 'Adjusting \'i_channel_join_power\' enabled.')
-                        logger.log('debug', 'List of game world server IDs: ' + config.gameWorlds[gameWorldId].serverGroupId)
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[gameWorldId].serverGroupId, permsid: 'i_channel_join_power', permvalue: config.defaultJoinPower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing default join power: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing default join power: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('debug', 'Adjusting \'i_channel_join_power\' disabled.')
-                      }
-                      if (config.adjustChannelSubscriptions === true) {
-                        logger.log('debug', 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[gameWorldId].serverGroupId, permsid: 'i_client_max_channel_subscriptions', permvalue: config.defaultChannelSubscriptions, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing default max channel subscriptions: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing default max channel subscriptions: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('debug', 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
-                      }
-                      if (config.adjustSubscribePower === true) {
-                        logger.log('debug', 'Adjusting \'i_channel_subscribe_power\' enabled.')
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[gameWorldId].serverGroupId, permsid: 'i_channel_subscribe_power', permvalue: config.defaultSubscribePower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing default channel subscribe power: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing default channel subscribe power: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('debug', 'Adjusting \'i_channel_subscribe_power\' disabled.')
-                      }
-                    }
+                    serverGroupPermissions.resettingPermissions(config, serverQueryClient, function (callback) {
+                    })
                     callback()
                   },
                   // TODO: Need to encapsulate this!
                   elevatingPermissions: function (callback) {
-                    config.worldsAllowed.forEach(function (allowedGameWorld) {
-                      if (config.adjustJoinPower === true) {
-                        logger.log('debug', 'Adjusting \'i_channel_join_power\' enabled.')
-                        logger.log('debug', 'Game worlds with elevated join power: ' + allowedGameWorld)
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[allowedGameWorld].serverGroupId, permsid: 'i_channel_join_power', permvalue: config.elevatedJoinPower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing elevated join power: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing elevated join power: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('info', 'Adjusting \'i_channel_join_power\' disabled.')
-                      }
-                      if (config.adjustChannelSubscriptions === true) {
-                        logger.log('debug', 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[allowedGameWorld].serverGroupId, permsid: 'i_client_max_channel_subscriptions', permvalue: config.elevatedChannelSubscriptions, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing elevated max channel subscriptions: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing elevated max channel subscriptions: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('debug', 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
-                      }
-                      if (config.adjustSubscribePower === true) {
-                        logger.log('debug', 'Adjusting \'i_channel_subscribe_power\' enabled.')
-                        serverQueryClient.send('servergroupaddperm', {sgid: config.gameWorlds[allowedGameWorld].serverGroupId, permsid: 'i_channel_subscribe_power', permvalue: config.elevatedSubscribePower, permnegated: 0, permskip: 0}, function (error, response, rawResponse) {
-                          if (error) logger.log('error', 'Error while changing server group permission. ' + util.inspect(error))
-                          logger.log('debug', 'Response while changing default channel subscribe power: ' + util.inspect(response))
-                          logger.log('debug', 'rawResponse while changing default channel subscribe power: ' + util.inspect(rawResponse))
-                        })
-                      } else {
-                        logger.log('debug', 'Adjusting \'i_channel_subscribe_power\' disabled.')
-                      }
+                    serverGroupPermissions.elevatingPermissins(config, serverQueryClient, function (callback) {
                     })
                     callback()
                   }
