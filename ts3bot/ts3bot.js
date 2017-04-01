@@ -280,7 +280,10 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
       callback()
     },
 
-    // TODO: Need to encapsulate this!
+    // This is fetching the current matchup from the API and then adjusting server group permissions on the teamspeak
+    // server, so you don't have to do that manually. This process is done in three steps. 1. Fetch the current matchup
+    // from the API. 2. Reset all server group permission to the default values defined in the config file. And 3.
+    // elevating server group permissions for your server and your matchup partners.
     matchup: function (callback) {
       if (config.FindMatchupPartner === true) {
         matchup.getMatchups(function (error, response) {
