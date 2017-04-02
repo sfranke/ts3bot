@@ -285,12 +285,14 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
     // from the API. 2. Reset all server group permission to the default values defined in the config file. And 3.
     // elevating server group permissions for your server and your matchup partners.
     matchup: function (callback) {
+      var currentConfig
       if (config.FindMatchupPartner === true) {
         matchup.getMatchups(function (error, response) {
           logger.log('debug', 'getMatchup error object: ' + error)
           logger.log('debug', 'getMatchup response object: ' + response)
           logger.log('debug', 'Type of matchup: ' + typeof (response))
-          var currentConfig = config
+          logger.log('debug', 'Current config.json: ' + util.inspect(config))
+          currentConfig = config
           logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
           currentConfig.worldsAllowed = response
           fs.open(path.join(__dirname, './config.json'), 'w+', function (error, fd) {
@@ -323,6 +325,8 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
           })
         })
       }
+      logger.log('debug', 'Config after matchup.getMatchups: ' + util.inspect(config))
+      logger.log('debug', 'currentConfig after matchup.getMatchups: ' + util.inspect(currentConfig))
       callback()
     }
   },
