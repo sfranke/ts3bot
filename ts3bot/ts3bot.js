@@ -323,10 +323,10 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
               })
             })
           })
+          logger.log('debug', 'currentConfig after matchup.getMatchups: ' + util.inspect(currentConfig))
         })
       }
       logger.log('debug', 'Config after matchup.getMatchups: ' + util.inspect(config))
-      logger.log('debug', 'currentConfig after matchup.getMatchups: ' + util.inspect(currentConfig))
       callback()
     }
   },
