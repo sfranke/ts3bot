@@ -54,7 +54,6 @@ Moves a client to the AFK channel.
 - npm (https://www.npmjs.com/)
 - node-teamspeak (https://github.com/gwTumm/node-teamspeak)
 - mongodb (https://www.mongodb.org/)
-- PM2 (https://www.npmjs.com/package/pm2)
 - expressjs (http://expressjs.com/)
 
 ## Installation
@@ -65,4 +64,4 @@ Moves a client to the AFK channel.
 - Navigate to its root folder (*/ts3bot).
 - Use 'npm' to install all dependencies.
 - Configure './ts3bot/config.json'.
-- Start the application using PM2.
+- Start the application 'cd ts3bot && node ts3bot.js'.
