@@ -83,6 +83,11 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
       } else {
         logger.log('info', xMark + 'Adjusting \'i_channel_subscribe_power\' disabled.')
       }
+      if (config.welcomePoke === true) {
+        logger.log('info', tick + 'Welcome poke enabled.')
+      } else {
+        logger.log('info', xMark + 'Welcome poke disabled.')
+      }
       if (config.commanderServerGroup === true) {
         logger.log('info', tick + 'Assign commander server group enabled.')
       } else {
