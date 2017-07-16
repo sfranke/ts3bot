@@ -6,26 +6,21 @@ block content
       .container
         h1= title
         div#status(style='height: 35px')
-          - if (status !== undefined && status[0].pm2_env !== undefined)
+          - if (status.length === 0)
+            span.label.label-danger Offline
+          - if (status.length !== 0)
             - if (status[0].pm2_env.status === 'online')
               .row
                 .col-sm-2.text-left-xs.text-right-md
                   span.label.label-success Online
-            - if (status[0].pm2_env.status !== 'online')
-              span.label.label-danger Offline
           - if (status === undefined)
             .row
               .col-sm-6
                 p Process monitor is not running!
           - if (status !== undefined)
             div
-              - for i in status
+              - each i in status
                 hr
-                .row
-                  .col-sm-3.text-left-xs.text-right-md
-                    p PID:
-                  .col-sm-9
-                    p #{i.pid}
                 .row
                   .col-sm-3.text-left-xs.text-right-md
                     p Name:

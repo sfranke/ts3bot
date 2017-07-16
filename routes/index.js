@@ -1,18 +1,18 @@
-var express = require('express')
-var router = express.Router()
-var moment = require('moment')
-var database = require('./database')
-var util = require('util')
-var bcrypt = require('bcrypt')
-var pm2 = require('pm2')
-var async = require('async')
+const express = require('express')
+const router = express.Router()
+const moment = require('moment')
+const database = require('./database')
+const util = require('util')
+const bcrypt = require('bcrypt')
+const pm2 = require('pm2')
+const async = require('async')
 
-var status = []
+let status = []
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
   // console.log('Session:', req.session)
-  var adminUser = {
+  let adminUser = {
     'name': 'admin',
     'email': 'admin@localhost.com',
     'password': null,
@@ -37,45 +37,33 @@ router.get('/', function (req, res, next) {
     }
   })
 
-  async.series([
-    function (callback) {
-      pm2.describe('www', function (error, response) {
-        if (error) {
-          console.log('Error while fetching pm2 status.')
-          status[0] = error
-          callback(error, null)
-        }
-        if (Object.keys(response).length === 0) {
-          status = undefined
-          callback(null, status)
-        } else {
-          status[0] = response
-          callback(null, status)
-        }
-      })
-    },
-    function (callback) {
-      pm2.describe('ts3bot', function (error, response) {
-        if (error) {
-          console.log('Error while fetching pm2 status.')
-          status[1] = error
-          callback(error, null)
-        }
-        if (Object.keys(response).length === 0) {
-          status = undefined
-          callback(null, status)
-        } else {
-          status[0] = response
-          callback(null, status)
-        }
-      })
-    },
-    function (callback) {
-      serverTime()
+  getPm2ProcessStatus(function (error, status) {
+    if (error !== null) {
+      console.log('Error while fetching process status via pm2\n' + util.inspect(error))
+      res.render('index', {title: 'Status', status: status, session: req.session})
+    } else {
       res.render('index', {title: 'Status', status: status, session: req.session})
     }
-  ])
+  })
+
+  serverTime()
 })
+
+function getPm2ProcessStatus(callback) {
+  pm2.describe('ts3bot', function (error, response) {
+    if (error) {
+      console.log('Error while fetching pm2 status.' + util.inspect(error))
+      callback(error, null)
+    }
+    if (response.length === 0) {
+      callback(null, status)
+    }
+    if (response.length !== 0) {
+      status = response
+      callback(null, status)
+    }
+  })
+}
 
 function serverTime () {
   setInterval(function () {
@@ -84,7 +72,7 @@ function serverTime () {
 }
 
 function generateHashedPassword (password, callback) {
-  var hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
+  let hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
   // console.log('Hashed password:', hashedPassword)
   callback(null, hashedPassword)
 };
