@@ -22,29 +22,29 @@ block content
               - each i in status
                 hr
                 .row
-                  .col-sm-3.text-left-xs.text-right-md
+                  .col-xs-6.col-sm-6.col-md-6
                     p Name:
-                  .col-sm-9
+                  .col-sm-6
                     p #{i.name}
                 .row
-                  .col-sm-3.text-left-xs.text-right-md
+                  .col-xs-6.col-sm-6.col-md-6
                     p Env:
-                  .col-sm-9
+                  .col-sm-6
                     p #{i.pm2_env.APPLICATION_ENV}
                 .row
-                  .col-sm-3.text-left-xs.text-right-md
+                  .col-xs-6.col-sm-6.col-md-6
                     p Memory:
-                  .col-sm-9
+                  .col-sm-6
                     p=(i.monit.memory /1024)/1024 + ' MB'
                 .row
-                  .col-sm-3.text-left-xs.text-right-md
+                  .col-xs-6.col-sm-6.col-md-6
                     p Restarts:
-                  .col-sm-9
+                  .col-sm-6
                     p #{i.pm2_env.restart_time}
                 .row
-                  .col-sm-3.text-left-xs.text-right-md
+                  .col-xs-6.col-sm-6.col-md-6
                     p Started:
-                  .col-sm-9
+                  .col-sm-6
                     p=moment(i.pm2_env.pm_uptime).format("MMM Do YYYY, HH:mm:ss")
             div#status(style="height: 35px")
 
