@@ -1,7 +1,7 @@
-var express = require('express')
-var mongoClient = require('mongodb').MongoClient
-var router = express.Router()
-// var util = require('util')
+const express = require('express')
+const mongoClient = require('mongodb').MongoClient
+const router = express.Router()
+// const util = require('util')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -34,6 +34,18 @@ var getAccountinformationByName = function (name, callback) {
     if (err) console.log('Error while connecting to DB during getAccountinformationByName.')
     var collection = db.collection('clients')
     collection.find({client_nickname: name}).toArray(function (err, doc) {
+      if (err) callback(err, null)
+      callback(null, doc)
+      db.close()
+    })
+  })
+}
+
+var getAccountinformationByAccountId = function (accountId, callback) {
+  mongoClient.connect(uri, function (err, db) {
+    if (err) console.log('Error while connecting to DB during getAccountinformationByName.')
+    var collection = db.collection('clients')
+    collection.find({gw2_account_id: accountId}).toArray(function (err, doc) {
       if (err) callback(err, null)
       callback(null, doc)
       db.close()
@@ -102,7 +114,38 @@ router.post('/', function (req, res, next) {
             })
           }
         } else {
-          res.render('account', {title: 'Account Information', name: undefined, session: req.session})
+          getAccountinformationByAccountId(uid, function (error, response) {
+            if (error) console.log('Error while connecting to DB during getAccountinformationByName.')
+            if (response.length !== 0) {
+              var time = new Date(response.last_seen * 1000)
+              var user = response
+              if (user.gw2_guilds !== '' && user.gw2_guilds !== undefined) {
+                var guilds = JSON.parse(response.gw2_guilds)
+                res.render('account', {
+                  title: 'Account Information',
+                  name: response.client_nickname,
+                  time: time,
+                  apiKey: response.gw2_api_key,
+                  accountId: response.gw2_account_id,
+                  accountName: response.gw2_account_name,
+                  guilds: guilds,
+                  created: response.gw2_account_created,
+                  user: user,
+                  session: req.session
+                })
+              } else {
+                res.render('account', {
+                  title: 'Account Information',
+                  name: user[0].client_nickname,
+                  time: time,
+                  user: user,
+                  session: req.session
+                })
+              }
+            } else {
+              res.render('account', {title: 'Account Information', name: undefined, session: req.session})
+            }
+          })
         }
       })
     }
