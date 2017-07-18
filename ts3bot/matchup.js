@@ -1,25 +1,23 @@
 #!/usr/bin/node
-
-var matchup = exports
-var util = require('util')
-var https = require('https')
-var logger = require('./logger')
-var config = JSON.parse(require('fs').readFileSync('config.json'))
-// var matchupDetails = require('./matchupDetails')
+const matchup = exports
+const util = require('util')
+const https = require('https')
+const logger = require('./logger')
+const config = JSON.parse(require('fs').readFileSync('config.json'))
 
 // Function to receive the current matchup from the GW2 API.
 matchup.getMatchups = function (callback) {
   logger.log('debug', 'Output config file on matchup.getMatchups: ' + util.inspect(config))
   if (config.homeWorld !== undefined) {
-    var options = {
+    let options = {
       hostname: 'api.guildwars2.com',
       path: '/v2/wvw/matches?world=' + config.homeWorld,
       method: 'GET'
     }
     https.get(options, function (response) {
-      var body = ''
+      let body = ''
       logger.log('debug', 'GW2 Matches-API status code: ' + response.statusCode)
-      var statusCode = response.statusCode
+      let statusCode = response.statusCode
       response.on('data', function (data) {
         logger.log('debug', 'Chunked response from Matchup endpoint(API): ' + data)
         logger.log('debug', 'Chunked response from Matchup endpoint(API): ' + util.inspect(data))
@@ -29,12 +27,12 @@ matchup.getMatchups = function (callback) {
             logger.log('debug', 'Server responding -> ' + response.statusCode)
             break
           case 400:
-            var httpsRequest400 = JSON.parse(data)
+            let httpsRequest400 = JSON.parse(data)
             logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest400))
             callback(httpsRequest400, null)
             break
           case 403:
-            var httpsRequest403 = JSON.parse(data)
+            let httpsRequest403 = JSON.parse(data)
             logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest403))
             callback(httpsRequest403, null)
             break
@@ -55,8 +53,14 @@ matchup.getMatchups = function (callback) {
       response.on('end', function () {
         logger.log('debug', 'CURRENT CONFIG: ' + body)
         logger.log('debug', 'CURRENT CONFIG util inspect: ' + util.inspect(body))
-        // var currentMatch = JSON.parse(body)
-        var currentMatchupDetails = JSON.parse(body)
+        let currentMatchupDetails
+        try {
+          currentMatchupDetails = JSON.parse(body)
+        } catch (e) {
+          logger.log('debug', 'Matchup data not valid json!')
+          logger.log('error', 'Matchup data not valid json!\n' + util.inspect(e))
+          callback({'error': 'Matchup data not valid json!'}, null)
+        }
         logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
         logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
         if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {

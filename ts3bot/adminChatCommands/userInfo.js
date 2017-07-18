@@ -15,9 +15,9 @@ userInfo.command = function (client, serverQueryClient, AdminMessageArray) {
   logger.log('debug', 'arg: ' + AdminMessageArray[1])
   var uid = AdminMessageArray[1].toString()
   var gw2Commander = 'No'
+  // TODO: Before sending a query to the database validate the user input and make sure
+  // to not send unnecessary request to the database. Validate using e.g. a regex pattern.
   database.getClientByUid(uid, function (error, response) {
-    console.log('TEST-1\n' + util.inspect(error))
-    console.log('TEST-2\n' + util.inspect(response))
     if (error) logger.log('debug', 'Error during !userInfo database.getClientByUid: ' + util.inspect(error))
     logger.log('debug', 'Client found during !userInfo database.getClientByUid: ' + util.inspect(response))
     if (response === null) {
