@@ -1,13 +1,14 @@
-var showMatchup = exports
-var fs = require('fs')
-var path = require('path')
-var logger = require('../logger')
-var config = JSON.parse(require('fs').readFileSync('config.json'))
+const showMatchup = exports
+const fs = require('fs')
+const path = require('path')
+const logger = require('../logger')
+let config = JSON.parse(require('fs').readFileSync('config.json'))
 
 showMatchup.info = function () {
+  let serverNames = config.worldsAllowed.map(function(element) { return config.gameWorlds[element].serverName })
   showMatchup.issued = '!showMatchup'
   showMatchup.description = 'Show current matchup partner.'
-  showMatchup.message = 'Currently allowed world IDs: ' + config.worldsAllowed
+  showMatchup.message = 'Currently allowed worlds: ' + serverNames.toString().replace(',', ', ')
   return showMatchup
 }
 
