@@ -73,6 +73,12 @@ block content
                             |    $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.name + '</p>');
                             |  });
                             |});
+
+              - if (u.gw2_api_key !== null)
+                div.row
+                  div.col-xs-6.col-sm-6.col-md-6
+                    h2 API Key
+                    P=u.gw2_api_key.slice(-12)
             - count++;
 
   include footer
