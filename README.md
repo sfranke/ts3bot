@@ -41,10 +41,10 @@ Shutting down the system via chat command.
 >!showMatchup
 
 Show current matchup partner.
->!userInfo <Uid>
+>!userInfo \<Uid\>
 
 Basic information about a client by its Uid.
->!move <ClientID>
+>!move \<ClientID\>
 
 Moves a client to the AFK channel.
 
