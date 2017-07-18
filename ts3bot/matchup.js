@@ -56,24 +56,24 @@ matchup.getMatchups = function (callback) {
         let currentMatchupDetails
         try {
           currentMatchupDetails = JSON.parse(body)
+          logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
+          logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
+          if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
+            logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
+            callback(null, currentMatchupDetails.all_worlds.red)
+          }
+          if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
+            logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
+            callback(null, currentMatchupDetails.all_worlds.blue)
+          }
+          if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
+            logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
+            callback(null, currentMatchupDetails.all_worlds.green)
+          }
         } catch (e) {
           logger.log('debug', 'Matchup data not valid json!')
           logger.log('error', 'Matchup data not valid json!\n' + util.inspect(e))
           callback({'error': 'Matchup data not valid json!'}, null)
-        }
-        logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
-        logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
-        if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
-          logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
-          callback(null, currentMatchupDetails.all_worlds.red)
-        }
-        if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
-          logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
-          callback(null, currentMatchupDetails.all_worlds.blue)
-        }
-        if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
-          logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
-          callback(null, currentMatchupDetails.all_worlds.green)
         }
       })
       response.on('error', function (error) {
