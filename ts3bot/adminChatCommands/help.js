@@ -1,16 +1,17 @@
-var help = exports
-var logger = require('../logger')
-var fs = require('fs')
-var util = require('util')
+const help = exports
+const logger = require('../logger')
+// const fs = require('fs')
+// const util = require('util')
 
 // Require all chat commands here, so we have access.
-var help = require('./help.js')
-var leet = require('./leet.js')
-var databaseBackup = require('./databaseBackup.js')
-var kill = require('./kill.js')
-var showMatchup = require('./showMatchup.js')
-var userInfo = require('./userInfo.js')
-var move = require('./move.js')
+// const help = require('./help.js')
+// const leet = require('./leet.js')
+const databaseBackup = require('./databaseBackup.js')
+const kill = require('./kill.js')
+const showMatchup = require('./showMatchup.js')
+const userInfo = require('./userInfo.js')
+const move = require('./move.js')
+const purgeOnMe = require('./purgeOnMe.js')
 
 help.info = function () {
   help.issued = '!help'
@@ -28,6 +29,7 @@ help.command = function (client, serverQueryClient) {
                     '[b]' + kill.info().issued + '[/b]' + '\n[i]' + kill.info().description + '[/i]\n\n' +
                     '[b]' + showMatchup.info().issued + '[/b]' + '\n[i]' + showMatchup.info().description + '[/i]\n\n' +
                     '[b]' + userInfo.info().issued + '[/b]' + '\n[i]' + userInfo.info().description + '[/i]\n\n' +
+                    '[b]' + purgeOnMe.info().issued + '[/b]' + '\n[i]' + purgeOnMe.info().description + '[/i]\n\n' +
                     '[b]' + move.info().issued + '[/b]' + '\n[i]' + move.info().description + '[/i]\n\n'
   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: client.invokerid, msg: messageText})
 }

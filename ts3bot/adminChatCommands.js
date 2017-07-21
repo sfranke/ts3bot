@@ -1,10 +1,10 @@
 var adminChatCommands = exports
-var config = JSON.parse(require('fs').readFileSync('config.json'))
-var chatMessage = require('./chatMessage')
+// var config = JSON.parse(require('fs').readFileSync('config.json'))
+var ChatMessage = require('./chatMessage')
 var logger = require('./logger')
 var util = require('util')
-var exec = require('child_process').exec
-var database = require('./database')
+// var exec = require('child_process').exec
+// var database = require('./database')
 var help = require('./adminChatCommands/help.js')
 var leet = require('./adminChatCommands/leet.js')
 var databaseBackup = require('./adminChatCommands/databaseBackup.js')
@@ -12,12 +12,13 @@ var kill = require('./adminChatCommands/kill.js')
 var showMatchup = require('./adminChatCommands/showMatchup.js')
 var userInfo = require('./adminChatCommands/userInfo.js')
 var move = require('./adminChatCommands/move.js')
+var purgeOnMe = require('./adminChatCommands/purgeOnMe.js')
 
 adminChatCommands.execute = function (client, serverQueryClient) {
   console.log('client:', client)
   console.log('serverquery:', serverQueryClient)
   console.log('command:', client.msg)
-  var message = new chatMessage()
+  var message = new ChatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
   logger.log('info', 'Received message from admin: ' + '\n' + '\'' + client.msg + '\'')
   logger.log('debug', 'ResponseObject on AdminMessage: ' + util.inspect(client))
@@ -54,6 +55,10 @@ adminChatCommands.execute = function (client, serverQueryClient) {
     // Chat command responding with a simple text message.
     if (AdminMessageArray[0] === '!1337') {
       leet.command(client, serverQueryClient)
+    }
+    // Chat command to purge a certain channel from idle clients.
+    if (AdminMessageArray[0] === '!purgeOnMe') {
+      purgeOnMe.command(client, serverQueryClient, AdminMessageArray)
     }
   }
 }

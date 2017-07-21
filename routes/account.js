@@ -1,7 +1,7 @@
 const express = require('express')
 const mongoClient = require('mongodb').MongoClient
 const router = express.Router()
-const util = require('util')
+// const util = require('util')
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -62,7 +62,6 @@ router.post('/', function (req, res, next) {
       var user = []
       user.push(response)
       if (response.gw2_guilds !== '' && response.gw2_guilds !== undefined) {
-        console.log('TEST1 ' + util.inspect(response))
         var guilds = JSON.parse(response.gw2_guilds)
         res.render('account', {
           title: 'Account Information',

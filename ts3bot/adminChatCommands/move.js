@@ -2,7 +2,6 @@ var move = exports
 var logger = require('../logger')
 var util = require('util')
 var config = JSON.parse(require('fs').readFileSync('config.json'))
-var database = require('../database')
 
 move.info = function () {
   move.issued = '!move <ClientID>'
