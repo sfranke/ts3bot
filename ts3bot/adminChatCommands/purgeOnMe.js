@@ -1,7 +1,7 @@
-var purgeOnMe = exports
-var logger = require('../logger')
-var util = require('util')
-var config = JSON.parse(require('fs').readFileSync('config.json'))
+const purgeOnMe = exports
+const logger = require('../logger')
+const util = require('util')
+const config = JSON.parse(require('fs').readFileSync('config.json'))
 
 purgeOnMe.info = function () {
   purgeOnMe.issued = '!purgeOnMe [time]'
