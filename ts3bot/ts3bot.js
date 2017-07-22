@@ -29,6 +29,7 @@ var clientIdleMove = require('./clientIdleMove')
 var matchup = require('./matchup')
 var serverGroups = require('./serverGroups')
 var adminChatCommands = require('./adminChatCommands')
+var commanderChatCommands = require('./commanderChatCommands')
 var serverGroupPermissions = require('./serverGroupPermissions')
 var os = require('os')
 var config = JSON.parse(require('fs').readFileSync('config.json'));
@@ -429,8 +430,41 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
       })
     } else if (config.adminReport.indexOf(response.invokeruid) !== -1) {
       adminChatCommands.execute(response, serverQueryClient)
+    // Since we are introducing chat commands for commanders as well, we need to check for whether or not
+    // the text message is sent by a member of the commander server group. Which is defined in the config file.
     } else if (response.invokername !== config.clientName && response.msg.length !== 72) {
-      // No response to an obviously invalid key.
+      let commander = response
+      // To find out which server groups a client is a member of we need to utilize 'clientinfo'.
+      serverQueryClient.send('clientinfo', {clid: response.invokerid}, function (error, response) {
+        if (error !== undefined) {
+          logger.log('debug', 'Error while getting clientinfo: ' + util.inspect(error))
+          logger.log('error', 'Error while getting clientinfo: ' + util.inspect(error))
+        } else {
+          logger.log('debug', 'Response while getting clientinfo: ' + util.inspect(response))
+          logger.log('debug', 'Channel ID: ' + response.cid)
+          logger.log('debug', 'Server groups of current client\n' + util.inspect(response.client_servergroups))
+          // For now it is safe to assume that a commander is at least member of two (2) server groups. Firstly
+          // the server group related to the game world and secondly the commander server group. It is possible
+          // though that clients with less than two server groups try to 'chat' with the system, so we need to handle
+          // that case as well.
+          try {
+            // The list of server groups on the Teamspeak3 server is a string.
+            let stringServerGroups = response.client_servergroups.split(',')
+            let intServerGroups = stringServerGroups.map(function (serverGroupId) { return parseInt(serverGroupId, 10) })
+            logger.log('debug', 'Server groups array: ' + util.inspect(intServerGroups))
+            logger.log('debug', 'Commander server group? ' + intServerGroups.indexOf(config.commanderServerGroupId))
+            if (intServerGroups.indexOf(config.commanderServerGroupId) !== -1) {
+              logger.log('debug', 'Commander issueing a chat command. ' + response.client_unique_identifier + ' - ' + response.client_nickname + ' - ' + response.connection_client_ip)
+              commanderChatCommands.execute(commander, serverQueryClient)
+            } else {
+              logger.log('debug', 'Not a commander. ' + response.client_unique_identifier + ' - ' + response.client_nickname + ' - ' + response.connection_client_ip)
+            }
+          } catch (e) {
+            logger.log('debug', 'Resolving error within try/catch block. ' + e)
+            logger.log('debug', 'Client with less than two server groups. ' + response.client_unique_identifier + ' - ' + response.client_nickname + ' - ' + response.connection_client_ip)
+          }
+        }
+      })
     }
   })
 
