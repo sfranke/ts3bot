@@ -12,6 +12,8 @@ const showMatchup = require('./showMatchup.js')
 const userInfo = require('./userInfo.js')
 const move = require('./move.js')
 const purgeOnMe = require('./purgeOnMe.js')
+const stackOnMe = require('./stackOnMe.js')
+const experimental = require('./experimental.js')
 
 help.info = function () {
   help.issued = '!help'
@@ -30,6 +32,8 @@ help.command = function (client, serverQueryClient) {
                     '[b]' + showMatchup.info().issued + '[/b]' + '\n[i]' + showMatchup.info().description + '[/i]\n\n' +
                     '[b]' + userInfo.info().issued + '[/b]' + '\n[i]' + userInfo.info().description + '[/i]\n\n' +
                     '[b]' + purgeOnMe.info().issued + '[/b]' + '\n[i]' + purgeOnMe.info().description + '[/i]\n\n' +
+                    '[b]' + stackOnMe.info().issued + '[/b]' + '\n[i]' + stackOnMe.info().description + '[/i]\n\n' +
+                    '[b]' + experimental.info().issued + '[/b]' + '\n[i]' + experimental.info().description + '[/i]\n\n' +
                     '[b]' + move.info().issued + '[/b]' + '\n[i]' + move.info().description + '[/i]\n\n'
   serverQueryClient.send('sendtextmessage', {targetmode: '1', target: client.invokerid, msg: messageText})
 }

@@ -1,29 +1,32 @@
-var adminChatCommands = exports
-// var config = JSON.parse(require('fs').readFileSync('config.json'))
-var ChatMessage = require('./chatMessage')
-var logger = require('./logger')
-var util = require('util')
-// var exec = require('child_process').exec
-// var database = require('./database')
-var help = require('./adminChatCommands/help.js')
-var leet = require('./adminChatCommands/leet.js')
-var databaseBackup = require('./adminChatCommands/databaseBackup.js')
-var kill = require('./adminChatCommands/kill.js')
-var showMatchup = require('./adminChatCommands/showMatchup.js')
-var userInfo = require('./adminChatCommands/userInfo.js')
-var move = require('./adminChatCommands/move.js')
-var purgeOnMe = require('./adminChatCommands/purgeOnMe.js')
+const adminChatCommands = exports
+// const config = JSON.parse(require('fs').readFileSync('config.json'))
+const ChatMessage = require('./chatMessage')
+const logger = require('./logger')
+const util = require('util')
+// const exec = require('child_process').exec
+// const database = require('./database')
+const help = require('./adminChatCommands/help.js')
+const leet = require('./adminChatCommands/leet.js')
+const databaseBackup = require('./adminChatCommands/databaseBackup.js')
+const kill = require('./adminChatCommands/kill.js')
+const showMatchup = require('./adminChatCommands/showMatchup.js')
+const userInfo = require('./adminChatCommands/userInfo.js')
+const move = require('./adminChatCommands/move.js')
+const purgeOnMe = require('./adminChatCommands/purgeOnMe.js')
+const experimental = require('./adminChatCommands/experimental.js')
+const stackOnMe = require('./adminChatCommands/stackOnMe.js')
 
 adminChatCommands.execute = function (client, serverQueryClient) {
-  console.log('client:', client)
-  console.log('serverquery:', serverQueryClient)
-  console.log('command:', client.msg)
-  var message = new ChatMessage()
+  logger.log('debug', 'client:\n' + util.inspect(client))
+  logger.log('debug', 'serverquery:\n' + util.inspect(serverQueryClient))
+  logger.log('debug', 'command: ' + client.msg)
+  logger.log('info', '[Chat command]\n' + util.inspect(client))
+  let message = new ChatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
   logger.log('info', 'Received message from admin: ' + '\n' + '\'' + client.msg + '\'')
   logger.log('debug', 'ResponseObject on AdminMessage: ' + util.inspect(client))
   if (client.msg.length > 1) {
-    var AdminMessageArray = client.msg.split(' ')
+    let AdminMessageArray = client.msg.split(' ')
     logger.log('debug', 'AdminMessageArray after split() ' + AdminMessageArray)
     // Move any client to predefined AFK channel. AFK channel can be found in config file.
     if (AdminMessageArray[0] === '!move') {
@@ -59,6 +62,13 @@ adminChatCommands.execute = function (client, serverQueryClient) {
     // Chat command to purge a certain channel from idle clients.
     if (AdminMessageArray[0] === '!purgeOnMe') {
       purgeOnMe.command(client, serverQueryClient, AdminMessageArray)
+    }
+    if (AdminMessageArray[0] === '!stackOnMe') {
+      stackOnMe.command(client, serverQueryClient, AdminMessageArray)
+    }
+    // Experimental chat command.
+    if (AdminMessageArray[0] === '!experimental') {
+      experimental.command(client, serverQueryClient, AdminMessageArray)
     }
   }
 }
