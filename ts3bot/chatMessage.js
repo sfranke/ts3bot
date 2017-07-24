@@ -23,14 +23,6 @@ function chatMessage (user) {
         message = {targetmode: '1', target: user.invokerid, msg: config.checkingKey}
         logger.log('info', 'Checking valid key.. ' + '\n\t' + '\'' + user.msg + '\'')
         break
-      case 'foreignWorld':
-        message = {
-          targetmode: '1',
-          target: user.invokerid,
-          msg: config.foreignWorld + ' ' + user.accountWorldName
-        }
-        logger.log('info', 'API-key is associated with ' + user.accountWorldName)
-        break
       case 'httpError':
         message = {targetmode: '1', target: user.invokerid, msg: config.serverNotResponding}
         logger.log('info', 'Restarting in 3 seconds.')

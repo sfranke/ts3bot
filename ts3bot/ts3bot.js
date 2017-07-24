@@ -21,7 +21,7 @@ const util = require('util')
 const TeamSpeakClient = require('node-teamspeak')
 const async = require('async')
 const logger = require('./logger')
-const chatMessage = require('./chatMessage')
+const ChatMessage = require('./chatMessage')
 const api = require('./api')
 const database = require('./database')
 const databasePurge = require('./databasePurge')
@@ -32,7 +32,8 @@ const adminChatCommands = require('./adminChatCommands')
 const commanderChatCommands = require('./commanderChatCommands')
 const serverGroupPermissions = require('./serverGroupPermissions')
 const os = require('os')
-const config = JSON.parse(require('fs').readFileSync('config.json'));
+const config = JSON.parse(require('fs').readFileSync('config.json'))
+const helper = require('./helper');
 
 // Main function to create an instance of the ts3bot itself.
 (function ts3bot () {
@@ -47,58 +48,36 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
     configurationFlags: function (callback) {
       const tick = '[✔] '
       const xMark = '[✘] '
-      logger.log('info', 'Logging level is set to: ' + config.debuglevel)
-      logger.log('info', 'Home world is set to: ' + config.homeWorld)
-      if (config.MoveAfkClientsFromLobby === true) {
-        logger.log('info', tick + 'Moving AFK clients from lobby enabled.')
-      } else {
-        logger.log('info', xMark + 'Moving AFK clients from lobby disabled.')
-      }
-      if (config.PurgeClientsFromTS3Database === true) {
-        logger.log('info', tick + 'Purge old clients from TS3 database enabled.')
-      } else {
-        logger.log('info', xMark + 'Purge old clients from TS3 database disabled.')
-      }
-      if (config.FindMatchupPartner === true) {
-        logger.log('info', tick + 'Looking for match-up partner enabled.')
-      } else {
-        logger.log('info', xMark + 'Looking for match-up partner disabled.')
-      }
-      if (config.setServerGroupPermissions === true) {
-        logger.log('info', tick + 'Resetting server group permissions automatically enabled.')
-      } else {
-        logger.log('info', xMark + 'Resetting server group permissions automatically disabled.')
-      }
-      if (config.adjustJoinPower === true) {
-        logger.log('info', tick + 'Adjusting \'i_channel_join_power\' enabled.')
-      } else {
-        logger.log('info', xMark + 'Adjusting \'i_channel_join_power\' disabled.')
-      }
-      if (config.adjustChannelSubscriptions === true) {
-        logger.log('info', tick + 'Adjusting \'i_client_max_channel_subscriptions\' enabled.')
-      } else {
-        logger.log('info', xMark + 'Adjusting \'i_client_max_channel_subscriptions\' disabled.')
-      }
-      if (config.adjustSubscribePower === true) {
-        logger.log('info', tick + 'Adjusting \'i_channel_subscribe_power\' enabled.')
-      } else {
-        logger.log('info', xMark + 'Adjusting \'i_channel_subscribe_power\' disabled.')
-      }
-      if (config.welcomePoke === true) {
-        logger.log('info', tick + 'Welcome poke enabled.')
-      } else {
-        logger.log('info', xMark + 'Welcome poke disabled.')
-      }
-      if (config.commanderServerGroup === true) {
-        logger.log('info', tick + 'Assign commander server group enabled.')
-      } else {
-        logger.log('info', xMark + 'Assign commander server group disabled.')
-      }
-      if (config.accessServerGroup === true) {
-        logger.log('info', tick + 'Assign access server group enabled.')
-      } else {
-        logger.log('info', xMark + 'Assign access server group disabled.')
-      }
+      // List of all features and their status at startup.
+      const features = [
+        'debuglevel',
+        'homeWorld',
+        'MoveAfkClientsFromLobby',
+        'PurgeClientsFromTS3Database',
+        'FindMatchupPartner',
+        'MoveAfkClientsFromLobby',
+        'PurgeClientsFromTS3Database',
+        'FindMatchupPartner',
+        'setServerGroupPermissions',
+        'adjustJoinPower',
+        'adjustChannelSubscriptions',
+        'adjustSubscribePower',
+        'welcomePoke',
+        'commanderServerGroup',
+        'accessServerGroup'
+      ]
+      // Output feature status to the console at startup.
+      features.map(function (feature) {
+        if (typeof config[feature] === 'boolean') {
+          if (config[feature] === true) {
+            logger.log('info', tick + config['_' + feature + '_comment'])
+          } else {
+            logger.log('info', xMark + config['_' + feature + '_comment'])
+          }
+        } else {
+          logger.log('info', config['_' + feature + '_comment'] + ' ' + config[feature])
+        }
+      })
       callback()
     },
 
@@ -130,19 +109,11 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
           logger.log('debug', 'No log file found.')
         // If this file exists and its size is NOT 0, then prepare for rename.
         } else {
-          var year = new Date().getFullYear()
-          var month = new Date().getMonth()
-          var day = new Date().getDate()
-          var hours = new Date().getHours()
-          var minutes = new Date().getMinutes()
-          var seconds = new Date().getSeconds()
-          var milliseconds = new Date().getMilliseconds()
-          var date = year + '' + (month + 1) + '' + day + '_' + hours + '-' + minutes + '-' + seconds + '-' + milliseconds
           logger.log('info', 'Creating backup of log file.')
           // Renames a file, moving it between directories if required.
-          fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + date + '.log'), function (err, res) {
+          fs.rename(path.join(__dirname, '/log'), path.join(__dirname, '/logBackup/' + helper.dateAndTime() + '.log'), function (err) {
             if (err) logger.log('debug', 'Error while renaming log file: ' + util.inspect(err))
-            logger.log('debug', 'Renaming log file: ' + util.inspect(res))
+            logger.log('debug', 'Log file renamed.')
             callback()
           })
         }
@@ -157,21 +128,21 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
           client_login_name: config.loginName,
           client_login_password: config.clientPassword
         },
-          function (error, response, rawResponse) {
-            if (error !== undefined) {
-              logger.log('error', error)
-            } else {
-              logger.log('info', 'Login successful.')
-              callback()
-            }
-          })
+        function (error, response, rawResponse) {
+          if (error !== undefined) {
+            logger.log('error', 'Error during login. ' + util.inspect(error))
+          } else {
+            logger.log('info', 'Login successful.')
+            callback()
+          }
+        })
     },
 
     // Server selection. Server ID is provided via config file.
     selectServer: function (callback) {
       serverQueryClient.send('use', {sid: config.virtualServerId}, function (error, response, rawResponse) {
         if (error !== undefined) {
-          logger.log('error', error)
+          logger.log('error', 'Error during server selection. ' + util.inspect(error))
         } else {
           logger.log('info', 'Virtual server selected successfully.')
           callback()
@@ -188,7 +159,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
         },
         function (error, response, rawResponse) {
           if (error !== undefined) {
-            logger.log('error', error)
+            logger.log('error', 'Error during nick change. ' + util.inspect(error))
           } else {
             logger.log('info', 'Client name changed successfully.')
             callback()
@@ -206,7 +177,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
         },
         function (error, response, rawResponse) {
           if (error !== undefined) {
-            logger.log('error', error)
+            logger.log('error', 'Error during registration for private text messages. ' + util.inspect(error))
           } else {
             logger.log('info', 'Registered for private textmessages successfully.')
             callback()
@@ -224,7 +195,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
         },
         function (error, response, rawResponse) {
           if (error !== undefined) {
-            logger.log('error', error)
+            logger.log('error', 'Error during registration for server events. ' + util.inspect(error))
           } else {
             logger.log('info', 'Registered for server events successfully.')
             callback()
@@ -241,7 +212,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
         },
         function (error, response, rawResponse) {
           if (error !== undefined) {
-            logger.log('error', error)
+            logger.log('error', 'Error during registration for text server. ' + util.inspect(error))
           } else {
             logger.log('info', 'Registered for textchannel events successfully.')
             callback()
@@ -253,8 +224,8 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
     connectDatabase: function (callback) {
       database.createDatabase(function (error, response) {
         if (error !== null) {
-          logger.log('debug', 'Database error: ' + error)
-          logger.log('error', 'Could not connect to database. Aborting.')
+          logger.log('debug', 'Database error: ' + util.inspect(error))
+          logger.log('error', 'Could not connect to database. Aborting.' + util.inspect(error))
           process.exit()
         } else {
           logger.log('info', 'Connected to database.')
@@ -350,7 +321,6 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
   // Since we have a comprehensive database of API-keys, we might consider checking for any API-key first in the
   // local storage (mongodB) and secondly validate against the official API.
   serverQueryClient.on('textmessage', function (response) {
-    var message = new chatMessage()
     if (response.invokername !== config.clientName && response.msg.length === 72) {
       api.account(response, function (error, response) {
         logger.log('debug', 'api.account_callback_err: ' + util.inspect(error))
@@ -358,14 +328,8 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
         var clientObject = response
         if (error !== null) {
           logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error))
-          var message = new chatMessage()
+          var message = new ChatMessage()
           // TODO: Check error cases here!
-          // If error object contains 'accountWorldName' and 'accountWorldId' which only is set if account is associated with foreign world.
-          if (error.accountWorldName !== undefined && error.accountWorldId !== config.homeWorld) {
-            logger.log('debug', 'Foreign world on registration.\n' + util.inspect(error))
-            logger.log('info', 'Foreign world on registration.\n' + '(' + error.invokerid + ')' + error.invokername + ': ' + error.invokeruid + ' \'' + error.apiKey + '\' ' + error.accountWorldName)
-            serverQueryClient.send('sendtextmessage', message.chatSend('foreignWorld', error))
-          }
           // If server responds with https status code 400 (invalid key).
           if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
             logger.log('debug', 'Invalid key on registration.\n' + util.inspect(error))
@@ -393,7 +357,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
             logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration ' + util.inspect(error))
             logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration ' + util.inspect(response))
             if (error !== null) {
-              var message = new chatMessage()
+              var message = new ChatMessage()
               serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', clientObject))
             } else {
               logger.log('info', 'Added account information to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid)
@@ -525,10 +489,10 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
                 })
                 if (config.welcomePoke === true) {
                   logger.log('debug', 'Sending welcome poke.')
-                  var existingWelcomePoke = new chatMessage()
+                  var existingWelcomePoke = new ChatMessage()
                   serverQueryClient.send('clientpoke', existingWelcomePoke.chatSend('welcomePokeMsg', clientObject))
                 }
-                var existingClientWelcomeMessage = new chatMessage()
+                var existingClientWelcomeMessage = new ChatMessage()
                 serverQueryClient.send('sendtextmessage', existingClientWelcomeMessage.chatSend('welcome', clientObject))
                 logger.log('info', 'Sent welcome message to existing user without API-key.')
                 serverGroups.purgeClient(serverQueryClient, clientObject, function (error, response) {
@@ -552,10 +516,10 @@ const config = JSON.parse(require('fs').readFileSync('config.json'));
               logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
               if (config.welcomePoke === true) {
                 logger.log('debug', 'Sending welcome poke.')
-                var newUserWelcomePoke = new chatMessage()
+                var newUserWelcomePoke = new ChatMessage()
                 serverQueryClient.send('clientpoke', newUserWelcomePoke.chatSend('welcomePokeMsg', clientObject))
               }
-              var newClientWelcomeMessage = new chatMessage()
+              var newClientWelcomeMessage = new ChatMessage()
               serverQueryClient.send('sendtextmessage', newClientWelcomeMessage.chatSend('welcome', clientObject))
               logger.log('info', 'Sent welcome message to new user for the first time.')
             }
