@@ -1,14 +1,14 @@
 #!/usr/bin/node
 
-var config = JSON.parse(require('fs').readFileSync('config.json'))
-var util = require('util')
-var logger = require('./logger')
-var events = require('events')
+const config = JSON.parse(require('fs').readFileSync('config.json'))
+const util = require('util')
+const logger = require('./logger')
+const events = require('events')
 
 function chatMessage (user) {
   chatMessage.prototype.chatSend = function (option, user) {
-    var opt = option
-    var message = ''
+    let opt = option
+    let message = ''
     switch (opt) {
       case 'welcome':
         message = {targetmode: '1', target: user.clid, msg: config.welcomeMessage}

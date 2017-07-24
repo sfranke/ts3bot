@@ -15,29 +15,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-var fs = require('fs')
-var path = require('path')
-var util = require('util')
-var TeamSpeakClient = require('node-teamspeak')
-var async = require('async')
-var logger = require('./logger')
-var chatMessage = require('./chatMessage')
-var api = require('./api')
-var database = require('./database')
-var databasePurge = require('./databasePurge')
-var clientIdleMove = require('./clientIdleMove')
-var matchup = require('./matchup')
-var serverGroups = require('./serverGroups')
-var adminChatCommands = require('./adminChatCommands')
-var commanderChatCommands = require('./commanderChatCommands')
-var serverGroupPermissions = require('./serverGroupPermissions')
-var os = require('os')
-var config = JSON.parse(require('fs').readFileSync('config.json'));
+const fs = require('fs')
+const path = require('path')
+const util = require('util')
+const TeamSpeakClient = require('node-teamspeak')
+const async = require('async')
+const logger = require('./logger')
+const chatMessage = require('./chatMessage')
+const api = require('./api')
+const database = require('./database')
+const databasePurge = require('./databasePurge')
+const clientIdleMove = require('./clientIdleMove')
+const matchup = require('./matchup')
+const serverGroups = require('./serverGroups')
+const adminChatCommands = require('./adminChatCommands')
+const commanderChatCommands = require('./commanderChatCommands')
+const serverGroupPermissions = require('./serverGroupPermissions')
+const os = require('os')
+const config = JSON.parse(require('fs').readFileSync('config.json'));
 
 // Main function to create an instance of the ts3bot itself.
 (function ts3bot () {
   // Configuration of the teamspeak server query client.
-  var serverQueryClient = new TeamSpeakClient(config.host, config.port)
+  let serverQueryClient = new TeamSpeakClient(config.host, config.port)
 
   // Start-up routine of the the bot. Connecting  to all services to run properly.
   // All routines that should be run on start-up should be implemented here.
@@ -45,8 +45,8 @@ var config = JSON.parse(require('fs').readFileSync('config.json'));
 
     // Configuration options and falgs should be listed here.
     configurationFlags: function (callback) {
-      var tick = '[✔] '
-      var xMark = '[✘] '
+      const tick = '[✔] '
+      const xMark = '[✘] '
       logger.log('info', 'Logging level is set to: ' + config.debuglevel)
       logger.log('info', 'Home world is set to: ' + config.homeWorld)
       if (config.MoveAfkClientsFromLobby === true) {
