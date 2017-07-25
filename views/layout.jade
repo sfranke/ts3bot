@@ -126,6 +126,10 @@ html(lang='en')
               li
                 a(href='/users') Users
             | 
+            - if (session != undefined && session.user != undefined)
+              li
+                a(href='/log') Log
+            | 
             li
               a(href='/about') About
 

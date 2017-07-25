@@ -1,53 +1,61 @@
-var express = require('express')
-var router = express.Router()
-var fs = require('fs')
+const express = require('express')
+const router = express.Router()
+const fs = require('fs')
 
-var tempLogArray = []
+let tempLogArray = []
 
 router.get('/', function (req, res, next) {
   if (!req.session.user) {
     return res.redirect('/')
   }
-  if (req.session.user.permission === 'admin') {
-    return res.redirect('/')
+  // TODO: This should check if this user is known from wihtin our own database.
+  if (req.session !== undefined && req.session.user !== undefined) {
+    // return res.redirect('/')
+    fs.access('./ts3bot/log', function (error, response) {
+      if (error) {
+        console.log(error)
+        res.render('log', {title: 'Log', log: ['No log file found!'], session: req.session})
+      } else {
+        (function getLog () {
+          let logArray = []
+          let rl = require('readline').createInterface({
+            input: require('fs').createReadStream('./ts3bot/log'),
+            terminal: false
+          })
+          rl.on('line', function (line) {
+            if (/\[Chat/.test(line)) {
+              logArray.push(line)
+            }
+          })
+          rl.on('close', function () {
+            res.render('log', {title: 'Log', log: logArray, session: req.session})
+            tempLogArray = logArray
+            updateLog()
+          })
+        })()
+      }
+    })
   } else {
     return res.redirect('/')
   }
-  // fs.access('./ts3bot/log', function (error, response) {
-  //   if (error) {
-  //     console.log(error)
-  //     res.render('log', {title: 'Log', log: ['No log file found!']})
-  //   } else {
-  //     (function getLog () {
-  //       var logArray = []
-  //       var rl = require('readline').createInterface({
-  //         input: require('fs').createReadStream('./ts3bot/log'),
-  //         terminal: false
-  //       })
-  //       rl.on('line', function (line) {
-  //         logArray.push(line)
-  //       })
-  //       rl.on('close', function () {
-  //         res.render('log', {title: 'Log', log: logArray})
-  //         tempLogArray = logArray
-  //         updateLog()
-  //       })
-  //     })()
-  //   }
-  // })
 })
 
 function updateLog () {
-  var fileWatcher = fs.watch('./ts3bot/log', function (event, file) {
+  let fileWatcher = fs.watch('./ts3bot/log', function (event, file) {
+    if (event === 'error') {
+      console.log('Error while accessing the logfile. ' + event)
+    }
     if (event === 'change') {
-      var rl = require('readline').createInterface({
+      let rl = require('readline').createInterface({
         input: require('fs').createReadStream('./ts3bot/log'),
         terminal: false
       })
       rl.on('line', function (line) {
-        if (tempLogArray.indexOf(line) === -1) {
-          io.emit('newLine', line)
-          tempLogArray.push(line)
+        if (/\[Chat/.test(line)) {
+          if (tempLogArray.indexOf(line) === -1) {
+            io.emit('newLine', line)
+            tempLogArray.push(line)
+          }
         }
       })
     }

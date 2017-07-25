@@ -6,10 +6,10 @@ const helpCommander = require('./adminChatCommands/helpCommander.js')
 const purgeOnMe = require('./adminChatCommands/purgeOnMe.js')
 
 commanderChatCommands.execute = function (client, serverQueryClient) {
-  // logger.log('debug', 'client:\n' + util.inspect(client))
   logger.log('debug', 'serverquery:\n' + util.inspect(serverQueryClient))
+  logger.log('debug', 'client:\n' + util.inspect(client))
   logger.log('debug', 'command: ' + client.msg)
-  logger.log('info', '[Chat command Commander]\n' + util.inspect(client))
+  logger.log('info', '[Chat command Commander] ' + client.invokeruid + ' ' + client.invokername + ' ' + client.msg)
   let message = new ChatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
   logger.log('info', 'Received message from commander: ' + '\n' + '\'' + client.msg + '\'')
