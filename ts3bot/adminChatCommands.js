@@ -63,7 +63,7 @@ adminChatCommands.execute = function (client, serverQueryClient) {
     if (/^!purg/.test(AdminMessageArray[0].toLowerCase())) {
       purgeOnMe.command(client, serverQueryClient, AdminMessageArray)
     }
-    if (AdminMessageArray[0] === '!stackOnMe') {
+    if (/^!stack/.test(AdminMessageArray[0].toLowerCase())) {
       stackOnMe.command(client, serverQueryClient, AdminMessageArray)
     }
     // Experimental chat command.
