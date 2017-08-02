@@ -21,7 +21,7 @@ commanderChatCommands.execute = function (client, serverQueryClient) {
       helpCommander.command(client, serverQueryClient)
     }
     // Chat command to purge a certain channel from idle clients.
-    if (AdminMessageArray[0] === '!purgeOnMe') {
+    if (/^!purg/.test(AdminMessageArray[0].toLowerCase())) {
       purgeOnMe.command(client, serverQueryClient, AdminMessageArray)
     }
   }
