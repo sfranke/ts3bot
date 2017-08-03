@@ -58,7 +58,7 @@ function serverTime () {
   }, 1000)
 }
 
-memory()
+appStatus()
 
 function getPm2ProcessStatus (callback) {
   pm2.describe('ts3bot', function (error, response) {
@@ -76,13 +76,13 @@ function getPm2ProcessStatus (callback) {
   })
 }
 
-function memory () {
+function appStatus () {
   setInterval(function () {
     getPm2ProcessStatus(function (error, status) {
       if (error !== null) {
         console.log('Error while fetching process status via pm2\n' + util.inspect(error))
       } else {
-        io.emit('memory', status)
+        io.emit('appStatus', status)
       }
     })
   }, 1000)

@@ -5,14 +5,8 @@ block content
     .jumbotron
       .container
         h1= title
-        div#status(style='height: 35px')
-          - if (status.length === 0)
+        - if (status.length === 0)
             span.label.label-danger Offline
-          - if (status.length !== 0)
-            - if (status[0].pm2_env.status === 'online')
-              .row
-                .col-sm-2.text-left-xs.text-right-md
-                  span.label.label-success Online
           - if (status === undefined)
             .row
               .col-sm-6
@@ -37,28 +31,40 @@ block content
                   .col-sm-6
                     p#memory=(i.monit.memory /1024)/1024 + ' MB'
                     script
-                        |$(function () {
-                        |  socket.on('memory', function (data) {
-                        |    $('#memory').replaceWith('<p id="memory"> ' + (data[0].monit.memory /1024)/1024 + ' MB' + '</p>');
-                        |  });
-                        |});
+                      |$(function () {
+                      |  socket.on('appStatus', function (data) {
+                      |    $('#memory').replaceWith('<p id="memory"> ' + (data[0].monit.memory /1024)/1024 + ' MB' + '</p>');
+                      |  });
+                      |});
 
                 .row
                   .col-xs-6.col-sm-6.col-md-6
                     p Restarts:
                   .col-sm-6
-                    p #{i.pm2_env.restart_time}
+                    p#restarts #{i.pm2_env.restart_time}
+                    script
+                      |$(function () {
+                      |  socket.on('appStatus', function (data) {
+                      |    $('#restarts').replaceWith('<p id="restarts"> ' + data[0].pm2_env.restart_time + '</p>');
+                      |  });
+                      |});
+
                 .row
                   .col-xs-6.col-sm-6.col-md-6
                     p Started:
                   .col-sm-6
-                    p=moment(i.pm2_env.pm_uptime).format("MMM Do YYYY, HH:mm:ss")
+                    p#started=moment(i.pm2_env.pm_uptime).format("MMM Do YYYY, HH:mm:ss")
+                    script
+                      |$(function () {
+                      |  socket.on('appStatus', function (data) {
+                      |    $('#started').replaceWith('<p id="started"> ' + moment(data[0].pm2_env.pm_uptime).format("MMM Do YYYY, HH:mm:ss") + '</p>');
+                      |  });
+                      |});
+
                 .row
                   .col-xs-12.col-sm-12.col-md-12
                     canvas#lineChart(width='100%', height='20%')
                     script(src='js/Chart.js')
-                    script(src='js/main.js')
-            div#status(style="height: 35px")
-            
+                    script(src='js/charts.js')
 
   include footer

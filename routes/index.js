@@ -4,7 +4,7 @@ const database = require('./database')
 const util = require('util')
 const bcrypt = require('bcrypt')
 const pm2 = require('pm2')
-// const async = require('async')
+const moment = require('moment')
 
 let status = []
 
@@ -44,9 +44,6 @@ router.get('/', function (req, res, next) {
       res.render('index', {title: 'Status', status: status, session: req.session})
     }
   })
-
-  // serverTime()
-  // memory()
 })
 
 function getPm2ProcessStatus (callback) {
