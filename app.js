@@ -6,6 +6,11 @@ var bodyParser = require('body-parser')
 var session = require('express-session')
 var flash = require('connect-flash')
 
+const moment = require('moment')
+const pm2 = require('pm2')
+const util = require('util')
+let status = []
+
 var routes = require('./routes/index')
 var about = require('./routes/about')
 var account = require('./routes/account')
@@ -45,6 +50,43 @@ app.use('/log', log)
 app.locals.moment = require('moment')
 app.locals.registerState = false
 
+serverTime()
+
+function serverTime () {
+  setInterval(function () {
+    io.emit('serverTime', moment(new Date().getTime()).format('HH:mm:ss'))
+  }, 1000)
+}
+
+memory()
+
+function getPm2ProcessStatus (callback) {
+  pm2.describe('ts3bot', function (error, response) {
+    if (error) {
+      console.log('Error while fetching pm2 status.' + util.inspect(error))
+      callback(error, null)
+    }
+    if (response.length === 0) {
+      callback(null, status)
+    }
+    if (response.length !== 0) {
+      status = response
+      callback(null, status)
+    }
+  })
+}
+
+function memory () {
+  setInterval(function () {
+    getPm2ProcessStatus(function (error, status) {
+      if (error !== null) {
+        console.log('Error while fetching process status via pm2\n' + util.inspect(error))
+      } else {
+        io.emit('memory', status)
+      }
+    })
+  }, 1000)
+}
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   var err = new Error('Not Found')
