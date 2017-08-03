@@ -1,11 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const moment = require('moment')
 const database = require('./database')
 const util = require('util')
 const bcrypt = require('bcrypt')
 const pm2 = require('pm2')
-const async = require('async')
+// const async = require('async')
 
 let status = []
 
@@ -46,10 +45,11 @@ router.get('/', function (req, res, next) {
     }
   })
 
-  serverTime()
+  // serverTime()
+  // memory()
 })
 
-function getPm2ProcessStatus(callback) {
+function getPm2ProcessStatus (callback) {
   pm2.describe('ts3bot', function (error, response) {
     if (error) {
       console.log('Error while fetching pm2 status.' + util.inspect(error))
@@ -65,6 +65,18 @@ function getPm2ProcessStatus(callback) {
   })
 }
 
+function memory () {
+  setInterval(function () {
+    getPm2ProcessStatus(function (error, status) {
+      if (error !== null) {
+        console.log('Error while fetching process status via pm2\n' + util.inspect(error))
+      } else {
+        io.emit('memory', status)
+      }
+    })
+  }, 1000)
+}
+
 function serverTime () {
   setInterval(function () {
     io.emit('serverTime', moment(new Date().getTime()).format('HH:mm:ss'))
@@ -75,6 +87,6 @@ function generateHashedPassword (password, callback) {
   let hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
   // console.log('Hashed password:', hashedPassword)
   callback(null, hashedPassword)
-};
+}
 
 module.exports = router
