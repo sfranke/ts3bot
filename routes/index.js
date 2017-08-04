@@ -62,24 +62,6 @@ function getPm2ProcessStatus (callback) {
   })
 }
 
-function memory () {
-  setInterval(function () {
-    getPm2ProcessStatus(function (error, status) {
-      if (error !== null) {
-        console.log('Error while fetching process status via pm2\n' + util.inspect(error))
-      } else {
-        io.emit('memory', status)
-      }
-    })
-  }, 1000)
-}
-
-function serverTime () {
-  setInterval(function () {
-    io.emit('serverTime', moment(new Date().getTime()).format('HH:mm:ss'))
-  }, 1000)
-}
-
 function generateHashedPassword (password, callback) {
   let hashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(9))
   // console.log('Hashed password:', hashedPassword)
