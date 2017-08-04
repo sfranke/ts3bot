@@ -37,7 +37,7 @@ serverGroups.purgeClient = function (serverQueryClient, clientObject) {
         if (error !== null) {
           // Handle API errors here!
           logger.log('debug', 'API error !== null')
-          if (error.apiServerStatus === 400) {
+          if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
             logger.log('debug', 'Invalid API, confirmed by API. Removing all server groups!')
             clientObject.commander = null
             clientObject.access = null
