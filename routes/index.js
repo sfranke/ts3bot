@@ -4,7 +4,6 @@ const database = require('./database')
 const util = require('util')
 const bcrypt = require('bcrypt')
 const pm2 = require('pm2')
-const moment = require('moment')
 
 let status = []
 
