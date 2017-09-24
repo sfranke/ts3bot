@@ -16,57 +16,36 @@ matchup.getMatchups = function (callback) {
     }
     https.get(options, function (response) {
       let body = ''
-      logger.log('debug', 'GW2 Matches-API status code: ' + response.statusCode)
-      let statusCode = response.statusCode
       response.on('data', function (data) {
         logger.log('debug', 'Chunked response from Matchup endpoint(API): ' + data)
         logger.log('debug', 'Chunked response from Matchup endpoint(API): ' + util.inspect(data))
-        body += data
-        switch (statusCode) {
-          case 200:
-            logger.log('debug', 'Server responding -> ' + response.statusCode)
-            break
-          case 400:
-            let httpsRequest400 = JSON.parse(data)
-            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest400))
-            callback(httpsRequest400, null)
-            break
-          case 403:
-            let httpsRequest403 = JSON.parse(data)
-            logger.log('error', 'Server responding -> ' + response.statusCode + ': ' + util.inspect(httpsRequest403))
-            callback(httpsRequest403, null)
-            break
-          case 502:
-            logger.log('error', 'Server not responding -> ' + statusCode)
-            callback(statusCode, null)
-            break
-          case 503:
-            logger.log('error', 'Server busy -> ' + statusCode)
-            callback(statusCode, null)
-            break
-          default:
-            logger.log('error', 'Unknown error occured while searching match-up partner.')
-            callback(statusCode, null)
-            break
+        if (response.statusCode && response.statusCode === 200) {
+          logger.log('debug', 'GW2 Matches-API status code: ' + response.statusCode)
+          body += data
+        } else { // other as ok
+          logger.log('warning', 'Sever respondes with: ' + response.statusCode)
         }
       })
       response.on('end', function () {
         logger.log('debug', 'CURRENT CONFIG: ' + body)
         logger.log('debug', 'CURRENT CONFIG util inspect: ' + util.inspect(body))
         let currentMatchupDetails
+        logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
+        logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
         try {
           currentMatchupDetails = JSON.parse(body)
-          logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
-          logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
           if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
+            console.log('red')
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
             callback(null, currentMatchupDetails.all_worlds.red)
           }
           if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
+            console.log('blue')
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
             callback(null, currentMatchupDetails.all_worlds.blue)
           }
           if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
+            console.log('green')
             logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
             callback(null, currentMatchupDetails.all_worlds.green)
           }
@@ -77,8 +56,8 @@ matchup.getMatchups = function (callback) {
         }
       })
       response.on('error', function (error) {
-        if (error) logger.log('error', 'While fetching matches')
-        logger.log('error', 'While calling \'api.guildwars.com/v2/matches\'')
+        if (error) logger.log('error', 'While fetching matches' + util.inspect(error))
+        logger.log('error', 'While calling \'api.guildwars.com/v2/matches\'' + util.inspect(error))
       })
     })
   }

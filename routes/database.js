@@ -69,7 +69,6 @@ database.deleteUser = function (userId, callback) {
 database.updateUserPermission = function (user, permission, callback) {
   console.log('UpdateUserPermission database: ' + util.inspect(user) + ' --> ' + permission)
   var _id = ObjectID(user._id)
-  var permission = permission
   console.log('TEST PERMISSION: ' + permission)
   mongoClient.connect(uri, function (err, db) {
     if (err) console.log('error', 'While connecting to DB during updateUser.')

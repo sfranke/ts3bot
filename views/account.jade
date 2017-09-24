@@ -60,6 +60,7 @@ block content
                     h2 Created
                       p=u.gw2_account_created
                   - if (guilds !== undefined)
+                    console.log(guilds)
                     div.col-xs-6.col-sm-6.col-md-6
                       h2 Guilds
                       p#guilds
@@ -70,7 +71,9 @@ block content
                           script
                             |$(document).ready(function(){
                             |  $.getJSON('/guild/#{i}', function(d) {
-                            |    $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.name + '</p>');
+                            |    if (d.tag !== undefined) {
+                            |      $('##{i}').replaceWith('<p>' + '[' + d.tag + '] ' + d.name + '</p>');
+                            |    }
                             |  });
                             |});
 

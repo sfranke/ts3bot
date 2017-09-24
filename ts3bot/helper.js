@@ -1,4 +1,5 @@
 const helper = exports
+const util = require('util')
 
 // Function to move idle client from cleanChannel(lobby) to config.afkChannel(AFK-Channel).
 helper.dateAndTime = function () {
@@ -30,4 +31,12 @@ helper.dateAndTime = function () {
   }
   now = yyyy + mm + dd + '_' + hours + '-' + minutes + '-' + seconds + '-' + milliseconds
   return now
+}
+helper.getConfig = function () {
+  try {
+    const config = JSON.parse(require('fs').readFileSync('config.json'))
+    return config
+  } catch (e) {
+    console.log('Failed to load config. ' + util.inspect(e) + '\n')
+  }
 }

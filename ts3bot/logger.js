@@ -1,7 +1,8 @@
-var logger = exports
-var config = JSON.parse(require('fs').readFileSync('config.json'))
-var path = require('path')
-var fs = require('fs')
+const logger = exports
+const helper = require('./helper.js')
+const config = helper.getConfig()
+const path = require('path')
+const fs = require('fs')
 
 logger.debuglevel = config.debuglevel
 fs.openSync(path.join(__dirname, '/log'), 'a')

@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/local/bin/node
 
 // Copyright (C) 2016  sfr4nke
 //
@@ -37,6 +37,9 @@ const helper = require('./helper');
 
 // Main function to create an instance of the ts3bot itself.
 (function ts3bot () {
+  // process.on('SIGINT', function () {
+  //   console.log('Received SIGINT.  Control-C pressed.')
+  // })
   // Configuration of the teamspeak server query client.
   let serverQueryClient = new TeamSpeakClient(config.host, config.port)
 
@@ -240,7 +243,10 @@ const helper = require('./helper');
     // why the host of this program should be whitelisted for the teamspeak server.
     databasePurge: function (callback) {
       if (config.PurgeClientsFromTS3Database === true) {
-        databasePurge.databaseCleanup(serverQueryClient)
+        setInterval(() => {
+          databasePurge.databaseCleanup(serverQueryClient)
+        }
+        , config.dbCleanupInterval)
       } else {
         logger.log('debug', 'Purge old clients from TS3 database disabled.')
       }
@@ -274,32 +280,41 @@ const helper = require('./helper');
           if (response !== null) {
             currentConfig.worldsAllowed = response
             fs.open(path.join(__dirname, './config.json'), 'w+', function (error, fd) {
-              logger.log('debug', 'File descriptor error: ' + error)
+              logger.log('debug', 'File descriptor error: ' + util.inspect(error))
               logger.log('debug', 'File descriptor: ' + fd)
+              // TODO: Get size here maybe? Might look into more specific information.
               if (error) logger.log('debug', 'Error while opening config file. ' + error)
-              fs.writeFile('./config.json', JSON.stringify(currentConfig, null, 4), function (error) {
-                if (error) logger.log('error', 'Error while saving config.' + error)
-                fs.appendFile('./config.json', os.EOL, function (error) {
-                  if (error) logger.log('error', 'Error while adding EOL to config.' + error)
-                  logger.log('info', 'Configuration saved successfully')
-                  if (config.setServerGroupPermissions === true) {
-                    async.series({
-                      resettingPermissions: function (callback) {
-                        serverGroupPermissions.resettingPermissions(config, serverQueryClient, function (callback) {
-                        })
-                        callback()
-                      },
-                      elevatingPermissions: function (callback) {
-                        serverGroupPermissions.elevatingPermissins(config, serverQueryClient, function (callback) {
-                        })
-                        callback()
-                      }
-                    }, function (err, results) {
-                      if (err) logger.log('error', 'Error while changin server group permissions. ' + util.inspect(err))
-                    })
-                  }
+              // This is where I might loose my config file!! Try/Catch this thing please to ensure this can NOT fail at all!
+              // TODO: Refactor so this part can not fail! Try/Catch the JSON parsing before even considering to
+              // write to a file on the hard drive.
+              try {
+                const conf = JSON.stringify(currentConfig, null, 4)
+                fs.writeFile('./config.json', conf, function (error) {
+                  if (error) logger.log('error', 'Error while saving config.' + error)
+                  fs.appendFile('./config.json', os.EOL, function (error) {
+                    if (error) logger.log('error', 'Error while adding EOL to config.' + error)
+                    logger.log('info', 'Configuration saved successfully')
+                    if (config.setServerGroupPermissions === true) {
+                      async.series({
+                        resettingPermissions: function (callback) {
+                          serverGroupPermissions.resettingPermissions(config, serverQueryClient, function (callback) {
+                          })
+                          callback()
+                        },
+                        elevatingPermissions: function (callback) {
+                          serverGroupPermissions.elevatingPermissins(config, serverQueryClient, function (callback) {
+                          })
+                          callback()
+                        }
+                      }, function (err, results) {
+                        if (err) logger.log('error', 'Error while changin server group permissions. ' + util.inspect(err))
+                      })
+                    }
+                  })
                 })
-              })
+              } catch (e) {
+                logger.log('debug', 'No valid JSON in matchup routine. ' + util.inspect(e))
+              }
             })
             logger.log('debug', 'currentConfig after matchup.getMatchups: ' + util.inspect(currentConfig))
           }

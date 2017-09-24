@@ -16,6 +16,7 @@ api.account = function (userObject, callback) {
       Authorization: 'Bearer ' + token
     }
   }
+  // TODO: Please simplify.
   https.get(options, function (response) {
     response.on('data', function (data) {
       switch (response.statusCode) {

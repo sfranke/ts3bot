@@ -9,6 +9,7 @@ function chatMessage (user) {
   chatMessage.prototype.chatSend = function (option, user) {
     let opt = option
     let message = ''
+    // TODO: Please simplify. Cases could have the same name as in the config file.
     switch (opt) {
       case 'welcome':
         message = {targetmode: '1', target: user.clid, msg: config.welcomeMessage}

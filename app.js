@@ -36,6 +36,11 @@ app.use(cookieParser())
 app.use(session({resave: true, saveUninitialized: true, secret: 'ljR4sdf076asdGEewXxklv'}))
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(flash())
+// allow CORS:
+app.use(function (req, res, next) {
+  res.setHeader('X-Powered-By', 'Impulse.2750')
+  next()
+})
 
 app.use('/', routes)
 app.use('/about', about)

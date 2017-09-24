@@ -12,9 +12,9 @@
     "_host_comment": "Server adress you want to connect to, default: 'localhost'.",
     "port": "",
     "_port_comment": "Server query port, default: '10011'",
-    "loginName": "likasd9",
+    "loginName": "bottu",
     "_loginName_comment": "Server query login name.",
-    "clientPassword": "nfPse73Y",
+    "clientPassword": "RwOCKits",
     "_clientPassword_comment": "Server query password",
     "virtualServerId": "1",
     "_virtualServerId_comment": "Virtual server id you want to issue your commands.",
@@ -22,7 +22,8 @@
     "_clientName_comment": "Client name that is visible to other clients.",
     "adminReport": [
         "rzi03/I6Z6MPnSMiRdy4pIlOxz8=",
-        "FkNLFAomYW4f88N9rXI2V3skqUI="
+        "FkNLFAomYW4f88N9rXI2V3skqUI=",
+        "Qs2ZqXrLQnrDgk2d+OcQLF0czk0="
     ],
     "_adminReport_comment": "The admin client that gets informed about the database cleanup routine.",
     "MoveAfkClientsFromLobby": true,
@@ -35,7 +36,8 @@
     "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
     "PurgeClientsFromTS3Database": true,
     "_PurgeClientsFromTS3Database_comment": "Remove incative clients from the Teamspeak3 database.",
-    "FindMatchupPartner": false,
+    "dbCleanupInterval": 64800000,
+    "FindMatchupPartner": true,
     "_FindMatchupPartner_comment": "Update match-up partner.",
     "setServerGroupPermissions": true,
     "_setServerGroupPermissions_comment": "Update server group permissions.",
