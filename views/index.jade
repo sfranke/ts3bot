@@ -29,11 +29,11 @@ block content
                   .col-xs-6.col-sm-6.col-md-6
                     p Memory:
                   .col-sm-6
-                    p#memory=(i.monit.memory /1024)/1024 + ' MB'
+                    p#memory=Math.floor((i.monit.memory /1024)/1024) + ' MB'
                     script
                       |$(function () {
                       |  socket.on('appStatus', function (data) {
-                      |    $('#memory').replaceWith('<p id="memory"> ' + (data[0].monit.memory /1024)/1024 + ' MB' + '</p>');
+                      |    $('#memory').replaceWith('<p id="memory"> ' + Math.floor((data[0].monit.memory /1024)/1024) + ' MB' + '</p>');
                       |  });
                       |});
 
