@@ -268,7 +268,7 @@ const helper = require('./helper');
     // from the API. 2. Reset all server group permission to the default values defined in the config file. And 3.
     // elevating server group permissions for your server and your matchup partners.
     matchup: function (callback) {
-      var currentConfig
+      let currentConfig
       if (config.FindMatchupPartner === true) {
         matchup.getMatchups(function (error, response) {
           logger.log('debug', 'getMatchup error object: ' + error)
@@ -340,10 +340,10 @@ const helper = require('./helper');
       api.account(response, function (error, response) {
         logger.log('debug', 'api.account_callback_err: ' + util.inspect(error))
         logger.log('debug', 'api.account_callback_res:\n' + util.inspect(response))
-        var clientObject = response
+        let clientObject = response
         if (error !== null) {
           logger.log('debug', 'Error while checking API-key.\n' + util.inspect(error))
-          var message = new ChatMessage()
+          let message = new ChatMessage()
           // TODO: Check error cases here!
           // If server responds with https status code 400 (invalid key).
           if (error.apiServerStatus === 400 && error.apiServerStatusReason === 'invalid key') {
@@ -372,7 +372,7 @@ const helper = require('./helper');
             logger.log('debug', 'Error of \'database.updateAccountInformation()\' on registration ' + util.inspect(error))
             logger.log('debug', 'Response of \'database.updateAccountInformation()\' on registration ' + util.inspect(response))
             if (error !== null) {
-              var message = new ChatMessage()
+              let message = new ChatMessage()
               serverQueryClient.send('sendtextmessage', message.chatSend('alreadyInUse', clientObject))
             } else {
               logger.log('info', 'Added account information to database.\n' + '(' + clientObject.invokerid + ')' + clientObject.invokername + ': ' + clientObject.invokeruid)
@@ -447,13 +447,15 @@ const helper = require('./helper');
     }
   })
 
+  // TODO: I lost permissions when the system was offline and unable to check my data. I might be wrong and the
+  // account I used was a blank one. please doule check!
   // Following the business logic for the event of a client entering the server. The clients data in the database is
   // checked and depending on the result, new user or registered user we will have two different strategies. New users
   // will be welcomed and asked to register. While a registered user's data will be revalidated. If the data is still
   // valid that user will be ignored. If changes occured, like a changes in the associated game world the registration
   // system will revoke/permitt server groups accordingly.
   serverQueryClient.on('cliententerview', function (response) {
-    var clientObject = response
+    let clientObject = response
     clientObject.invokername = clientObject.client_nickname
     clientObject.invokeruid = clientObject.client_unique_identifier
     clientObject.invokerdbid = clientObject.client_database_id
@@ -504,10 +506,10 @@ const helper = require('./helper');
                 })
                 if (config.welcomePoke === true) {
                   logger.log('debug', 'Sending welcome poke.')
-                  var existingWelcomePoke = new ChatMessage()
+                  let existingWelcomePoke = new ChatMessage()
                   serverQueryClient.send('clientpoke', existingWelcomePoke.chatSend('welcomePokeMsg', clientObject))
                 }
-                var existingClientWelcomeMessage = new ChatMessage()
+                let existingClientWelcomeMessage = new ChatMessage()
                 serverQueryClient.send('sendtextmessage', existingClientWelcomeMessage.chatSend('welcome', clientObject))
                 logger.log('info', 'Sent welcome message to existing user without API-key.')
                 serverGroups.purgeClient(serverQueryClient, clientObject, function (error, response) {
@@ -531,10 +533,10 @@ const helper = require('./helper');
               logger.log('info', 'Set new user for: ' + clientObject.client_nickname)
               if (config.welcomePoke === true) {
                 logger.log('debug', 'Sending welcome poke.')
-                var newUserWelcomePoke = new ChatMessage()
+                let newUserWelcomePoke = new ChatMessage()
                 serverQueryClient.send('clientpoke', newUserWelcomePoke.chatSend('welcomePokeMsg', clientObject))
               }
-              var newClientWelcomeMessage = new ChatMessage()
+              let newClientWelcomeMessage = new ChatMessage()
               serverQueryClient.send('sendtextmessage', newClientWelcomeMessage.chatSend('welcome', clientObject))
               logger.log('info', 'Sent welcome message to new user for the first time.')
             }
