@@ -7,8 +7,7 @@ const config = JSON.parse(require('fs').readFileSync('config.json'))
 
 // Function to receive the current matchup from the GW2 API.
 matchup.getMatchups = function (callback) {
-  logger.log('debug', 'Output config file on matchup.getMatchups: ' + util.inspect(config))
-  if (config.homeWorld !== undefined) {
+  if (config.homeWorld) {
     let options = {
       hostname: 'api.guildwars2.com',
       path: '/v2/wvw/matches?world=' + config.homeWorld,
@@ -27,27 +26,19 @@ matchup.getMatchups = function (callback) {
             }
         })
         response.on('end', function () {
-            logger.log('debug', 'CURRENT CONFIG: ' + body)
-            logger.log('debug', 'CURRENT CONFIG util inspect: ' + util.inspect(body))
             let currentMatchupDetails
             logger.log('debug', 'Response data: ' + util.inspect(currentMatchupDetails))
-            logger.log('debug', 'Inspect response data: ' + util.inspect(currentMatchupDetails))
+            // TODO: Have only one thing in here that could fail to avoid confusion.
             try {
                 currentMatchupDetails = JSON.parse(body)
-                if (currentMatchupDetails.all_worlds.red.indexOf(config.homeWorld) !== -1) {
-                    console.log('red')
-                    logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.red)
-                    callback(null, currentMatchupDetails.all_worlds.red)
-                }
-                if (currentMatchupDetails.all_worlds.blue.indexOf(config.homeWorld) !== -1) {
-                    console.log('blue')
-                    logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.blue)
-                    callback(null, currentMatchupDetails.all_worlds.blue)
-                }
-                if (currentMatchupDetails.all_worlds.green.indexOf(config.homeWorld) !== -1) {
-                    console.log('green')
-                    logger.log('debug', 'Found Matchup: ' + currentMatchupDetails.all_worlds.green)
-                    callback(null, currentMatchupDetails.all_worlds.green)
+                const borderColors = ['red', 'blue', 'green']
+                const matchupPartner = borderColors.filter((borderColor) => {
+                    return currentMatchupDetails.all_worlds[borderColor].indexOf(config.homeWorld) !== -1
+                })
+                logger.log('debug', 'matchup partner ' + util.inspect(matchupPartner))
+                if (matchupPartner.length > 0) {
+                    logger.log('debug', 'Found matchup: ' + currentMatchupDetails.all_worlds[matchupPartner[0]])
+                    callback(null, currentMatchupDetails.all_worlds[matchupPartner[0]])
                 }
             } catch (e) {
                 logger.log('debug', 'Matchup data not valid json!')
@@ -60,7 +51,9 @@ matchup.getMatchups = function (callback) {
             logger.log('error', 'While calling \'api.guildwars.com/v2/matches\'' + util.inspect(error))
         })
     }).on('error', function (res) {
-      logger.log('debug', 'HTTPS request failed during Match-Up routine.' + util.inspect(res))
+      logger.log('debug', 'HTTPS request failed during Match-Up routine. API could not be reached!\n' + util.inspect(res))
     })
+  } else {
+     logger.log('debug', 'Config.homeWorld not set in config file!')
   }
 }
