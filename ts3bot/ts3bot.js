@@ -273,7 +273,6 @@ const helper = require('./helper');
         matchup.getMatchups(function (error, response) {
           logger.log('debug', 'getMatchup error object: ' + error)
           logger.log('debug', 'getMatchup response object: ' + response)
-          logger.log('debug', 'Type of matchup: ' + typeof (response))
           currentConfig = config
           if (response !== null) {
             currentConfig.worldsAllowed = response
