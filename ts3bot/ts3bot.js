@@ -101,7 +101,7 @@ const helper = require('./helper');
           })
         // Else it is already there and we don't need to create it.
         } else {
-          logger.log('debug', '/logBackup/ folder already exists.')
+          logger.log('debug', 'Backup folder for old logs already exists.')
         }
       })
       // Checking if a file called 'log' exists.
@@ -274,9 +274,7 @@ const helper = require('./helper');
           logger.log('debug', 'getMatchup error object: ' + error)
           logger.log('debug', 'getMatchup response object: ' + response)
           logger.log('debug', 'Type of matchup: ' + typeof (response))
-          logger.log('debug', 'Current config.json: ' + util.inspect(config))
           currentConfig = config
-          logger.log('debug', 'Current config.json: ' + util.inspect(currentConfig))
           if (response !== null) {
             currentConfig.worldsAllowed = response
             fs.open(path.join(__dirname, './config.json'), 'w+', function (error, fd) {
@@ -316,11 +314,9 @@ const helper = require('./helper');
                 logger.log('debug', 'No valid JSON in matchup routine. ' + util.inspect(e))
               }
             })
-            logger.log('debug', 'currentConfig after matchup.getMatchups: ' + util.inspect(currentConfig))
           }
         })
       }
-      logger.log('debug', 'Config after matchup.getMatchups: ' + util.inspect(config))
       callback()
     }
   },

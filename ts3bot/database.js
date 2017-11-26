@@ -128,7 +128,7 @@ database.setNewUser = function (clientObject, callback) {
   mongoClient.connect(uri, function (err, db) {
     if (err) logger.log('error', 'While connecting to DB during setNewUser.')
     var collection = db.collection('clients')
-    logger.log('debug', 'Heeeeyyyaa!' + util.inspect(clientObject))
+    logger.log('debug', 'Looking for user: ' + util.inspect(clientObject))
     collection.update(
       {
         client_unique_id: clientObject.invokeruid
