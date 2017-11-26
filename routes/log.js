@@ -54,7 +54,7 @@ function updateLog () {
         if (/\[Chat/.test(line)) {
           if (tempLogArray.indexOf(line) === -1) {
             io.emit('newLine', line)
-            tempLogArray.push(line)
+            tempLogArray.push(line.toString())
           }
         }
       })
