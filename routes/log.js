@@ -41,7 +41,7 @@ router.get('/', function (req, res, next) {
 })
 
 function updateLog () {
-  let fileWatcher = fs.watch('./ts3bot/log', function (event, file) {
+  fs.watch('./ts3bot/log', function (event, file) {
     if (event === 'error') {
       console.log('Error while accessing the logfile. ' + event)
     }
@@ -54,7 +54,7 @@ function updateLog () {
         if (/\[Chat/.test(line)) {
           if (tempLogArray.indexOf(line) === -1) {
             io.emit('newLine', line)
-            tempLogArray.push(line.toString())
+            tempLogArray.push(line)
           }
         }
       })
