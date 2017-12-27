@@ -20,7 +20,7 @@ adminChatCommands.execute = function (client, serverQueryClient) {
   logger.log('debug', 'client:\n' + util.inspect(client))
   logger.log('debug', 'serverquery:\n' + util.inspect(serverQueryClient))
   logger.log('debug', 'command: ' + client.msg)
-  logger.log('info', '[Chat command] ' + client.invokeruid + ' ' + client.invokername + ' ' + client.msg.replace('<', ''))
+  logger.log('info', '[Chat command] ' + client.invokeruid + ' ' + client.invokername + ' ' + client.msg.replace(/[^a-zA-Z0-9 !]/g, ''))
   let message = new ChatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
   logger.log('info', 'Received message from admin: ' + '\n' + '\'' + client.msg + '\'')
