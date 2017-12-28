@@ -12,7 +12,7 @@ commanderChatCommands.execute = function (client, serverQueryClient) {
   logger.log('info', '[Chat command Commander] ' + client.invokeruid + ' ' + client.invokername + ' ' + client.msg.replace(/[^a-zA-Z0-9 !]/g, ''))
   let message = new ChatMessage()
   serverQueryClient.send('sendtextmessage', message.chatSend('admin', client))
-  logger.log('info', 'Received message from commander: ' + '\n' + '\'' + client.msg + '\'')
+  logger.log('info', 'Received message from commander: ' + '\'' + client.msg + '\'')
   logger.log('debug', 'ResponseObject on CommanderMessage: ' + util.inspect(client))
   if (client.msg.length > 1) {
     let AdminMessageArray = client.msg.split(' ')

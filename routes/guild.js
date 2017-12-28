@@ -30,8 +30,10 @@ router.get('/:id', function (req, res, next) {
     response.on('error', function (error) {
       console.log('error event', error)
     })
-  }).on('error', function (error) {
-    if (error) console.log('Handling error now!' + error)
+  })
+  .on('error', function (error) {
+    // TODO: Avoid retry in some cases? 'Error: getaddrinfo EAI_AGAIN api.guildwars2.com:443'
+    if (error) console.log('Handling error now! ' + error)
   })
 })
 
