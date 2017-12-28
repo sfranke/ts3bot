@@ -29,6 +29,7 @@ const clientIdleMove = require('./clientIdleMove')
 const matchup = require('./matchup')
 const serverGroups = require('./serverGroups')
 const adminChatCommands = require('./adminChatCommands')
+const userChatCommands = require('./userChatCommands')
 const commanderChatCommands = require('./commanderChatCommands')
 const serverGroupPermissions = require('./serverGroupPermissions')
 const os = require('os')
@@ -436,6 +437,8 @@ const helper = require('./helper');
           } catch (e) {
             logger.log('debug', 'Resolving error within try/catch block. ' + e)
             logger.log('debug', 'Client with less than two server groups. ' + response.client_unique_identifier + ' - ' + response.client_nickname + ' - ' + response.connection_client_ip)
+            // User chat command.
+            userChatCommands.execute(commander, serverQueryClient)
           }
         }
       })

@@ -5,7 +5,7 @@ const logger = require('../logger')
 let config = JSON.parse(require('fs').readFileSync('config.json'))
 
 showMatchup.info = function () {
-  let serverNames = config.worldsAllowed.map(function(element) { return config.gameWorlds[element].serverName })
+  let serverNames = config.worldsAllowed.map(function (element) { return config.gameWorlds[element].serverName + ' (' + element + ')' })
   showMatchup.issued = '!showMatchup'
   showMatchup.description = 'Show current matchup partner.'
   showMatchup.message = 'Currently allowed worlds: ' + serverNames.toString().replace(',', ', ')
