@@ -208,6 +208,9 @@
         },
         "HeartOfThorns": {
             "serverGroupId": 44
+        },
+        "PathOfFire": {
+            "serverGroupId": 45
         }
     },
     "_access_comment": "The access level of a user's game account and its respective server group."
