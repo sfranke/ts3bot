@@ -13,9 +13,9 @@ var async = require('async')
 // ensure every client has the appropriate permissions/server groups. Tha main factors are the gw2_account_world which
 // provides the information about the game sever. And the serverGroupIds provided by the config file.
 serverGroups.purgeClient = function (serverQueryClient, clientObject) {
-    // logger.log('debug', 'serverQueryClient:\n' + util.inspect(serverQueryClient));
-    // logger.log('debug', 'clientObject:\n' + util.inspect(clientObject));
-    // Fetch all related servergroup IDs.
+  logger.log('debug', 'serverQueryClient:\n' + util.inspect(serverQueryClient))
+  logger.log('debug', 'clientObject:\n' + util.inspect(clientObject))
+  // Fetch all related servergroup IDs.
   var allServerGroups = []
   if (clientObject.client_servergroups !== undefined) {
     var groups = clientObject.client_servergroups.toString()
@@ -82,22 +82,26 @@ function cleanUpServerGroups (serverQueryClient, serverGroups, allServerGroups, 
         })
       }
     }
+    // TODO: Please clean this up when you have time!
     if (config.accessServerGroup === true) {
       logger.log('debug', 'Access server group enabled.')
-      if (clientObject.access === 'PlayForFree') {
+      if (clientObject.access.includes('PlayForFree')) {
         logger.log('debug', 'Detected "PlayForFree" access.')
         logger.log('debug', 'Server group is: ' + config.access['PlayForFree'].serverGroupId)
         serverQueryClient.send('servergroupaddclient', {sgid: config.access['PlayForFree'].serverGroupId, cldbid: clientObject.invokerdbid})
       }
-      if (clientObject.access === 'GuildWars2') {
+      if (clientObject.access.includes('GuildWars2')) {
         logger.log('debug', 'Detected "GuildWars2" access.')
         logger.log('debug', 'Server group is: ' + config.access['GuildWars2'].serverGroupId)
         serverQueryClient.send('servergroupaddclient', {sgid: config.access['GuildWars2'].serverGroupId, cldbid: clientObject.invokerdbid})
       }
-      if (clientObject.access === 'HeartOfThorns') {
-        logger.log('debug', 'Detected "HeartOfThorns" access.')
+      if (clientObject.access.includes('HeartOfThorns')) {
         logger.log('debug', 'Server group is: ' + config.access['HeartOfThorns'].serverGroupId)
         serverQueryClient.send('servergroupaddclient', {sgid: config.access['HeartOfThorns'].serverGroupId, cldbid: clientObject.invokerdbid})
+      }
+      if (clientObject.access.includes('PathOfFire')) {
+        logger.log('debug', 'Server group is: ' + config.access['PathOfFire'].serverGroupId)
+        serverQueryClient.send('servergroupaddclient', {sgid: config.access['PathOfFire'].serverGroupId, cldbid: clientObject.invokerdbid})
       }
     }
     // Remove all server groups except the one that this account is affiliated with.
@@ -137,16 +141,20 @@ function stripAllServerGroups (serverQueryClient, serverGroups, allServerGroups,
       }
       callback()
     },
+    // TODO: Please clean this up when you have time!
     strippingAccessServerGroup: function (callback) {
       if (config.accessServerGroup === true) {
-        if (clientObject.access !== 'PlayForFree') {
+        if (clientObject.access === null || !clientObject.access.includes('PlayForFree')) {
           serverQueryClient.send('servergroupdelclient', {sgid: config.access['PlayForFree'].serverGroupId, cldbid: clientObject.invokerdbid})
         }
-        if (clientObject.access !== 'GuildWars2') {
+        if (clientObject.access === null || !clientObject.access.includes('GuildWars2')) {
           serverQueryClient.send('servergroupdelclient', {sgid: config.access['GuildWars2'].serverGroupId, cldbid: clientObject.invokerdbid})
         }
-        if (clientObject.access !== 'HeartOfThorns') {
+        if (clientObject.access === null || !clientObject.access.includes('HeartOfThorns')) {
           serverQueryClient.send('servergroupdelclient', {sgid: config.access['HeartOfThorns'].serverGroupId, cldbid: clientObject.invokerdbid})
+        }
+        if (clientObject.access === null || !clientObject.access.includes('PathOfFire')) {
+          serverQueryClient.send('servergroupdelclient', {sgid: config.access['PathOfFire'].serverGroupId, cldbid: clientObject.invokerdbid})
         }
       }
       callback()
