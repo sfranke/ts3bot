@@ -3,6 +3,7 @@ const ChatMessage = require('./chatMessage')
 const logger = require('./logger')
 const util = require('util')
 const helpUser = require('./adminChatCommands/helpUser.js')
+const welcome = require('./adminChatCommands/welcome.js')
 
 userChatCommands.execute = function (client, serverQueryClient) {
   logger.log('debug', 'serverquery:\n' + util.inspect(serverQueryClient))
@@ -18,6 +19,18 @@ userChatCommands.execute = function (client, serverQueryClient) {
     // Displays a chat response provding an overview of all available chat commands.
     if (userMessageArray[0] === '!help') {
       helpUser.command(client, serverQueryClient)
+    }
+
+    // Looking for something matching '/.*perm.*/' to have maximum flexibility when recognizing
+    // a user asking to get permissions in chat.
+    const permStringIndexList = userMessageArray
+      .filter(function (string) { return string.toLowerCase().trim() })
+      .map(function (string, index) { return /.*perm.*/g.test(string.toLowerCase()) ? index : undefined })
+      .filter(function (index) { return index !== undefined })
+
+    // Initiates a welcome message.
+    if (!!permStringIndexList.length) {
+      welcome.command(client, serverQueryClient, userMessageArray)
     }
   }
 }
