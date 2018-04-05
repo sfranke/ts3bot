@@ -28,8 +28,8 @@ userChatCommands.execute = function (client, serverQueryClient) {
       .map(function (string, index) { return /.*perm.*/g.test(string.toLowerCase()) ? index : undefined })
       .filter(function (index) { return index !== undefined })
 
-    // Initiates a welcome message.
-    if (!!permStringIndexList.length) {
+    // Initiates a welcome message if '/.*perm.*/' has been found.
+    if (permStringIndexList.length) {
       welcome.command(client, serverQueryClient, userMessageArray)
     }
   }
