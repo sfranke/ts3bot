@@ -13,6 +13,15 @@ clientIdleMove.moveClient = function (serverQueryClient) {
     if (error !== undefined) {
       logger.log('error', 'While \'clientlist -times\'. ' + util.inspect(error))
     } else {
+      // Restart if there is no real users on the server.
+      let realusers = []
+      if (response.length > 1) {
+        realusers = response.filter((client) => client.client_type !== 1)
+        logger.log(`info`, `Clients currently on the server: ${realusers.length}`)
+      } else {
+        logger.log(`info`, `Clients currently on the server: ${realusers.length}`)
+        process.exit()
+      }
       for (var user in response) {
         // Declare server query clients
         var serverQueryClientType = 1
@@ -40,6 +49,6 @@ clientIdleMove.moveClient = function (serverQueryClient) {
     }
     setTimeout(function () {
       clientIdleMove.moveClient(serverQueryClient)
-    }, 30000)
+    }, config.idleTimeLimit)
   })
 }
