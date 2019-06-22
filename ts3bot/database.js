@@ -1,15 +1,10 @@
-#!/usr/bin/node
+#!/bin/node
 
 var database = exports
 var mongoClient = require('mongodb').MongoClient
 var util = require('util')
 var logger = require('./logger')
 var uri = 'mongodb://localhost:27017/ts3bot'
-
-function currentTime () {
-  var unixStamp = new Date().toJSON()
-  return unixStamp
-}
 
 // Creata a new Database, only executes if there is no database yet.
 database.createDatabase = function (callback) {
@@ -61,7 +56,7 @@ database.updateAccountInformation = function (clientObject, callback) {
             client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
-            last_seen: currentTime(),
+            last_seen: new Date().toJSON(),
             gw2_api_key: clientObject.apiKey,
             gw2_account_id: clientObject.accountId,
             gw2_account_world: clientObject.world,
@@ -100,7 +95,7 @@ database.updateExistingAccountInformationByInvokeruid = function (clientObject, 
             client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
             client_unique_id: clientObject.invokeruid,
             client_nickname: clientObject.invokername,
-            last_seen: currentTime(),
+            last_seen: new Date().toJSON(),
             gw2_api_key: clientObject.apiKey,
             gw2_account_id: clientObject.accountId,
             gw2_account_world: clientObject.world,
@@ -137,7 +132,7 @@ database.setNewUser = function (clientObject, callback) {
         client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: currentTime(),
+        last_seen: new Date().toJSON(),
         gw2_api_key: null,
         gw2_account_id: null,
         gw2_account_world: null,
@@ -171,7 +166,7 @@ database.updateLastSeen = function (clientObject, callback) {
         client_database_id: clientObject.client_database_id || clientObject.invokerdbid,
         client_unique_id: clientObject.invokeruid,
         client_nickname: clientObject.invokername,
-        last_seen: currentTime(),
+        last_seen: new Date().toJSON(),
         gw2_api_key: clientObject.apiKey,
         gw2_account_id: clientObject.accountId,
         gw2_account_world: clientObject.world,
