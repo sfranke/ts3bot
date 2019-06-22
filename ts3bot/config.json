@@ -34,6 +34,8 @@
     "_afkChannel_comment": "Channel that AFK-users get moved to.",
     "idleTimeLimit": 10000,
     "_idleTimeLimit_comment": "The maximum time a user is allowed to be afk in milliseconds.",
+    "heartBeatTimer": 3000,
+    "_heartBeatTimer_comment": "A timer used for the interval of the heart beat.",
     "PurgeClientsFromTS3Database": false,
     "_PurgeClientsFromTS3Database_comment": "Remove incative clients from the Teamspeak3 database.",
     "dbCleanupInterval": 64800000,
