@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/bin/node
 
 // Copyright (C) 2016  sfr4nke
 //
@@ -229,8 +229,8 @@ const helper = require('./helper');
       database.createDatabase(function (error, response) {
         if (error !== null) {
           logger.log('debug', 'Database error: ' + util.inspect(error))
-          logger.log('error', 'Could not connect to database. Aborting.' + util.inspect(error))
-          process.exit()
+          logger.log('error', 'Could not connect to database. Aborting. ' + util.inspect(error))
+          process.exit(1)
         } else {
           logger.log('info', 'Connected to database.')
           logger.log('info', 'Starting database clean-up routine.')
