@@ -239,6 +239,30 @@ const helper = require('./helper');
       })
     },
 
+    // Heart beat to make sure we do not automatically disconnect from the server.
+    heartBeat: function (callback) {
+      setInterval(() => {
+        logger.log(`info`, `Sending heart beat`)
+        serverQueryClient.send('clientlist', ['times'], function (error, response, rawResponse) {
+          logger.log('debug', 'clientlist -times _error. ' + util.inspect(error))
+          logger.log('debug', 'clientlist -times _response.\n' + util.inspect(response))
+          if (error !== undefined) {
+            logger.log('error', 'While \'clientlist -times\'. ' + util.inspect(error))
+          } else {
+            // Restart if there is no real users on the server.
+            let realusers = []
+            if (response.length > 1) {
+              realusers = response.filter((client) => client.client_type !== 1)
+              logger.log(`info`, `Clients currently on the server: ${realusers.length}`)
+            } else {
+              logger.log(`info`, `Clients currently on the server: ${realusers.length}`)
+              process.exit()
+            }
+          }
+        })
+      }, config.heartBeatTimer)
+    },
+
     // Clean-up routine to delete old/inactive clients from the teamspeak servers SQLite database.
     // Because of the amount of hits to the SQLite database. This function is one of the reasons
     // why the host of this program should be whitelisted for the teamspeak server.
